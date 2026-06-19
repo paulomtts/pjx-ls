@@ -64,16 +64,16 @@
           "begin": "(\\{\\{-?)",
           "beginCaptures": {
             "1": {
-              "name": "punctuation.definition.interpolation.begin.pyjinhx"
+              "name": "constant.character.format.placeholder.other.python"
             }
           },
           "end": "(-?\\}\\})",
           "endCaptures": {
             "1": {
-              "name": "punctuation.definition.interpolation.end.pyjinhx"
+              "name": "constant.character.format.placeholder.other.python"
             }
           },
-          "contentName": "variable.other.pyjinhx-interpolation",
+          "contentName": "meta.embedded.pyjinhx",
           "applyEndPatternLast": true,
           "patterns": []
         }

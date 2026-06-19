@@ -4,11 +4,11 @@
   "patterns": [
     {
       "match": "\\G\\s*",
-      "name": "variable.other.pyjinhx-interpolation"
+      "name": "meta.embedded.pyjinhx"
     },
     {
       "match": ".+",
-      "name": "variable.other.pyjinhx-interpolation"
+      "name": "meta.embedded.pyjinhx"
     }
   ]
 }

@@ -44,14 +44,6 @@
             "settings": { "foreground": "#4EC9B0" }
           },
           {
-            "scope": [
-              "variable.other.pyjinhx-interpolation",
-              "punctuation.definition.interpolation.begin.pyjinhx",
-              "punctuation.definition.interpolation.end.pyjinhx"
-            ],
-            "settings": { "foreground": "#C586C0" }
-          },
-          {
             "scope": "keyword.control.import.pyjinhx",
             "settings": { "foreground": "#C586C0" }
           }

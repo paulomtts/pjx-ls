@@ -34,8 +34,8 @@
               "name": "string.quoted.single.html"
             },
             {
-              "match": "\\{\\{[^}]*\\}\\}",
-              "name": "variable.other.pyjinhx-interpolation"
+              "begin": "\\{\\{-?", "beginCaptures": { "0": { "name": "constant.character.format.placeholder.other.python" } }, "end": "-?\\}\\}", "endCaptures": { "0": { "name": "constant.character.format.placeholder.other.python" } },
+              "contentName": "meta.embedded.pyjinhx"
             }
           ]
         }
@@ -62,8 +62,8 @@
           "name": "string.quoted.single.html"
         },
         {
-          "match": "\\{\\{[^}]*\\}\\}",
-          "name": "variable.other.pyjinhx-interpolation"
+          "begin": "\\{\\{-?", "beginCaptures": { "0": { "name": "constant.character.format.placeholder.other.python" } }, "end": "-?\\}\\}", "endCaptures": { "0": { "name": "constant.character.format.placeholder.other.python" } },
+          "contentName": "meta.embedded.pyjinhx"
         }
       ]
     }
