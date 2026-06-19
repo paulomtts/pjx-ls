@@ -70,4 +70,4 @@ npm run package  # produce a .vsix
 
 ## License
 
-[MIT](LICENSE)
+MIT — see the `LICENSE` file in the repository.

@@ -8,7 +8,7 @@ const options = {
   target: "node18",
   external: ["vscode"],
   outfile: "dist/extension.cjs",
-  sourcemap: true,
+  sourcemap: process.argv.includes("--watch"),
 };
 
 if (process.argv.includes("--watch")) {
