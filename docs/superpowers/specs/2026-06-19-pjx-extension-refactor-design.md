@@ -27,7 +27,9 @@ not a feature expansion.
 |---|---|
 | Target architecture | Reorganize as-is — grammar + formatter extension, no LSP |
 | Language / tooling | TypeScript + build step (esbuild) + `@types/vscode` |
-| Tests | Formatter (core) logic, Node's built-in `node:test` runner |
+| Module system | `package.json` `"type": "module"`; VSCode bundle emitted as CJS `dist/extension.cjs` (proven: VSCode requires CJS, but `node --test` needs ESM to run `.ts` natively) |
+| Tests | Formatter (core) logic, Node's built-in `node:test` runner — runs `.ts` ESM directly on Node ≥23.6 (verified on Node v26.2.0), no test build, no `tsx` |
+| Codebase guide | A `docs/codebase-guide.md` that teaches a newcomer how the extension is organized and how the formatter works (user-requested deliverable) |
 | Test fixtures | All `.html` components from `~/Code/nori/.../new/` (+ sibling `.py` for slot reference) |
 | Cleanup | Delete all 16 `.vsix`; flatten `pyjinhx-highlight/` to repo root |
 | `bin/format-file.js` CLI | Remove (redundant with the VSCode formatter) |
@@ -134,9 +136,14 @@ it is genuinely dead) before changing it.
   Eager `"*"` activation is deprecated and slows editor startup. (Observable
   behavior unchanged for users — the formatter only acts on component templates
   anyway.)
-- **Dead branch** in `formatSlottedPascalTags`: `if (content === formattedContent)
-  { continue }` can never be true because `formattedContent` always begins with a
-  newline. Remove after confirming via test.
+- ~~**Dead branch** in `formatSlottedPascalTags`~~ — **RETRACTED.** Empirical
+  characterization (instrumented execution) proved `if (content ===
+  formattedContent) { continue }` is **reachable and load-bearing**: it is the
+  slot-stage idempotency guard for already-canonical slot values. It fires because
+  `isHtmlSlotValue` calls `.trim()` before testing `startsWith("<")`, so a
+  canonical value like `"\n  <p>Hi</p>\n"` (which begins with `\n`) still passes
+  the HTML gate and can equal `formattedContent`. **Keep this branch**; pin it with
+  a test.
 - **Duplicated def-signature grammar** across `pyjinhx.json` and
   `pyjinhx-injection-def-header*.json`. Kept as hand-maintained JSON (no codegen —
   out of scope) but documented as intentionally mirrored.
@@ -147,6 +154,30 @@ it is genuinely dead) before changing it.
   reflect highlighting + formatting.
 - **Remove** `bin/format-file.js`, all 16 `.vsix` artifacts, and the nested
   `pyjinhx-highlight/` directory (flatten to repo root).
+
+## Known behavioral quirks (preserve under test; do NOT fix in this refactor)
+
+Empirical characterization surfaced real behavioral bugs in the current formatter.
+Because this is a **behavior-preserving** refactor, these are locked in by
+characterization tests and documented in the codebase guide as "known limitations
+/ future work" — **not** fixed here (fixing them changes output and is a separate
+decision for the user).
+
+1. **Inline whitespace loss.** When an element's only children are text and/or
+   `{{ }}` expressions, `tryInlineElement` concatenates them with **no separator**,
+   so `<p>Hello {{ name }} world</p>` → `<p>Hello{{ name }}world</p>`. Idempotent,
+   but semantically lossy (changes rendered output).
+2. **Trailing-space-before-newline artifact.** Slot expansion moves the attribute
+   name to its own line, leaving the tag-open line as e.g. `<PJXButton ` (trailing
+   space) before the newline.
+3. **Asymmetric trailing `>`.** Whether the opening tag's `>` is split onto its own
+   line depends on whether the *source* tag already contained a newline, not on a
+   normalization rule.
+4. **Whitespace-only text nodes dropped** by the tokenizer; multi-line attribute
+   interiors are passed through verbatim (not re-indented).
+5. **Shape-based slot detection.** Any double-quoted attribute whose trimmed value
+   starts with `<`+letter/`/` is expanded — the formatter does not consult a
+   `PjxSlot` whitelist.
 
 ## Testing
 
