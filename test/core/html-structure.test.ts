@@ -71,6 +71,48 @@ test("interpolation containing < and quotes is not mis-tokenized", () => {
   );
 });
 
+test("a bare double-quote inside {{ }} in an attribute does not terminate the tag", () => {
+  // Locks the {{ }}-skip in readQuotedString: without it, the " inside the
+  // interpolation would close the attribute and corrupt the tag.
+  assert.equal(
+    formatHtmlStructure(`<div a="{{ x or "y" }}"><span>t</span></div>`),
+    `<div a="{{ x or "y" }}">\n  <span>t</span>\n</div>\n`,
+  );
+});
+
+test("macro block raw open keywords each nest depth +1", () => {
+  assert.equal(
+    formatHtmlStructure("{% macro foo() %}<span>x</span>{% endmacro %}"),
+    "{% macro foo() %}\n  <span>x</span>\n{% endmacro %}\n",
+  );
+  assert.equal(
+    formatHtmlStructure("{% block content %}<span>x</span>{% endblock %}"),
+    "{% block content %}\n  <span>x</span>\n{% endblock %}\n",
+  );
+  assert.equal(
+    formatHtmlStructure("{% raw %}<span>x</span>{% endraw %}"),
+    "{% raw %}\n  <span>x</span>\n{% endraw %}\n",
+  );
+});
+
+test("unknown jinja tags (set, include) are depth-neutral", () => {
+  assert.equal(
+    formatHtmlStructure("<div>{% set x = 1 %}<span>y</span></div>"),
+    "<div>\n  {% set x = 1 %}\n  <span>y</span>\n</div>\n",
+  );
+  assert.equal(
+    formatHtmlStructure("<div>{% include 'p.html' %}<span>y</span></div>"),
+    "<div>\n  {% include 'p.html' %}\n  <span>y</span>\n</div>\n",
+  );
+});
+
+test("a non-def {# comment #} is depth-neutral", () => {
+  assert.equal(
+    formatHtmlStructure("<div>{# a comment #}<span>x</span></div>"),
+    "<div>\n  {# a comment #}\n  <span>x</span>\n</div>\n",
+  );
+});
+
 test("empty input returned unchanged", () => {
   assert.equal(formatHtmlStructure(""), "");
 });

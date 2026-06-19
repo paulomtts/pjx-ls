@@ -54,6 +54,20 @@ test("rejects wrong extension", () => {
   );
 });
 
+test("accepts the jinja and jinja-html language ids", () => {
+  assert.equal(isComponentTemplate(make({ languageId: "jinja" })), true);
+  assert.equal(isComponentTemplate(make({ languageId: "jinja-html" })), true);
+});
+
 test("rejects unsupported languageId", () => {
   assert.equal(isComponentTemplate(make({ languageId: "css" })), false);
+});
+
+test("requires the leading slash on /components/ (no substring trap)", () => {
+  assert.equal(
+    isComponentTemplate(
+      make({ fileName: "/p/mycomponents/a.html", uri: { scheme: "file", fsPath: "/p/mycomponents/a.html" } }),
+    ),
+    false,
+  );
 });

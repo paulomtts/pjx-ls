@@ -43,3 +43,16 @@ test("isHtmlSlotValue trims before testing for '<'", () => {
 test("splitHtmlFragments splits on '><' boundaries", () => {
   assert.deepEqual(splitHtmlFragments("<a/><b/>"), ["<a/>", "<b/>"]);
 });
+
+test("a bare double-quote inside {{ }} does not terminate the slot value early", () => {
+  // The slot value is HTML and contains a double quote INSIDE an interpolation.
+  // The {{ }}-skip in readDoubleQuotedContent must read past it so the whole value
+  // (through </i>) is captured — not truncated at the inner ". Locks that skip
+  // branch (a mutant that drops it truncates the value at `<i>{{ a or `).
+  const input = `<X slot="<i>{{ a or "b" }}</i>"/>`;
+  const out = formatSlottedPascalTags(input);
+  assert.ok(
+    out.includes(`{{ a or "b" }}</i>`),
+    "the interpolation (with its inner double quote) and the closing tag must stay intact",
+  );
+});
