@@ -6,7 +6,7 @@
       "match": "^(def)\\b",
       "captures": {
         "1": {
-          "name": "keyword.control.import.python"
+          "name": "keyword.control.import.pyjinhx"
         }
       }
     },

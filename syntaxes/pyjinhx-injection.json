@@ -26,16 +26,16 @@
             {
               "match": "\\b([a-z_][\\w-]*)=",
               "captures": {
-                "1": { "name": "entity.other.attribute-name.pyjinhx" }
+                "1": { "name": "entity.other.attribute-name.html" }
               }
             },
             {
               "match": "'[^']*'",
-              "name": "string.quoted.single.pyjinhx"
+              "name": "string.quoted.single.html"
             },
             {
               "match": "\\{\\{[^}]*\\}\\}",
-              "name": "variable.other.bracket.jinja"
+              "name": "variable.other.pyjinhx-interpolation"
             }
           ]
         }
@@ -63,7 +63,7 @@
         },
         {
           "match": "\\{\\{[^}]*\\}\\}",
-          "name": "variable.other.bracket.jinja"
+          "name": "variable.other.pyjinhx-interpolation"
         }
       ]
     }

@@ -45,16 +45,16 @@
           "begin": "(\\{#-?)(def)\\b",
           "beginCaptures": {
             "1": {
-              "name": "keyword.control.import.python"
+              "name": "keyword.control.import.pyjinhx"
             },
             "2": {
-              "name": "keyword.control.import.python"
+              "name": "keyword.control.import.pyjinhx"
             }
           },
           "end": "(-?#\\})",
           "endCaptures": {
             "1": {
-              "name": "keyword.control.import.python"
+              "name": "keyword.control.import.pyjinhx"
             }
           },
           "patterns": [

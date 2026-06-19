@@ -1,9 +1,9 @@
 {
-  "name": "pyjinhx-slot-highlight",
+  "name": "pyjinhx-syntax-support",
   "displayName": "PyJinHx",
   "description": "Syntax highlighting and template formatting for the PyJinHx Python framework (PascalCase component tags, slots, {#def#} headers, interpolation).",
   "version": "0.1.16",
-  "publisher": "nori",
+  "publisher": "paulomtts",
   "license": "MIT",
   "type": "module",
   "main": "./dist/extension.cjs",
@@ -34,6 +34,28 @@
           "default": true,
           "description": "Expand single-line quoted slot values that contain a PascalCase component tag when saving component templates."
         }
+      }
+    },
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": "entity.name.tag.pyjinhx",
+            "settings": { "foreground": "#4EC9B0" }
+          },
+          {
+            "scope": [
+              "variable.other.pyjinhx-interpolation",
+              "punctuation.definition.interpolation.begin.pyjinhx",
+              "punctuation.definition.interpolation.end.pyjinhx"
+            ],
+            "settings": { "foreground": "#C586C0" }
+          },
+          {
+            "scope": "keyword.control.import.pyjinhx",
+            "settings": { "foreground": "#C586C0" }
+          }
+        ]
       }
     },
     "languages": [
