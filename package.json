@@ -7,7 +7,7 @@
   "license": "MIT",
   "type": "module",
   "main": "./dist/extension.cjs",
-  "icon": "icon.png",
+  "icon": "icons/icon.png",
   "engines": { "vscode": "^1.80.0" },
   "repository": { "type": "git", "url": "https://github.com/paulomtts/pjx-ls.git" },
   "bugs": { "url": "https://github.com/paulomtts/pjx-ls/issues" },
@@ -75,8 +75,8 @@
         "aliases": ["PyJinHx", "pjx"],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./icons/pjx.png",
-          "dark": "./icons/pjx.png"
+          "light": "./icons/file.png",
+          "dark": "./icons/file.png"
         }
       }
     ],

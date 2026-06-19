@@ -12,3 +12,4 @@ tsconfig.json
 **/*.map
 **/*.svg
 icon.ico
+icons/icon-1024.png
