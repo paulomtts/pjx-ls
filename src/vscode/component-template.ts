@@ -32,9 +32,14 @@ export function isComponentTemplate(document: TemplateDocumentLike): boolean {
   if (!isTemplateExtension(document.fileName)) {
     return false;
   }
-  const normalizedPath = document.uri.fsPath.split(sep).join("/");
-  if (!normalizedPath.includes(COMPONENTS_PATH_SEGMENT)) {
-    return false;
+  // A `.pjx` file is the dedicated PyJinHx language, so it is always a component
+  // template. An `.html` file is only treated as one when it lives under a
+  // `/components/` path (avoids reformatting arbitrary HTML documents).
+  if (!document.fileName.endsWith(".pjx")) {
+    const normalizedPath = document.uri.fsPath.split(sep).join("/");
+    if (!normalizedPath.includes(COMPONENTS_PATH_SEGMENT)) {
+      return false;
+    }
   }
   return TEMPLATE_LANGUAGE_IDS.has(document.languageId);
 }

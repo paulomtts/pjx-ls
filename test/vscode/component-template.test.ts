@@ -29,6 +29,32 @@ test("accepts .pjx with pyjinhx language", () => {
   );
 });
 
+test("accepts a .pjx file anywhere, not just under /components/", () => {
+  assert.equal(
+    isComponentTemplate(
+      make({
+        fileName: "/home/me/scratch/demo.pjx",
+        uri: { scheme: "file", fsPath: "/home/me/scratch/demo.pjx" },
+        languageId: "pyjinhx",
+      }),
+    ),
+    true,
+  );
+});
+
+test("still requires /components/ for .html files", () => {
+  assert.equal(
+    isComponentTemplate(
+      make({
+        fileName: "/home/me/scratch/page.html",
+        uri: { scheme: "file", fsPath: "/home/me/scratch/page.html" },
+        languageId: "html",
+      }),
+    ),
+    false,
+  );
+});
+
 test("rejects non-file scheme", () => {
   assert.equal(
     isComponentTemplate(make({ uri: { scheme: "untitled", fsPath: "/proj/components/x/y.html" } })),
