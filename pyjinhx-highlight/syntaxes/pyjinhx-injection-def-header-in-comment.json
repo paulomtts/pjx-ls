@@ -1,0 +1,46 @@
+{
+  "scopeName": "pyjinhx.injection.def-header-in-comment",
+  "injectionSelector": "L:comment.block.jinja, L:comment.block",
+  "patterns": [
+    {
+      "match": "^(def)\\b",
+      "captures": {
+        "1": {
+          "name": "keyword.control.import.python"
+        }
+      }
+    },
+    {
+      "match": "((?:\"(?:[^\"\\\\]|\\\\.)*\")|(?:'(?:[^'\\\\]|\\\\.)*'))",
+      "name": "string.quoted.python"
+    },
+    {
+      "match": "\\b(True|False|None)\\b",
+      "captures": {
+        "1": {
+          "name": "constant.language.python"
+        }
+      }
+    },
+    {
+      "match": "\\b(int|str|float|bool|bytes|list|dict|set|tuple|Any|Optional|Union|Literal|Sequence|Mapping|Callable|TypeVar|Protocol)\\b",
+      "captures": {
+        "1": {
+          "name": "support.type.python"
+        }
+      }
+    },
+    {
+      "match": "\\b([a-z_][\\w]*)\\b(?=\\s*:)",
+      "captures": {
+        "1": {
+          "name": "variable.parameter.python"
+        }
+      }
+    },
+    {
+      "match": "[:=,]",
+      "name": "punctuation.separator.pyjinhx-def"
+    }
+  ]
+}

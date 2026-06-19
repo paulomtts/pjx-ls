@@ -1,0 +1,24 @@
+{
+  "scopeName": "pyjinhx.injection.interpolation",
+  "injectionSelector": "L:text.html.jinja, L:text.html.basic, L:text.pyjinhx",
+  "patterns": [
+    {
+      "name": "meta.pyjinhx-interpolation",
+      "begin": "(\\{\\{-?)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.interpolation.begin.pyjinhx"
+        }
+      },
+      "end": "(-?\\}\\})",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.interpolation.end.pyjinhx"
+        }
+      },
+      "contentName": "variable.other.pyjinhx-interpolation",
+      "applyEndPatternLast": true,
+      "patterns": []
+    }
+  ]
+}

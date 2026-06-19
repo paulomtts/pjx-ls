@@ -1,0 +1,71 @@
+{
+  "scopeName": "pyjinhx.injection",
+  "injectionSelector": "L:string.quoted.double.html",
+  "patterns": [
+    {
+      "include": "#pyjinhx-component-tag"
+    },
+    {
+      "include": "#html-in-slot"
+    }
+  ],
+  "repository": {
+    "pyjinhx-component-tag": {
+      "patterns": [
+        {
+          "begin": "(<)([A-Z][A-Za-z0-9]*)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.tag.begin.pyjinhx" },
+            "2": { "name": "entity.name.tag.pyjinhx" }
+          },
+          "end": "(/>)",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.tag.end.pyjinhx" }
+          },
+          "patterns": [
+            {
+              "match": "\\b([a-z_][\\w-]*)=",
+              "captures": {
+                "1": { "name": "entity.other.attribute-name.pyjinhx" }
+              }
+            },
+            {
+              "match": "'[^']*'",
+              "name": "string.quoted.single.pyjinhx"
+            },
+            {
+              "match": "\\{\\{[^}]*\\}\\}",
+              "name": "variable.other.bracket.jinja"
+            }
+          ]
+        }
+      ]
+    },
+    "html-in-slot": {
+      "patterns": [
+        {
+          "match": "(<)(/?)([a-z][a-z0-9]*)\\b",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.begin.html" },
+            "2": { "name": "punctuation.definition.tag.begin.html" },
+            "3": { "name": "entity.name.tag.html" }
+          }
+        },
+        {
+          "match": "\\b([a-z_][\\w-]*)=",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.html" }
+          }
+        },
+        {
+          "match": "'[^']*'",
+          "name": "string.quoted.single.html"
+        },
+        {
+          "match": "\\{\\{[^}]*\\}\\}",
+          "name": "variable.other.bracket.jinja"
+        }
+      ]
+    }
+  }
+}

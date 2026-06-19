@@ -1,0 +1,14 @@
+{
+  "scopeName": "pyjinhx.injection.interpolation-in-jinja",
+  "injectionSelector": "L:meta.expression.jinja -meta.pyjinhx-interpolation",
+  "patterns": [
+    {
+      "match": "\\G\\s*",
+      "name": "variable.other.pyjinhx-interpolation"
+    },
+    {
+      "match": ".+",
+      "name": "variable.other.pyjinhx-interpolation"
+    }
+  ]
+}

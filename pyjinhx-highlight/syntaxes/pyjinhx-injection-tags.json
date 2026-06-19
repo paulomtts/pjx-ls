@@ -1,0 +1,13 @@
+{
+  "scopeName": "pyjinhx.injection.tags",
+  "injectionSelector": "L:meta.tag.other -comment",
+  "patterns": [
+    {
+      "match": "(</?)([A-Z][A-Za-z0-9]*)(?=\\s|/?>|>)",
+      "captures": {
+        "1": { "name": "punctuation.definition.tag.begin.pyjinhx" },
+        "2": { "name": "entity.name.tag.pyjinhx" }
+      }
+    }
+  ]
+}
