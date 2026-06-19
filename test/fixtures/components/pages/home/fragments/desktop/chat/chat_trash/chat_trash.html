@@ -1,0 +1,16 @@
+<div id="{{ id }}" class="chat-trash">
+  <header class="chat-trash__header">
+    <PJXIcon name="trash-2" size="20"/>
+    <h2 class="chat-trash__title">{{ t.trash }}</h2>
+  </header>
+  {% set items = items or archived_conversations() %}
+  {% if items %}
+  <PJXAccordionGroup id="trash-accordions" mode="multi" gap="0" class_name="chat-trash__group">
+    {% for cid, conv in items %}
+    <ArchivedConversation cid="{{ cid }}" title="{{ conv.title }}" archived_relative="{{ conv.archived_relative }}"/>
+    {% endfor %}
+  </PJXAccordionGroup>
+  {% else %}
+  <p class="chat-trash__empty">{{ t.trash_empty }}</p>
+  {% endif %}
+</div>

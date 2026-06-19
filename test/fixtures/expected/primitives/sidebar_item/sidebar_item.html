@@ -1,0 +1,11 @@
+<button class="sidebar-item{% if active %} sidebar-item--active{% endif %}{% if danger %} sidebar-item--danger{% endif %}" type="button"{{ extra_attrs_html }}>
+  {% if start %}
+    <span class="sidebar-item__start">{{ start }}</span>
+  {% endif %}
+  {% if center %}
+    <span class="sidebar-item__center">{{ center }}</span>
+  {% endif %}
+  {% if end %}
+    <span class="sidebar-item__end">{{ end }}</span>
+  {% endif %}
+</button>

@@ -1,0 +1,7 @@
+<div id="{{ id }}" class="chat-desktop">
+  {% if view == "trash" %}
+  <ChatTrash id="chat-trash"/>
+  {% else %}
+  <ChatThread conversation="{{ conversation }}"/>
+  {% endif %}
+</div>

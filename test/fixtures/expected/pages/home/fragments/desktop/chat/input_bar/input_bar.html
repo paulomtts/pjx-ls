@@ -1,0 +1,12 @@
+{#def placeholder: str = "" #}
+<form id="{{ id }}" class="input-bar" hx-post="/chat/message" hx-swap="none" hx-on::after-request="this.reset(); this.querySelector('textarea').dispatchEvent(new Event('input'))">
+  <div class="input-bar__inner">
+    <div class="input-bar__textarea-wrap">
+      <textarea name="content" class="input-bar__textarea" placeholder="{{ placeholder }}" aria-label="{{ placeholder }}" rows="1" spellcheck="false"></textarea>
+    </div>
+    <PJXButton variant="primary" type="submit" class_name="input-bar__send" 
+      start="
+        <PJXIcon name='send'/>
+      " center="Enviar"/>
+  </div>
+</form>

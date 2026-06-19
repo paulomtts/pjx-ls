@@ -1,0 +1,5 @@
+<div id="{{ id }}" class="domain-tabs">
+  <PJXButton variant="ghost" start="<PJXIcon name='message-square'/>" center="{{ t.chat }}" hx-post="/nav?route=chat" hx-push-url="/?route=chat" hx-swap="none" data-active="{{ 'true' if route == 'chat' else 'false' }}"/>
+  <PJXButton variant="ghost" start="<PJXIcon name='files'/>" center="{{ t.library }}" hx-post="/nav?route=library" hx-push-url="/?route=library" hx-swap="none" data-active="{{ 'true' if route == 'library' else 'false' }}"/>
+  <PJXButton variant="ghost" start="<PJXIcon name='building'/>" center="{{ t.organizations }}" hx-post="/nav?route=organizations" hx-push-url="/?route=organizations" hx-swap="none" data-active="{{ 'true' if route == 'organizations' else 'false' }}"/>
+</div>

@@ -1,0 +1,7 @@
+{#def conversation: str = "1" #}
+<div class="chat-thread">
+  <div class="message-list-wrapper">
+    <MessageThread id="message-thread" conversation="{{ conversation }}" empty_text="Comece uma nova conversa…"/>
+  </div>
+  <InputBar id="chat-input" placeholder="Pergunte ao Nori…"/>
+</div>

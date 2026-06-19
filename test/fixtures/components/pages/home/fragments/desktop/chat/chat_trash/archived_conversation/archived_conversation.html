@@ -1,0 +1,12 @@
+{#def cid: str, title: str, archived_relative: str = "" #}
+<PJXAccordion open="false" class_name="archived-conversation__accordion"
+  header="
+    <span class='archived-conversation__name'>{{ title }}</span>
+    <span class='archived-conversation__meta'>{{ archived_relative }}</span>
+  " 
+  actions="
+    <ArchivedConversationActions cid='{{ cid }}' title='{{ title }}'/>
+  "
+>
+  <PJXLazyPanel url="/chat/trash/{{ cid }}/preview" trigger="toggle from:closest details once"/>
+</PJXAccordion>

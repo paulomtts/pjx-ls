@@ -1,0 +1,10 @@
+{#def conversation: str, title: str, active: bool = False #}
+<div class="conversation-item">
+  <SidebarItem 
+    start="
+      <PJXIcon name='message-square' size='16'/>
+    " center="{{ title }}" active="{{ 'true' if active else 'false' }}" hx-get="/chat/conversations/{{ conversation }}" hx-swap="none" hx-push-url="/?route=chat&conversation={{ conversation }}"/>
+  <button class="conversation-item__archive" type="button" aria-label="Arquivar conversa" title="Arquivar" hx-post="/chat/conversations/{{ conversation }}/archive" hx-swap="none" hx-confirm="Arquivar “{{ title }}”? Você poderá restaurá-la na lixeira." data-pjx-confirm-ok="Arquivar" data-pjx-confirm-cancel="Cancelar">
+    <PJXIcon name="archive" size="14"/>
+  </button>
+</div>
