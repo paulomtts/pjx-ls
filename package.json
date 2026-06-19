@@ -46,10 +46,6 @@
           {
             "scope": "keyword.control.import.pyjinhx",
             "settings": { "foreground": "#C586C0" }
-          },
-          {
-            "scope": "entity.other.jinja.delimiter.comment",
-            "settings": { "foreground": "#C586C0" }
           }
         ]
       }
