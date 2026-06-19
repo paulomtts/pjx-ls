@@ -34,6 +34,28 @@
           "patterns": [
             { "include": "#pyjinhx-interpolation" },
             {
+              "begin": "\"(?=\\s*$)",
+              "beginCaptures": {
+                "0": { "name": "punctuation.definition.string.begin.html" }
+              },
+              "end": "\"",
+              "endCaptures": {
+                "0": { "name": "punctuation.definition.string.end.html" }
+              },
+              "patterns": [{ "include": "$self" }]
+            },
+            {
+              "begin": "\"(?=\\s*</?[A-Za-z])",
+              "beginCaptures": {
+                "0": { "name": "punctuation.definition.string.begin.html" }
+              },
+              "end": "\"",
+              "endCaptures": {
+                "0": { "name": "punctuation.definition.string.end.html" }
+              },
+              "patterns": [{ "include": "$self" }]
+            },
+            {
               "begin": "\"",
               "beginCaptures": {
                 "0": { "name": "punctuation.definition.string.begin.html" }
