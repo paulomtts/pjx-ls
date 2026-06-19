@@ -5,7 +5,8 @@ Syntax highlighting and template formatting for the [PyJinHx](https://github.com
 - **Highlighting:** PascalCase component tags, `{#def … #}` signature headers, `{{ … }}` interpolation, HTML-in-slot values (TextMate grammars in `syntaxes/`).
 - **Formatting:** slot-value expansion + HTML/Jinja structural re-indentation for component templates under `**/components/**`.
 
-See [`docs/codebase-guide.md`](docs/codebase-guide.md) for an architecture walkthrough.
+For an architecture walkthrough, see `docs/codebase-guide.md` in the source
+repository (not shipped in the packaged extension).
 
 ## Development
 
