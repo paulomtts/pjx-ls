@@ -2,9 +2,11 @@
 <div class="sidebar">
   <div class="sidebar__top">
     <PJXButton variant="secondary" 
-  start="
-    <PJXIcon name='plus'/>
-  " center="{{ t.new }}"/>
+      start="
+        <PJXIcon name='plus'/>
+      "
+      center="{{ t.new }}"
+    />
   </div>
   {% for group in groups %}
     <PJXAccordion label="{{ group.label }}">
