@@ -4,11 +4,11 @@
   "patterns": [
     {
       "match": "\\G\\s*",
-      "name": "meta.embedded.pyjinhx"
+      "name": "constant.character.format.placeholder.other.python"
     },
     {
       "match": ".+",
-      "name": "meta.embedded.pyjinhx"
+      "name": "constant.character.format.placeholder.other.python"
     }
   ]
 }

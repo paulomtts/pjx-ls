@@ -35,7 +35,7 @@
             },
             {
               "begin": "\\{\\{-?", "beginCaptures": { "0": { "name": "constant.character.format.placeholder.other.python" } }, "end": "-?\\}\\}", "endCaptures": { "0": { "name": "constant.character.format.placeholder.other.python" } },
-              "contentName": "meta.embedded.pyjinhx"
+              "contentName": "constant.character.format.placeholder.other.python"
             }
           ]
         }
@@ -63,7 +63,7 @@
         },
         {
           "begin": "\\{\\{-?", "beginCaptures": { "0": { "name": "constant.character.format.placeholder.other.python" } }, "end": "-?\\}\\}", "endCaptures": { "0": { "name": "constant.character.format.placeholder.other.python" } },
-          "contentName": "meta.embedded.pyjinhx"
+          "contentName": "constant.character.format.placeholder.other.python"
         }
       ]
     }

@@ -16,7 +16,7 @@
           "name": "constant.character.format.placeholder.other.python"
         }
       },
-      "contentName": "meta.embedded.pyjinhx",
+      "contentName": "constant.character.format.placeholder.other.python",
       "applyEndPatternLast": true,
       "patterns": []
     }
