@@ -1,4 +1,5 @@
 import { INDENT } from "../config.ts";
+import { isHtmlSlotValue, readDoubleQuotedContent } from "./slots.ts";
 
 const JINJA_BLOCK_OPEN = /^\{%\s*(?:if|for|macro|block|filter|raw)\b/;
 const JINJA_BLOCK_MID = /^\{%\s*(?:elif|else)\b/;
@@ -91,7 +92,7 @@ function readJinja(text: string, startIndex: number, marker: string, endMarker: 
 }
 
 function tagName(tagValue: string): string {
-  const match = tagValue.match(/^<\/?([A-Za-z][A-Za-z0-9]*)/);
+  const match = tagValue.match(/^<\/?\s*([A-Za-z][A-Za-z0-9]*)/);
   return match ? match[1] : "";
 }
 
@@ -166,6 +167,91 @@ export function tokenizeHtmlTemplate(text: string): Token[] {
 
   return tokens;
 }
+
+// ── Tag attribute parsing & slot-aware rendering ───────────────────────────
+
+interface TagAttr {
+  name: string;
+  /** null for a valueless/bare attribute (e.g. `disabled`). */
+  value: string | null;
+}
+
+interface ParsedTag {
+  name: string;
+  attrs: TagAttr[];
+  selfClose: boolean;
+}
+
+/** Parse an opening or self-closing tag into its name and attributes. */
+function parseTag(tagValue: string): ParsedTag {
+  const trimmed = tagValue.trim();
+  const selfClose = trimmed.endsWith("/>");
+  const inner = trimmed.slice(1, selfClose ? -2 : -1);
+
+  const nameMatch = inner.match(/^\s*([A-Za-z][\w:-]*)/);
+  const name = nameMatch ? nameMatch[1] : "";
+  let index = nameMatch ? nameMatch[0].length : 0;
+  const attrs: TagAttr[] = [];
+
+  while (index < inner.length) {
+    while (index < inner.length && /\s/.test(inner[index])) index += 1;
+    if (index >= inner.length) break;
+
+    const rest = inner.slice(index);
+    const quoted = rest.match(/^([\w:@.-]+)\s*=\s*"/);
+    if (quoted) {
+      const openQuoteIndex = index + quoted[0].length - 1;
+      const parsed = readDoubleQuotedContent(inner, openQuoteIndex);
+      if (!parsed) break;
+      attrs.push({ name: quoted[1], value: parsed.content });
+      index = parsed.closeIndex + 1;
+      continue;
+    }
+
+    const bare = rest.match(/^([^\s]+)/);
+    if (!bare) break;
+    attrs.push({ name: bare[1], value: null });
+    index += bare[0].length;
+  }
+
+  return { name, attrs, selfClose };
+}
+
+function tagHasSlot(parsed: ParsedTag): boolean {
+  return parsed.attrs.some((attr) => attr.value !== null && isHtmlSlotValue(attr.value));
+}
+
+/**
+ * Render a slotted tag in "exploded" form: tag name alone, each attribute on its
+ * own indented line, slot values recursively formatted, and the closing
+ * `>` / `/>` on its own line at the tag's indent.
+ */
+function renderExplodedTag(parsed: ParsedTag, baseIndent: string): string {
+  const attrIndent = baseIndent + INDENT;
+  const lines: string[] = [`${baseIndent}<${parsed.name}`];
+
+  for (const attr of parsed.attrs) {
+    if (attr.value === null) {
+      lines.push(attrIndent + attr.name);
+      continue;
+    }
+    if (isHtmlSlotValue(attr.value)) {
+      lines.push(`${attrIndent}${attr.name}="`);
+      const formatted = formatHtmlStructure(attr.value).replace(/\n+$/, "");
+      for (const line of formatted.split("\n")) {
+        lines.push(line.trim().length ? attrIndent + INDENT + line : "");
+      }
+      lines.push(`${attrIndent}"`);
+      continue;
+    }
+    lines.push(`${attrIndent}${attr.name}="${attr.value}"`);
+  }
+
+  lines.push(baseIndent + (parsed.selfClose ? "/>" : ">"));
+  return lines.join("\n");
+}
+
+// ── Structural re-indentation ──────────────────────────────────────────────
 
 function jinjaDepthDelta(value: string): number {
   const trimmed = value.trim();
@@ -256,11 +342,23 @@ export function formatHtmlStructure(text: string): string {
     }
 
     if (token.type === "self_close") {
-      lines.push(baseIndent + token.value.trim());
+      const parsed = parseTag(token.value);
+      if (tagHasSlot(parsed)) {
+        lines.push(renderExplodedTag(parsed, baseIndent));
+      } else {
+        lines.push(baseIndent + token.value.trim());
+      }
       continue;
     }
 
     if (token.type === "open") {
+      const parsed = parseTag(token.value);
+      if (tagHasSlot(parsed)) {
+        lines.push(renderExplodedTag(parsed, baseIndent));
+        depth += 1;
+        continue;
+      }
+
       const inlineElement = tryInlineElement(tokens, index);
       if (inlineElement) {
         lines.push(baseIndent + inlineElement.value.trim());
