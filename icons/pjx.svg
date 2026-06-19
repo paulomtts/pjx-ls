@@ -6,7 +6,7 @@
       <stop offset="1" stop-color="#D81E86"/>
     </linearGradient>
   </defs>
-  <g fill="none" stroke="url(#pjx)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+  <g transform="translate(11 2.4) scale(0.92)" fill="none" stroke="url(#pjx)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
     <path d="M14 53 V7 H30 a11 11 0 0 1 0 22 H14"/>
     <path d="M68 7 V42 a11 11 0 0 1 -22 0"/>
     <path d="M84 7 L110 53 M110 7 L84 53"/>
