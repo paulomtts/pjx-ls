@@ -1,21 +1,29 @@
-import { readFileSync, writeFileSync, mkdirSync, globSync } from "node:fs";
+// Generate golden formatter outputs for fixtures that don't have one yet.
+//
+// The existing goldens are a FROZEN behavior contract (originally captured from
+// the legacy JS formatter). This script intentionally SKIPS any fixture that
+// already has a golden, so it can never silently re-baseline the contract — it
+// only captures goldens for NEW fixtures dropped into test/fixtures/components.
+// To deliberately re-baseline, delete the stale golden first, then re-run.
+import { readFileSync, writeFileSync, mkdirSync, globSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
-// Oracle = the EXISTING formatter (CommonJS), still present at this point.
-const { formatPyjinhxTemplate } = require("../pyjinhx-highlight/format-slots.js");
+import { formatPyjinhxTemplate } from "../src/core/format.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const inputs = globSync("test/fixtures/components/**/*.html", { cwd: root });
-let count = 0;
+let wrote = 0;
+let skipped = 0;
 for (const rel of inputs) {
-  const input = readFileSync(join(root, rel), "utf8");
-  const golden = formatPyjinhxTemplate(input);
   const outRel = rel.replace("test/fixtures/components/", "test/fixtures/expected/");
-  mkdirSync(join(root, dirname(outRel)), { recursive: true });
-  writeFileSync(join(root, outRel), golden, "utf8");
-  count += 1;
+  const outAbs = join(root, outRel);
+  if (existsSync(outAbs)) {
+    skipped += 1;
+    continue;
+  }
+  const golden = formatPyjinhxTemplate(readFileSync(join(root, rel), "utf8"));
+  mkdirSync(dirname(outAbs), { recursive: true });
+  writeFileSync(outAbs, golden, "utf8");
+  wrote += 1;
 }
-console.log(`wrote ${count} goldens`);
+console.log(`goldens: wrote ${wrote}, skipped ${skipped} existing`);
