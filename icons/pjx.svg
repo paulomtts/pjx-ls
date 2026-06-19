@@ -1,14 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 122 60">
-  <title>PJX</title>
-  <defs>
-    <linearGradient id="pjx" gradientUnits="userSpaceOnUse" x1="8" y1="8" x2="112" y2="54">
-      <stop offset="0" stop-color="#FF2E93"/>
-      <stop offset="1" stop-color="#D81E86"/>
-    </linearGradient>
-  </defs>
-  <g transform="translate(11 2.4) scale(0.92)" fill="none" stroke="url(#pjx)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M14 53 V7 H30 a11 11 0 0 1 0 22 H14"/>
-    <path d="M68 7 V42 a11 11 0 0 1 -22 0"/>
-    <path d="M84 7 L110 53 M110 7 L84 53"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64">
+  <title>pjx</title>
+  <g fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <!-- P, top loop -->
+    <path d="M20 28 V8 H30 a10 10 0 0 1 0 20 H20" stroke="#FF2E93"/>
+    <!-- J below P, shortened upper body; together they read like an angular 8 -->
+    <path d="M42 44 V53 a10 10 0 0 1 -20 0" stroke="#3B5BDB"/>
+    <!-- lowercase x to the right of J -->
+    <path d="M46 46 l8 8 M54 46 l-8 8" stroke="#0CA678" stroke-width="6"/>
   </g>
 </svg>
