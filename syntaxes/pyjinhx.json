@@ -9,6 +9,9 @@
       "include": "#pyjinhx-def-header"
     },
     {
+      "include": "#pyjinhx-component-tag"
+    },
+    {
       "include": "text.html.jinja"
     },
     {
@@ -16,6 +19,44 @@
     }
   ],
   "repository": {
+    "pyjinhx-component-tag": {
+      "patterns": [
+        {
+          "begin": "(</?)([A-Z][A-Za-z0-9]*)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.tag.begin.pyjinhx" },
+            "2": { "name": "entity.name.tag.pyjinhx" }
+          },
+          "end": "(/?>)",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.tag.end.pyjinhx" }
+          },
+          "patterns": [
+            { "include": "#pyjinhx-interpolation" },
+            {
+              "begin": "\"",
+              "beginCaptures": {
+                "0": { "name": "punctuation.definition.string.begin.html" }
+              },
+              "end": "\"",
+              "endCaptures": {
+                "0": { "name": "punctuation.definition.string.end.html" }
+              },
+              "name": "string.quoted.double.html",
+              "patterns": [{ "include": "#pyjinhx-interpolation" }]
+            },
+            {
+              "match": "'[^']*'",
+              "name": "string.quoted.single.html"
+            },
+            {
+              "match": "([a-zA-Z_][\\w:-]*)(?=\\s*=)",
+              "name": "entity.other.attribute-name.html"
+            }
+          ]
+        }
+      ]
+    },
     "pyjinhx-interpolation": {
       "patterns": [
         {
