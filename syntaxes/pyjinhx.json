@@ -36,22 +36,22 @@
             {
               "begin": "\"(?=\\s*$)",
               "beginCaptures": {
-                "0": { "name": "punctuation.definition.string.begin.html" }
+                "0": { "name": "string.quoted.double.html punctuation.definition.string.begin.html" }
               },
               "end": "\"",
               "endCaptures": {
-                "0": { "name": "punctuation.definition.string.end.html" }
+                "0": { "name": "string.quoted.double.html punctuation.definition.string.end.html" }
               },
               "patterns": [{ "include": "$self" }]
             },
             {
               "begin": "\"(?=\\s*</?[A-Za-z])",
               "beginCaptures": {
-                "0": { "name": "punctuation.definition.string.begin.html" }
+                "0": { "name": "string.quoted.double.html punctuation.definition.string.begin.html" }
               },
               "end": "\"",
               "endCaptures": {
-                "0": { "name": "punctuation.definition.string.end.html" }
+                "0": { "name": "string.quoted.double.html punctuation.definition.string.end.html" }
               },
               "patterns": [{ "include": "$self" }]
             },
