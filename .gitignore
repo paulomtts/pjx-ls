@@ -2,3 +2,6 @@ node_modules/
 dist/
 *.vsix
 docs/
+
+# Source artwork (1MB+); shipped assets are derived: icon.png + icons/pjx.svg
+icon.ico

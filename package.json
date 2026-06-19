@@ -7,6 +7,7 @@
   "license": "MIT",
   "type": "module",
   "main": "./dist/extension.cjs",
+  "icon": "icon.png",
   "engines": { "vscode": "^1.80.0" },
   "scripts": {
     "build": "node esbuild.config.mjs",
@@ -16,7 +17,6 @@
     "package": "npm run check && npm run build && vsce package"
   },
   "activationEvents": [
-    "onLanguage:pyjinhx",
     "onLanguage:html",
     "onLanguage:jinja",
     "onLanguage:jinja-html"
@@ -41,7 +41,11 @@
         "id": "pyjinhx",
         "extensions": [".pjx"],
         "aliases": ["PyJinHx", "pjx"],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/pjx.svg",
+          "dark": "./icons/pjx.svg"
+        }
       }
     ],
     "grammars": [
