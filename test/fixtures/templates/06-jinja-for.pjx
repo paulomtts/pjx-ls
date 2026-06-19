@@ -1,0 +1,1 @@
+<ul class="list">{% for item in items %}<li>{{ item }}</li>{% endfor %}</ul>

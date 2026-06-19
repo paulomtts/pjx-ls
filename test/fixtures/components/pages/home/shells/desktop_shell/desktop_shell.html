@@ -1,9 +1,0 @@
-<div id="{{ id }}" class="desktop-shell">
-  {% if route == "library" %}
-  <section class="desktop-panel desktop-panel--library"><h1>{{ t.library }}</h1></section>
-  {% elif route == "organizations" %}
-  <section class="desktop-panel desktop-panel--organizations"><h1>{{ t.organizations }}</h1></section>
-  {% else %}
-  <ChatDesktop id="chat-desktop" conversation="{{ conversation }}"/>
-  {% endif %}
-</div>

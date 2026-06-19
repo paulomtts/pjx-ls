@@ -1,0 +1,1 @@
+<div class="route">{% if route == "library" %}<LibraryPanel/>{% elif route == "orgs" %}<OrgPanel/>{% else %}<ChatPanel/>{% endif %}</div>

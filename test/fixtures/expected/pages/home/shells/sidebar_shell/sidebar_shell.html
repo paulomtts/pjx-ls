@@ -1,9 +1,0 @@
-<div id="{{ id }}" class="sidebar-shell">
-  {% if route == "library" %}
-    <LibrarySidebar id="library-sidebar" file="{{ library_file }}"/>
-  {% elif route == "organizations" %}
-    <OrgSidebar id="org-sidebar" section="{{ org_section }}"/>
-  {% else %}
-    <ChatSidebar id="chat-sidebar" conversation="{{ conversation }}" view="{{ view }}"/>
-  {% endif %}
-</div>

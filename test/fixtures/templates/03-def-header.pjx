@@ -1,0 +1,2 @@
+{#def title: str, count: int = 0 #}
+<section class="panel"><h2>{{ title }}</h2></section>

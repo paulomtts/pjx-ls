@@ -1,0 +1,5 @@
+<div class="card">
+  <div class="card__body">
+    <p>Static text content</p>
+  </div>
+</div>

@@ -1,5 +1,0 @@
-{#def cid: str, title: str #}
-<div class="archived-conversation__actions">
-  <PJXButton variant="secondary" class_name="archived-conversation__action" start="<PJXIcon name='undo' size='16'/>" aria-label="Restaurar conversa" title="Restaurar" hx-post="/chat/trash/{{ cid }}/restore" hx-swap="none"/>
-  <PJXButton variant="ghost" class_name="archived-conversation__action archived-conversation__action--danger" start="<PJXIcon name='trash-2' size='16'/>" aria-label="Apagar permanentemente" title="Apagar permanentemente" hx-delete="/chat/trash/{{ cid }}" hx-swap="none" hx-confirm="Apagar permanentemente “{{ title }}”? Esta ação não pode ser desfeita." data-pjx-confirm-danger data-pjx-confirm-ok="Apagar" data-pjx-confirm-cancel="Cancelar"/>
-</div>

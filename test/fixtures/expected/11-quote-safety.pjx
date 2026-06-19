@@ -1,0 +1,1 @@
+<ConversationItem conversation="{{ item.id }}" title="{{ item.title }}" active="{{ 'true' if conversation == item.id else 'false' }}"/>
