@@ -6,9 +6,6 @@ HTML templates with PascalCase components, slots, and `{#def … #}` signature h
 
 Works on `.pjx` files and on PyJinHx component templates written as `.html`/Jinja.
 
-<!-- Add a screenshot of a highlighted + formatted .pjx file here before publishing:
-![PyJinHx highlighting](images/preview.png) -->
-
 ## Features
 
 ### Highlighting

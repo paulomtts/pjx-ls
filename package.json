@@ -75,8 +75,8 @@
         "aliases": ["PyJinHx", "pjx"],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./icons/pjx.svg",
-          "dark": "./icons/pjx.svg"
+          "light": "./icons/pjx.png",
+          "dark": "./icons/pjx.png"
         }
       }
     ],
