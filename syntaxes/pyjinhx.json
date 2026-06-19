@@ -161,6 +161,10 @@
         {
           "match": "[:=,]",
           "name": "punctuation.separator.pyjinhx-def"
+        },
+        {
+          "match": "[\\[\\]{}()]",
+          "name": "punctuation.bracket.pyjinhx"
         }
       ]
     }

@@ -46,6 +46,10 @@
           {
             "scope": "keyword.control.import.pyjinhx",
             "settings": { "foreground": "#C586C0" }
+          },
+          {
+            "scope": "punctuation.bracket.pyjinhx",
+            "settings": { "foreground": "#FFD700" }
           }
         ]
       }
