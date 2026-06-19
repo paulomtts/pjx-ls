@@ -24,15 +24,14 @@ work to do; the goldens show the result.
 | 12 | `realistic-component` | Capstone: def header + slots + components + nested Jinja |
 | 13 | `known-limitation-inline-whitespace` | **Intentionally** demonstrates a preserved quirk |
 
-## Notes on quirks (see `docs/codebase-guide.md` §7)
+## Notes on behavior
 
-These goldens capture the formatter's **actual** current behavior, which includes
-deliberately-preserved limitations:
-
-- **09 / 10 / 12** show real slot-expansion, which leaves a trailing space on the
-  tag-open line and computes its own indentation (so a slot inside a nested element
-  can look mis-aligned). This is the genuine behavior of the "format slotted
-  component tags" feature.
+- **09 / 10 / 12** show slot-aware "exploded" formatting: a component tag with an
+  HTML-valued (slot) attribute puts its name alone on the first line, every
+  attribute one-per-line, the slot value recursively formatted, and the closing
+  `>` / `/>` on its own line. Tags without a slot stay on one line.
+- **10** note: `<PJXBadge>New</PJXBadge>` stays inline because its only child is
+  text — the same inline rule applied everywhere (e.g. `<p>text</p>`).
 - **13** shows the inline whitespace-loss quirk: `Hello {{ name }}, welcome` →
   `Hello{{ name }}, welcome` (inline children are concatenated without separators).
 
