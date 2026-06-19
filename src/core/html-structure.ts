@@ -4,6 +4,7 @@ import { isHtmlSlotValue, readDoubleQuotedContent } from "./slots.ts";
 const JINJA_BLOCK_OPEN = /^\{%\s*(?:if|for|macro|block|filter|raw)\b/;
 const JINJA_BLOCK_MID = /^\{%\s*(?:elif|else)\b/;
 const JINJA_BLOCK_CLOSE = /^\{%\s*end(?:if|for|macro|block|filter|raw)\b/;
+const DEF_HEADER = /^\{#-?\s*def\b/;
 
 type TokenType = "jinja" | "jinja_expr" | "open" | "close" | "self_close" | "text";
 
@@ -327,6 +328,11 @@ export function formatHtmlStructure(text: string): string {
         continue;
       }
       lines.push(INDENT.repeat(depth) + trimmed);
+      // A {#def … #} header is always separated from the rest of the file by a
+      // blank line (a trailing one is removed by the final trimEnd()).
+      if (DEF_HEADER.test(trimmed)) {
+        lines.push("");
+      }
       continue;
     }
 
