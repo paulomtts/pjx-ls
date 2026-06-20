@@ -72,6 +72,7 @@
         "editor.semanticHighlighting.enabled": true
       },
       "python.analysis.diagnosticMode": "workspace",
+      "cursorpyright.analysis.diagnosticMode": "workspace",
       "editor.tokenColorCustomizations": {
         "textMateRules": [
           {
