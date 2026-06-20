@@ -6,6 +6,9 @@
       "include": "#pyjinhx-interpolation"
     },
     {
+      "include": "#pyjinhx-python-block"
+    },
+    {
       "include": "#pyjinhx-def-header"
     },
     {
@@ -98,6 +101,24 @@
           "contentName": "constant.character.format.placeholder.other.python",
           "applyEndPatternLast": true,
           "patterns": []
+        }
+      ]
+    },
+    "pyjinhx-python-block": {
+      "patterns": [
+        {
+          "name": "meta.pyjinhx-python-block",
+          "begin": "(\\{#-?)\\s*(python)\\s*$",
+          "beginCaptures": {
+            "1": { "name": "keyword.control.import.pyjinhx" },
+            "2": { "name": "keyword.control.import.pyjinhx" }
+          },
+          "end": "^\\s*(-?#\\})\\s*$",
+          "endCaptures": {
+            "1": { "name": "keyword.control.import.pyjinhx" }
+          },
+          "contentName": "source.python",
+          "patterns": [{ "include": "source.python" }]
         }
       ]
     },
