@@ -71,6 +71,7 @@
       "[pyjinhx]": {
         "editor.semanticHighlighting.enabled": true
       },
+      "python.analysis.diagnosticMode": "workspace",
       "editor.tokenColorCustomizations": {
         "textMateRules": [
           {
