@@ -21,6 +21,9 @@ const OUR_LEGEND = new vscode.SemanticTokensLegend(
 // providers target a real mirror file rather than an in-memory virtual doc.
 const liveMirrors = new Set<string>();
 const gitignoredRoots = new Set<string>();
+// mirror fsPath → the source `.pjx` Uri it reflects, for mapping Pylance's
+// mirror diagnostics back onto the block.
+const mirrorToSource = new Map<string, vscode.Uri>();
 
 function mirrorPathFor(doc: vscode.TextDocument): string {
   const dir = path.dirname(doc.uri.fsPath);
@@ -66,13 +69,19 @@ function syncMirror(doc: vscode.TextDocument): vscode.Uri | undefined {
     ensureGitignore(doc);
     fs.writeFileSync(mirrorPath, content, "utf8");
     liveMirrors.add(mirrorPath);
-    return vscode.Uri.file(mirrorPath);
+    const uri = vscode.Uri.file(mirrorPath);
+    mirrorToSource.set(mirrorPath, doc.uri);
+    // Make Pylance track and analyse the mirror so it publishes diagnostics +
+    // semantic tokens for it (fire-and-forget; it stays a background document).
+    void vscode.workspace.openTextDocument(uri);
+    return uri;
   } catch {
     return undefined;
   }
 }
 
 function removeMirror(mirrorPath: string): void {
+  mirrorToSource.delete(mirrorPath);
   if (!liveMirrors.has(mirrorPath)) return;
   liveMirrors.delete(mirrorPath);
   try {
@@ -107,6 +116,35 @@ export function registerPythonIntellisense(
   context: vscode.ExtensionContext,
   output: vscode.OutputChannel,
 ): void {
+  // Forward Pylance's type-check diagnostics from each mirror `.py` onto its
+  // `.pjx`. The mirror is 1:1 line-mapped and column-verbatim, so ranges copy
+  // directly — only the source Uri changes, so the squiggle lands in the block.
+  const blockDiagnostics = vscode.languages.createDiagnosticCollection("pyjinhx-python");
+  context.subscriptions.push(blockDiagnostics);
+
+  const forwardDiagnostics = (mirrorUri: vscode.Uri): void => {
+    const source = mirrorToSource.get(mirrorUri.fsPath);
+    if (!source) return;
+    const mirrored = vscode.languages
+      .getDiagnostics(mirrorUri)
+      .map((d) => {
+        const copy = new vscode.Diagnostic(d.range, d.message, d.severity);
+        copy.source = "pyjinhx";
+        copy.code = d.code;
+        copy.tags = d.tags;
+        return copy;
+      });
+    blockDiagnostics.set(source, mirrored);
+  };
+
+  context.subscriptions.push(
+    vscode.languages.onDidChangeDiagnostics((event) => {
+      for (const uri of event.uris) {
+        if (mirrorToSource.has(uri.fsPath)) forwardDiagnostics(uri);
+      }
+    }),
+  );
+
   // Keep mirrors current with the editor's documents.
   for (const doc of vscode.workspace.textDocuments) {
     if (doc.languageId === "pyjinhx") syncMirror(doc);
@@ -119,7 +157,10 @@ export function registerPythonIntellisense(
       if (event.document.languageId === "pyjinhx") syncMirror(event.document);
     }),
     vscode.workspace.onDidCloseTextDocument((doc) => {
-      if (doc.languageId === "pyjinhx") removeMirror(mirrorPathFor(doc));
+      if (doc.languageId === "pyjinhx") {
+        removeMirror(mirrorPathFor(doc));
+        blockDiagnostics.delete(doc.uri);
+      }
     }),
     // Clean every mirror on shutdown.
     new vscode.Disposable(() => {
