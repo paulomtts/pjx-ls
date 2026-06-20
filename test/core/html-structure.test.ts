@@ -9,10 +9,10 @@ test("nested block elements indent 2 spaces per level", () => {
   );
 });
 
-test("inline element collapses text+expr children WITHOUT separators (known quirk)", () => {
+test("inline element preserves significant spaces around interpolations", () => {
   assert.equal(
     formatHtmlStructure("<p>Hello {{ name }} world</p>"),
-    "<p>Hello{{ name }}world</p>\n",
+    "<p>Hello {{ name }} world</p>\n",
   );
 });
 

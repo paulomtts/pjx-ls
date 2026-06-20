@@ -10,6 +10,9 @@ export interface Token {
   type: TokenType;
   value: string;
   name?: string;
+  /** True when a single significant (same-line) space precedes this inline token —
+   *  used to preserve spacing like `{{ x }} left` when an element is inlined. */
+  spaceBefore?: boolean;
 }
 
 interface Parsed {
@@ -98,6 +101,19 @@ function tagName(tagValue: string): string {
 export function tokenizeHtmlTemplate(text: string): Token[] {
   const tokens: Token[] = [];
   let index = 0;
+  // A pending same-line space between two inline tokens. Whitespace runs that
+  // contain a newline are block separators (collapsible) and don't set it.
+  let pendingSpace = false;
+
+  const prevIsInline = (): boolean => {
+    const previous = tokens[tokens.length - 1];
+    return previous !== undefined && (previous.type === "text" || previous.type === "jinja_expr");
+  };
+  const inlineSpaceBefore = (): boolean => {
+    const value = pendingSpace && prevIsInline();
+    pendingSpace = false;
+    return value;
+  };
 
   while (index < text.length) {
     const character = text[index];
@@ -106,6 +122,7 @@ export function tokenizeHtmlTemplate(text: string): Token[] {
       const parsed = readJinja(text, index, "{#", "#}");
       if (!parsed) break;
       tokens.push({ type: "jinja", value: parsed.value });
+      pendingSpace = false;
       index = parsed.endIndex + 1;
       continue;
     }
@@ -113,13 +130,14 @@ export function tokenizeHtmlTemplate(text: string): Token[] {
       const parsed = readJinja(text, index, "{%", "%}");
       if (!parsed) break;
       tokens.push({ type: "jinja", value: parsed.value });
+      pendingSpace = false;
       index = parsed.endIndex + 1;
       continue;
     }
     if (character === "{" && text[index + 1] === "{") {
       const parsed = readJinja(text, index, "{{", "}}");
       if (!parsed) break;
-      tokens.push({ type: "jinja_expr", value: parsed.value });
+      tokens.push({ type: "jinja_expr", value: parsed.value, spaceBefore: inlineSpaceBefore() });
       index = parsed.endIndex + 1;
       continue;
     }
@@ -134,11 +152,17 @@ export function tokenizeHtmlTemplate(text: string): Token[] {
       } else {
         tokens.push({ type: "open", value: tagValue, name: tagName(tagValue) });
       }
+      pendingSpace = false;
       index = parsed.endIndex + 1;
       continue;
     }
     if (/\s/.test(character)) {
-      index += 1;
+      let hasNewline = false;
+      while (index < text.length && /\s/.test(text[index])) {
+        if (text[index] === "\n") hasNewline = true;
+        index += 1;
+      }
+      if (!hasNewline) pendingSpace = true;
       continue;
     }
 
@@ -155,9 +179,13 @@ export function tokenizeHtmlTemplate(text: string): Token[] {
       index += 1;
     }
     if (index > textStart) {
-      const textValue = text.slice(textStart, index).trim();
+      const raw = text.slice(textStart, index);
+      const textValue = raw.trim();
       if (textValue.length > 0) {
-        tokens.push({ type: "text", value: textValue });
+        tokens.push({ type: "text", value: textValue, spaceBefore: inlineSpaceBefore() });
+        // A same-line trailing space means the NEXT inline token is separated.
+        const trailing = raw.match(/\s+$/);
+        pendingSpace = trailing !== null && !trailing[0].includes("\n");
       }
       continue;
     }
@@ -286,7 +314,7 @@ function tryInlineElement(tokens: Token[], startIndex: number): { endIndex: numb
       return { endIndex: index, value: `${openToken.value}${inner}${token.value}` };
     }
     if (token.type === "text" || token.type === "jinja_expr") {
-      inner += token.value;
+      inner += (token.spaceBefore ? " " : "") + token.value;
       continue;
     }
     return null;

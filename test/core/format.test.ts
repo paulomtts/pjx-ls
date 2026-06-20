@@ -40,3 +40,19 @@ test("a file with only a python block and no body round-trips", () => {
   const input = "{# python\nx = 1\n#}\n";
   assert.equal(formatPyjinhxTemplate(input), input);
 });
+
+test("inline whitespace between text and interpolation is preserved", () => {
+  // the documented limitation, now fixed: significant spaces survive
+  assert.equal(
+    formatPyjinhxTemplate("<span>{{ remaining }} left</span>\n"),
+    "<span>{{ remaining }} left</span>\n",
+  );
+  assert.equal(
+    formatPyjinhxTemplate("<p>Hello {{ name }}, welcome back</p>\n"),
+    "<p>Hello {{ name }}, welcome back</p>\n",
+  );
+  assert.equal(
+    formatPyjinhxTemplate("<b>{{ a }} {{ b }}</b>\n"),
+    "<b>{{ a }} {{ b }}</b>\n",
+  );
+});
