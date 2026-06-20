@@ -122,25 +122,25 @@ export function registerPythonIntellisense(
   const blockDiagnostics = vscode.languages.createDiagnosticCollection("pyjinhx-python");
   context.subscriptions.push(blockDiagnostics);
 
-  const forwardDiagnostics = (mirrorUri: vscode.Uri): void => {
+  const forwardDiagnostics = (mirrorUri: vscode.Uri, via: string): void => {
     const source = mirrorToSource.get(mirrorUri.fsPath);
     if (!source) return;
-    const mirrored = vscode.languages
-      .getDiagnostics(mirrorUri)
-      .map((d) => {
-        const copy = new vscode.Diagnostic(d.range, d.message, d.severity);
-        copy.source = "pyjinhx";
-        copy.code = d.code;
-        copy.tags = d.tags;
-        return copy;
-      });
+    const raw = vscode.languages.getDiagnostics(mirrorUri);
+    output.appendLine(`[diag/${via}] mirror has ${raw.length} diagnostics`);
+    const mirrored = raw.map((d) => {
+      const copy = new vscode.Diagnostic(d.range, d.message, d.severity);
+      copy.source = "pyjinhx";
+      copy.code = d.code;
+      copy.tags = d.tags;
+      return copy;
+    });
     blockDiagnostics.set(source, mirrored);
   };
 
   context.subscriptions.push(
     vscode.languages.onDidChangeDiagnostics((event) => {
       for (const uri of event.uris) {
-        if (mirrorToSource.has(uri.fsPath)) forwardDiagnostics(uri);
+        if (mirrorToSource.has(uri.fsPath)) forwardDiagnostics(uri, "push");
       }
     }),
   );
@@ -262,6 +262,9 @@ export function registerPythonIntellisense(
           output.appendLine(
             `[semantic] forwarded ${data.length / 5} tokens: ${JSON.stringify(typeCounts)}`,
           );
+          // Analysis just ran for the mirror — also pull diagnostics now, since
+          // push-based publication can be unreliable for a non-visible mirror.
+          forwardDiagnostics(uri, "semantic");
           return new vscode.SemanticTokens(new Uint32Array(data));
         },
       },
