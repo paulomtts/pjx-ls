@@ -213,7 +213,14 @@ export function registerPythonIntellisense(
             tokenTypes: SEMANTIC_TOKEN_TYPES,
             tokenModifiers: SEMANTIC_TOKEN_MODIFIERS,
           });
-          output.appendLine(`[semantic] forwarded tokens: ${data.length / 5}`);
+          const typeCounts: Record<string, number> = {};
+          for (let i = 3; i < data.length; i += 5) {
+            const name = SEMANTIC_TOKEN_TYPES[data[i]] ?? "?";
+            typeCounts[name] = (typeCounts[name] ?? 0) + 1;
+          }
+          output.appendLine(
+            `[semantic] forwarded ${data.length / 5} tokens: ${JSON.stringify(typeCounts)}`,
+          );
           return new vscode.SemanticTokens(new Uint32Array(data));
         },
       },

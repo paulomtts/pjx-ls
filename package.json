@@ -68,6 +68,9 @@
       }
     },
     "configurationDefaults": {
+      "[pyjinhx]": {
+        "editor.semanticHighlighting.enabled": true
+      },
       "editor.tokenColorCustomizations": {
         "textMateRules": [
           {
