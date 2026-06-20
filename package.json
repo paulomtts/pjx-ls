@@ -2,7 +2,7 @@
   "name": "pyjinhx-syntax-support",
   "displayName": "PyJinHx",
   "description": "Syntax highlighting and template formatting for the PyJinHx Python framework (PascalCase component tags, slots, {#def#} headers, interpolation).",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "paulomtts",
   "license": "MIT",
   "type": "module",
@@ -33,7 +33,8 @@
   "activationEvents": [
     "onLanguage:html",
     "onLanguage:jinja",
-    "onLanguage:jinja-html"
+    "onLanguage:jinja-html",
+    "onLanguage:pyjinhx"
   ],
   "categories": ["Formatters", "Programming Languages"],
   "contributes": {
