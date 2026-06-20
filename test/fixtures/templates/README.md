@@ -12,7 +12,6 @@ work to do; the goldens show the result.
 |---|---------|-----------|
 | 01 | `plain-element` | Plain HTML nesting → 2-space indentation per level |
 | 02 | `interpolation` | `{{ }}` in attributes and as an expr-only (inline) child |
-| 03 | `def-header` | `{#def … #}` signature header kept on its own line |
 | 04 | `component-tag` | A self-closing PascalCase component; plain string attr not expanded |
 | 05 | `nesting-depth` | Four levels of nesting + a self-closing component |
 | 06 | `jinja-for` | `{% for %}` block depth and body indentation |
@@ -21,8 +20,9 @@ work to do; the goldens show the result.
 | 09 | `slot-inline-expansion` | A single-line HTML slot value expanded across lines |
 | 10 | `slot-nested-markup` | A slot value with multiple nested fragments |
 | 11 | `quote-safety` | Single quotes + `{{ }}` inside double-quoted attrs survive intact |
-| 12 | `realistic-component` | Capstone: def header + slots + components + nested Jinja |
+| 12 | `realistic-component` | Capstone: realistic component template with slots, nested components, and nested Jinja — no `{#def#}` special-casing |
 | 13 | `known-limitation-inline-whitespace` | **Intentionally** demonstrates a preserved quirk |
+| 14 | `python-block` | `{# python #}` single-file-component block is preserved verbatim while the surrounding template body is formatted |
 
 ## Notes on behavior
 

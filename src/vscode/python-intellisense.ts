@@ -52,7 +52,7 @@ export function registerPythonIntellisense(context: vscode.ExtensionContext): vo
   context.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument((doc) => {
       if (doc.languageId !== "pyjinhx") return;
-      virtualContent.delete(`${SCHEME}:${doc.uri.fsPath}.py`);
+      virtualContent.delete(virtualUriFor(doc).toString());
     }),
   );
 
