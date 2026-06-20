@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext): void {
   output.appendLine("PyJinHx extension activated.");
   context.subscriptions.push(output);
   registerFormatting(context, output);
-  registerPythonIntellisense(context);
+  registerPythonIntellisense(context, output);
   registerStubgen(context, output);
 }
 

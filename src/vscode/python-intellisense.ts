@@ -103,7 +103,10 @@ async function fetchPylanceLegend(uri: vscode.Uri): Promise<TokenLegend | undefi
   return pylanceLegend;
 }
 
-export function registerPythonIntellisense(context: vscode.ExtensionContext): void {
+export function registerPythonIntellisense(
+  context: vscode.ExtensionContext,
+  output: vscode.OutputChannel,
+): void {
   // Keep mirrors current with the editor's documents.
   for (const doc of vscode.workspace.textDocuments) {
     if (doc.languageId === "pyjinhx") syncMirror(doc);
@@ -183,18 +186,34 @@ export function registerPythonIntellisense(context: vscode.ExtensionContext): vo
       {
         async provideDocumentSemanticTokens(document) {
           const uri = syncMirror(document);
-          if (!uri) return undefined;
+          if (!uri) {
+            output.appendLine("[semantic] no python block; skipping");
+            return undefined;
+          }
+          // Make sure Pylance is tracking the mirror file before we query it.
+          try {
+            await vscode.workspace.openTextDocument(uri);
+          } catch {
+            /* ignore */
+          }
           const legend = await fetchPylanceLegend(uri);
+          output.appendLine(
+            `[semantic] legend: ${legend ? `${legend.tokenTypes.length} types` : "UNDEFINED"}`,
+          );
           if (!legend) return undefined;
           const tokens = await vscode.commands.executeCommand<vscode.SemanticTokens | undefined>(
             "vscode.provideDocumentSemanticTokens",
             uri,
+          );
+          output.appendLine(
+            `[semantic] pylance tokens: ${tokens ? `${tokens.data.length / 5}` : "UNDEFINED"}`,
           );
           if (!tokens) return undefined;
           const data = reencodeSemanticTokens(Array.from(tokens.data), legend, {
             tokenTypes: SEMANTIC_TOKEN_TYPES,
             tokenModifiers: SEMANTIC_TOKEN_MODIFIERS,
           });
+          output.appendLine(`[semantic] forwarded tokens: ${data.length / 5}`);
           return new vscode.SemanticTokens(new Uint32Array(data));
         },
       },
