@@ -33,7 +33,8 @@
   "activationEvents": [
     "onLanguage:html",
     "onLanguage:jinja",
-    "onLanguage:jinja-html"
+    "onLanguage:jinja-html",
+    "onLanguage:pyjinhx"
   ],
   "categories": ["Formatters", "Programming Languages"],
   "contributes": {
