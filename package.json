@@ -40,7 +40,7 @@
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
-      "restrictedConfigurations": ["pyjinhx.pythonPath"]
+      "restrictedConfigurations": ["pyjinhx.pythonPath", "pyjinhx.ruffPath"]
     }
   },
   "contributes": {
@@ -64,6 +64,16 @@
           "type": "string",
           "default": "",
           "description": "Python interpreter used to run pyjinhx.stubgen. Empty uses `python` on PATH."
+        },
+        "pyjinhx.formatPythonOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Format the Python inside a {# python #} block with `ruff format` when a .pjx file is saved."
+        },
+        "pyjinhx.ruffPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the ruff executable used to format {# python #} blocks. Empty uses `ruff` on PATH."
         }
       }
     },
