@@ -13,3 +13,6 @@ tsconfig.json
 **/*.svg
 icon.ico
 icons/icon-1024.png
+.superpowers/**
+.claude/**
+*.vsix
