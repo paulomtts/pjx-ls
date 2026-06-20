@@ -1,5 +1,4 @@
 {#def view: str = "chat" #}
-
 <div class="sidebar">
   <div class="sidebar__top">
     <PJXButton

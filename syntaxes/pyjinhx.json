@@ -9,9 +9,6 @@
       "include": "#pyjinhx-python-block"
     },
     {
-      "include": "#pyjinhx-def-header"
-    },
-    {
       "include": "#pyjinhx-component-tag"
     },
     {
@@ -119,73 +116,6 @@
           },
           "contentName": "source.python",
           "patterns": [{ "include": "source.python" }]
-        }
-      ]
-    },
-    "pyjinhx-def-header": {
-      "patterns": [
-        {
-          "name": "meta.pyjinhx-def-header",
-          "begin": "(\\{#-?)(def)\\b",
-          "beginCaptures": {
-            "1": {
-              "name": "keyword.control.import.pyjinhx"
-            },
-            "2": {
-              "name": "keyword.control.import.pyjinhx"
-            }
-          },
-          "end": "(-?#\\})",
-          "endCaptures": {
-            "1": {
-              "name": "keyword.control.import.pyjinhx"
-            }
-          },
-          "patterns": [
-            {
-              "include": "#pyjinhx-def-signature"
-            }
-          ]
-        }
-      ]
-    },
-    "pyjinhx-def-signature": {
-      "patterns": [
-        {
-          "match": "((?:\"(?:[^\"\\\\]|\\\\.)*\")|(?:'(?:[^'\\\\]|\\\\.)*'))",
-          "name": "string.quoted.python"
-        },
-        {
-          "match": "\\b(True|False|None)\\b",
-          "captures": {
-            "1": {
-              "name": "constant.language.python"
-            }
-          }
-        },
-        {
-          "match": "\\b(int|str|float|bool|bytes|list|dict|set|tuple|Any|Optional|Union|Literal|Sequence|Mapping|Callable|TypeVar|Protocol)\\b",
-          "captures": {
-            "1": {
-              "name": "support.type.python"
-            }
-          }
-        },
-        {
-          "match": "\\b([a-z_][\\w]*)\\b(?=\\s*:)",
-          "captures": {
-            "1": {
-              "name": "variable.parameter.python"
-            }
-          }
-        },
-        {
-          "match": "[:=,]",
-          "name": "punctuation.separator.pyjinhx-def"
-        },
-        {
-          "match": "[\\[\\]{}()]",
-          "name": "punctuation.bracket.pyjinhx"
         }
       ]
     }

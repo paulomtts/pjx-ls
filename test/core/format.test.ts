@@ -26,20 +26,6 @@ test("a tag without an HTML slot stays on one line", () => {
   assert.equal(formatPyjinhxTemplate(input), `${input}\n`);
 });
 
-test("def header is followed by a blank line separating it from the rest", () => {
-  assert.equal(
-    formatPyjinhxTemplate(
-      `{#def conversation: str, title: str, active: bool = False #}\n<div class="x">\n<span>hi</span>\n</div>`,
-    ),
-    `{#def conversation: str, title: str, active: bool = False #}\n\n<div class="x">\n  <span>hi</span>\n</div>\n`,
-  );
-});
-
-test("the blank line after a def header is idempotent (not doubled)", () => {
-  const formatted = `{#def x: str #}\n\n<div class="x">\n  <span>hi</span>\n</div>\n`;
-  assert.equal(formatPyjinhxTemplate(formatted), formatted);
-});
-
 test("a {# python #} block is preserved verbatim; only the body is formatted", () => {
   const input =
     "{# python\nclass Counter(BaseComponent):\n    n: int = 0  # inline #} stays\n#}\n<div><span>{{ n }}</span></div>\n";

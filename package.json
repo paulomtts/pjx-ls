@@ -1,7 +1,7 @@
 {
   "name": "pyjinhx-syntax-support",
   "displayName": "PyJinHx",
-  "description": "Syntax highlighting and template formatting for the PyJinHx Python framework (PascalCase component tags, slots, {#def#} headers, interpolation).",
+  "description": "Syntax highlighting and template formatting for the PyJinHx Python framework (PascalCase component tags, slots, {# python #} single-file components, interpolation).",
   "version": "0.1.0",
   "publisher": "paulomtts",
   "license": "MIT",
@@ -84,9 +84,7 @@
       { "language": "pyjinhx", "scopeName": "text.pyjinhx", "path": "./syntaxes/pyjinhx.json" },
       { "scopeName": "pyjinhx.injection", "path": "./syntaxes/pyjinhx-injection.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.tags", "path": "./syntaxes/pyjinhx-injection-tags.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
-      { "scopeName": "pyjinhx.injection.def-header", "path": "./syntaxes/pyjinhx-injection-def-header.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
-      { "scopeName": "pyjinhx.injection.def-header-in-comment", "path": "./syntaxes/pyjinhx-injection-def-header-in-comment.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
-      { "scopeName": "pyjinhx.injection.interpolation", "path": "./syntaxes/pyjinhx-injection-interpolation.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
+{ "scopeName": "pyjinhx.injection.interpolation", "path": "./syntaxes/pyjinhx-injection-interpolation.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.interpolation-in-jinja", "path": "./syntaxes/pyjinhx-injection-interpolation-in-jinja.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.python-block", "path": "./syntaxes/pyjinhx-injection-python-block.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] }
     ]
