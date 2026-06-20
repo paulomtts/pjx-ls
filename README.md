@@ -67,8 +67,8 @@ save a `.pjx` file. This requires `pyjinhx` to be installed in your Python envir
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `pyjinhx.generateStubsOnSave` | `false` | Regenerate `.pyi` stubs on every save. |
-| `pyjinhx.pythonPath` | `""` | Path to the Python interpreter. Falls back to the Python extension's active interpreter. |
+| `pyjinhx.generateStubsOnSave` | `true` | Regenerate `.pyi` stubs on every save. |
+| `pyjinhx.pythonPath` | `""` | Path to the Python interpreter used to run `pyjinhx.stubgen`. Empty uses `python` on `PATH`. |
 
 Stub generation is **trust-gated**: it will not run in untrusted workspaces.
 
@@ -91,8 +91,8 @@ their path contains `/components/`, to avoid reformatting unrelated HTML.
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `pyjinhx.formatSlotsOnSave` | `true` | Format PyJinHx component templates on save. |
-| `pyjinhx.generateStubsOnSave` | `false` | Regenerate `.pyi` stubs on save (requires `pyjinhx` installed). |
-| `pyjinhx.pythonPath` | `""` | Python interpreter path for stub generation. |
+| `pyjinhx.generateStubsOnSave` | `true` | Regenerate `.pyi` stubs on save (requires `pyjinhx` installed). |
+| `pyjinhx.pythonPath` | `""` | Python interpreter path for stub generation. Empty uses `python` on `PATH`. |
 
 ## Commands
 
