@@ -13,7 +13,7 @@ const root = fileURLToPath(new URL("../..", import.meta.url));
 const inputs = globSync("test/fixtures/templates/*.pjx", { cwd: root }).sort();
 
 test("the progressive fixture suite is present", () => {
-  assert.equal(inputs.length, 13);
+  assert.equal(inputs.length, 14);
 });
 
 for (const rel of inputs) {

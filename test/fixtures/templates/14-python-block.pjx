@@ -1,0 +1,5 @@
+{# python
+class Counter(BaseComponent):
+    n: int = 0
+#}
+<div><span>{{ n }}</span></div>

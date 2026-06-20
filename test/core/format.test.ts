@@ -39,3 +39,18 @@ test("the blank line after a def header is idempotent (not doubled)", () => {
   const formatted = `{#def x: str #}\n\n<div class="x">\n  <span>hi</span>\n</div>\n`;
   assert.equal(formatPyjinhxTemplate(formatted), formatted);
 });
+
+test("a {# python #} block is preserved verbatim; only the body is formatted", () => {
+  const input =
+    "{# python\nclass Counter(BaseComponent):\n    n: int = 0  # inline #} stays\n#}\n<div><span>{{ n }}</span></div>\n";
+  const out = formatPyjinhxTemplate(input);
+  // block is untouched (including the inline #} and the Python indentation)
+  assert.match(out, /\{# python\nclass Counter\(BaseComponent\):\n    n: int = 0  # inline #\} stays\n#\}\n/);
+  // body below is reindented as usual
+  assert.match(out, /<div>\n  <span>\{\{ n \}\}<\/span>\n<\/div>/);
+});
+
+test("a file with only a python block and no body round-trips", () => {
+  const input = "{# python\nx = 1\n#}\n";
+  assert.equal(formatPyjinhxTemplate(input), input);
+});
