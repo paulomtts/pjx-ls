@@ -21,5 +21,27 @@ test("package.json registers the python-block injection", () => {
   const grammars = pkg.contributes.grammars;
   const entry = grammars.find((g: { scopeName: string; injectTo: string[] }) => g.scopeName === "pyjinhx.injection.python-block");
   assert.ok(entry, "python-block injection must be registered");
-  assert.deepEqual(entry.injectTo, ["text.html.basic", "text.html.jinja", "text.pyjinhx"]);
+  // `.pjx` (text.pyjinhx) is handled by the main grammar's own python-block rule,
+  // so the injection only targets host HTML/Jinja files — avoids a double-definition
+  // that let pyjinhx scopes bleed over the embedded `source.python` coloring.
+  assert.deepEqual(entry.injectTo, ["text.html.basic", "text.html.jinja"]);
+});
+
+test("the main grammar owns the python block for .pjx files", () => {
+  const grammar = JSON.parse(readFileSync(root + "syntaxes/pyjinhx.json", "utf8"));
+  assert.ok(
+    grammar.repository["pyjinhx-python-block"],
+    "main grammar must define the python-block rule so source.python applies in .pjx",
+  );
+  const includes = grammar.patterns.map((p: { include: string }) => p.include);
+  assert.ok(includes.includes("#pyjinhx-python-block"));
+});
+
+test("interpolation injection is fenced out of the python block", () => {
+  const interp = JSON.parse(
+    readFileSync(root + "syntaxes/pyjinhx-injection-interpolation.json", "utf8"),
+  );
+  // The block region carries scope `meta.pyjinhx-python-block`; the interpolation
+  // injection must exclude it so `{{`-style coloring never overrides Python.
+  assert.match(interp.injectionSelector, /-meta\.pyjinhx-python-block/);
 });

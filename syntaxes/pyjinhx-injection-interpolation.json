@@ -1,6 +1,6 @@
 {
   "scopeName": "pyjinhx.injection.interpolation",
-  "injectionSelector": "L:text.html.jinja, L:text.html.basic, L:text.pyjinhx",
+  "injectionSelector": "L:text.html.jinja -meta.pyjinhx-python-block, L:text.html.basic -meta.pyjinhx-python-block, L:text.pyjinhx -meta.pyjinhx-python-block",
   "patterns": [
     {
       "name": "meta.pyjinhx-interpolation",

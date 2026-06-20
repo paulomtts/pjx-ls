@@ -103,7 +103,7 @@
       { "scopeName": "pyjinhx.injection.tags", "path": "./syntaxes/pyjinhx-injection-tags.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.interpolation", "path": "./syntaxes/pyjinhx-injection-interpolation.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.interpolation-in-jinja", "path": "./syntaxes/pyjinhx-injection-interpolation-in-jinja.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
-      { "scopeName": "pyjinhx.injection.python-block", "path": "./syntaxes/pyjinhx-injection-python-block.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] }
+      { "scopeName": "pyjinhx.injection.python-block", "path": "./syntaxes/pyjinhx-injection-python-block.json", "injectTo": ["text.html.basic", "text.html.jinja"] }
     ]
   },
   "devDependencies": {
