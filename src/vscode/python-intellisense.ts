@@ -28,6 +28,7 @@ function refreshVirtual(doc: vscode.TextDocument): vscode.Uri {
 
 export function registerPythonIntellisense(context: vscode.ExtensionContext): void {
   const onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
+  context.subscriptions.push(onDidChangeEmitter);
 
   context.subscriptions.push(
     vscode.workspace.registerTextDocumentContentProvider(SCHEME, {
@@ -44,6 +45,14 @@ export function registerPythonIntellisense(context: vscode.ExtensionContext): vo
       if (event.document.languageId !== "pyjinhx") return;
       const uri = refreshVirtual(event.document);
       onDidChangeEmitter.fire(uri);
+    }),
+  );
+
+  // Prune stale entries when a pyjinhx doc is closed.
+  context.subscriptions.push(
+    vscode.workspace.onDidCloseTextDocument((doc) => {
+      if (doc.languageId !== "pyjinhx") return;
+      virtualContent.delete(`${SCHEME}:${doc.uri.fsPath}.py`);
     }),
   );
 

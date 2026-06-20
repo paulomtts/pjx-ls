@@ -1,4 +1,3 @@
-// src/vscode/stubgen.ts
 import * as vscode from "vscode";
 import { execFile } from "node:child_process";
 import { CONFIG_SECTION } from "../config.ts";
@@ -10,6 +9,7 @@ export function registerStubgen(
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
       if (document.languageId !== "pyjinhx") return;
+      if (!vscode.workspace.isTrusted) return;
       const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
       if (!config.get("generateStubsOnSave", true)) return;
 

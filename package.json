@@ -37,6 +37,12 @@
     "onLanguage:pyjinhx"
   ],
   "categories": ["Formatters", "Programming Languages"],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "restrictedConfigurations": ["pyjinhx.pythonPath"]
+    }
+  },
   "contributes": {
     "commands": [
       { "command": "pyjinhx.formatSlots", "title": "PyJinHx: Format Slotted Component Tags" }
@@ -95,7 +101,7 @@
       { "language": "pyjinhx", "scopeName": "text.pyjinhx", "path": "./syntaxes/pyjinhx.json" },
       { "scopeName": "pyjinhx.injection", "path": "./syntaxes/pyjinhx-injection.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.tags", "path": "./syntaxes/pyjinhx-injection-tags.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
-{ "scopeName": "pyjinhx.injection.interpolation", "path": "./syntaxes/pyjinhx-injection-interpolation.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
+      { "scopeName": "pyjinhx.injection.interpolation", "path": "./syntaxes/pyjinhx-injection-interpolation.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.interpolation-in-jinja", "path": "./syntaxes/pyjinhx-injection-interpolation-in-jinja.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.python-block", "path": "./syntaxes/pyjinhx-injection-python-block.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] }
     ]
