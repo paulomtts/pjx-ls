@@ -1,7 +1,5 @@
 {
-  "comments": {
-    "blockComment": ["{#", "#}"]
-  },
+  "// comments": "Intentionally NO comment rules. Declaring {# #} as a block comment makes comment-aware tools (e.g. Better Comments) treat the whole {# python #} single-file-component block as a comment and tint it, overriding the embedded source.python coloring. The cost is no Ctrl+/ block-comment toggle in .pjx.",
   "brackets": [
     ["{", "}"],
     ["[", "]"],
