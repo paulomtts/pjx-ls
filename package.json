@@ -48,6 +48,16 @@
           "type": "boolean",
           "default": true,
           "description": "Expand single-line quoted slot values that contain a PascalCase component tag when saving component templates."
+        },
+        "pyjinhx.generateStubsOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run `python -m pyjinhx.stubgen` for the workspace when a .pjx file is saved, keeping .pjx/stubs/*.pyi current for type-checking."
+        },
+        "pyjinhx.pythonPath": {
+          "type": "string",
+          "default": "",
+          "description": "Python interpreter used to run pyjinhx.stubgen. Empty uses `python` on PATH."
         }
       }
     },
