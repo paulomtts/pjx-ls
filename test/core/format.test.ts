@@ -133,3 +133,15 @@ test("glued block-level tags break onto their own lines", () => {
 test("an inline element glued to text keeps its place", () => {
   assert.equal(formatPyjinhxTemplate("<p>a<b>c</b>d</p>"), "<p>\n  a<b>c</b>d\n</p>\n");
 });
+
+test("spaces inside an inline element are kept", () => {
+  assert.equal(formatPyjinhxTemplate("<p>Hello<b> world</b>!</p>"), "<p>\n  Hello<b> world</b>!\n</p>\n");
+  assert.equal(formatPyjinhxTemplate("<p><b>world </b>again</p>"), "<p>\n  <b>world </b>again\n</p>\n");
+});
+
+test("a set block whose filter argument contains = is still a block", () => {
+  assert.equal(
+    formatPyjinhxTemplate('<div>\n{% set x | replace("a", "=") %}\n<b>y</b>\n{% endset %}\n</div>'),
+    '<div>\n  {% set x | replace("a", "=") %}\n    <b>y</b>\n  {% endset %}\n</div>\n',
+  );
+});

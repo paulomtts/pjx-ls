@@ -2,6 +2,7 @@ import { INDENT } from "../config.ts";
 import { isHtmlSlotValue, readDoubleQuotedContent } from "./slots.ts";
 
 const JINJA_TAG_NAME = /^\{%[-+]?\s*(\w+)/;
+const INLINE_SET = /^\{%[-+]?\s*set\s+[\w\s,().]+=/;
 const JINJA_BLOCKS = new Set(["if", "for", "macro", "block", "filter", "with", "call", "set"]);
 const VOID_ELEMENTS = new Set([
   "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr",
@@ -32,7 +33,7 @@ function jinjaTag(value: string): JinjaTag | undefined {
     return { kind: "close", name: name.slice(3) };
   }
   // `{% set x = 1 %}` is a statement; only the bare `{% set x %}` form opens a block.
-  if (JINJA_BLOCKS.has(name) && !(name === "set" && value.includes("="))) {
+  if (JINJA_BLOCKS.has(name) && !(name === "set" && INLINE_SET.test(value.trim()))) {
     return { kind: "open", name };
   }
   return undefined;
@@ -393,14 +394,17 @@ function tryInlineElement(tokens: Token[], startIndex: number): { endIndex: numb
   const openToken = tokens[startIndex];
   if (openToken.type !== "open") return null;
 
+  // Edge whitespace inside a block-level element collapses; elsewhere it renders.
+  const keepEdges = !isBlockTag(openToken);
   let inner = "";
   for (let index = startIndex + 1; index < tokens.length; index += 1) {
     const token = tokens[index];
     if (token.type === "close" && token.name === openToken.name) {
-      return { endIndex: index, value: `${openToken.value}${inner}${token.value}` };
+      const trailing = keepEdges && token.spaceBefore && inner ? " " : "";
+      return { endIndex: index, value: `${openToken.value}${inner}${trailing}${token.value}` };
     }
     if (token.type === "text" || token.type === "jinja_expr") {
-      inner += (token.spaceBefore && inner ? " " : "") + token.value;
+      inner += (token.spaceBefore && (inner || keepEdges) ? " " : "") + token.value;
       continue;
     }
     return null;
