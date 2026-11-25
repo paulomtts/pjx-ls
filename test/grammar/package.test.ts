@@ -87,3 +87,15 @@ test("{ auto-closes everywhere (the pyjinhx configuration is the only one in eff
 test("Emmet is not enabled by default: it cannot be scoped away from code regions", () => {
   assert.equal(pkg.contributes.configurationDefaults?.["emmet.includeLanguages"], undefined);
 });
+
+test("autoCloseBefore keeps VS Code's defaults and adds <", () => {
+  for (const char of ";:.,=}])> \n\t<") {
+    assert.ok(config.autoCloseBefore.includes(char), JSON.stringify(char));
+  }
+});
+
+test("a #} line is outdented relative to the body it closes", () => {
+  const decrease = new RegExp(config.indentationRules.decreaseIndentPattern);
+  for (const line of ["#}", "    #}", "\t#}  "]) assert.ok(decrease.test(line), line);
+  for (const line of ["x = 1 #}", "{#python", "    x = 1", "# }"]) assert.ok(!decrease.test(line), line);
+});
