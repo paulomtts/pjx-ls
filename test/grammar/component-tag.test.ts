@@ -52,3 +52,21 @@ test("slot values are only recognised on component tags", async () => {
   const tokens = await tokenizePjx('<div title="<b>">x</div>');
   assert.ok(!scopesOf(tokens, "b").includes("entity.name.tag.html"));
 });
+
+test("an all-caps tag is HTML, as in pyjinhx", async () => {
+  for (const tag of ["BR", "A", "DIV", "H1"]) {
+    const tokens = await tokenizePjx(`<${tag}>x</${tag}>`);
+    const name = tokens.filter((token) => token.text === tag);
+    assert.equal(name.length, 2, tag);
+    for (const token of name) {
+      assert.ok(!token.scopes.includes("meta.tag.component.pyjinhx"), `${tag}: ${token.scopes.join(" ")}`);
+      assert.ok(!token.scopes.includes("support.class.component.pyjinhx"), tag);
+    }
+  }
+});
+
+test("a PascalCase name with a lowercase letter is a component", async () => {
+  for (const tag of ["Card", "PJXButton", "Ab", "HTMLView", "X1y"]) {
+    assert.ok(scopesOf(await tokenizePjx(`<${tag}/>`), tag).includes("support.class.component.pyjinhx"), tag);
+  }
+});
