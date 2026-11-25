@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { blocksOf } from "./blocks.ts";
 import { assertSnapshot, dumpTokens } from "./snapshot.ts";
 import { scopesOf, tokenizePjx, type ScopedToken } from "./tokenize.ts";
 
@@ -48,4 +49,26 @@ test("Jinja does not apply inside comments or raw regions in tags", async () => 
   assert.deepEqual(jinjaTokens(await tokenizePjx("{# <a href='{{ x }}'> #}")), []);
   const raw = await tokenizePjx("{% raw %}<a href='{{ x }}'>{% endraw %}");
   assert.ok(!raw.some((token) => token.scopes.includes("meta.scope.jinja.variable")));
+});
+
+test("Jinja inside HTML, JS and CSS comments still renders, so it is Jinja", async () => {
+  const html = await tokenizePjx("<!-- {{ x }} -->");
+  assert.ok(scopesOf(html, "x").includes("meta.scope.jinja.variable"));
+  assert.ok(scopesOf(html, "x").includes("comment.block.html"));
+  const js = await tokenizePjx("<script>\n// {{ c }}\n</script>");
+  assert.ok(scopesOf(js, "c").includes("meta.scope.jinja.variable"));
+  const css = await tokenizePjx("<style>\n/* {{ c }} */\n</style>");
+  assert.ok(scopesOf(css, "c").includes("meta.scope.jinja.variable"));
+});
+
+test("a {#css block inside an HTML comment is still a block", async () => {
+  const tokens = await tokenizePjx("<!-- old\n{#css\n.a { color: red; }\n#}\n-->\n<p></p>");
+  assert.deepEqual(blocksOf(tokens), [{ keyword: "css", open_line: 2, close_line: 4 }]);
+  assert.ok(scopesOf(tokens, "color").includes("support.type.property-name.css"));
+  assert.ok(!scopesOf(tokens, "p").some((scope) => scope.startsWith("comment")));
+});
+
+test("{% raw %} inside an HTML comment is raw", async () => {
+  const tokens = await tokenizePjx("<!-- {% raw %}{{ x }}{% endraw %} -->");
+  assert.ok(!scopesOf(tokens, "x").includes("meta.scope.jinja.variable"));
 });
