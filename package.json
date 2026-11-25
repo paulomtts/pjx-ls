@@ -71,8 +71,7 @@
     "grammars": [
       { "language": "pyjinhx", "scopeName": "text.pyjinhx", "path": "./syntaxes/pyjinhx.json" },
       { "scopeName": "source.pyjinhx.jinja", "path": "./syntaxes/pyjinhx-jinja.json" },
-      { "scopeName": "pyjinhx.injection", "path": "./syntaxes/pyjinhx-injection.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
-      { "scopeName": "pyjinhx.injection.tags", "path": "./syntaxes/pyjinhx-injection-tags.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] }
+      { "scopeName": "pyjinhx.injection", "path": "./syntaxes/pyjinhx-injection.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] }
     ]
   },
   "devDependencies": {

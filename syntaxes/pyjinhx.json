@@ -35,94 +35,54 @@
   ],
   "repository": {
     "pyjinhx-component-tag": {
+      "name": "meta.tag.component.pyjinhx",
+      "begin": "(</?)([A-Z][A-Za-z0-9]*)(?=[\\s/>]|$)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.tag.begin.html"
+        },
+        "2": {
+          "name": "entity.name.tag.component.pyjinhx support.class.component.pyjinhx"
+        }
+      },
+      "end": "/?>",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.tag.end.html"
+        }
+      },
       "patterns": [
         {
-          "begin": "(</?)([A-Z][A-Za-z0-9]*)",
+          "name": "meta.attribute.slot.pyjinhx",
+          "begin": "([^\\s/=>\"'<]+)\\s*(=)\\s*(\")(?=\\s*(?:$|<))",
           "beginCaptures": {
             "1": {
-              "name": "punctuation.definition.tag.begin.pyjinhx"
+              "name": "entity.other.attribute-name.html"
             },
             "2": {
-              "name": "entity.name.tag.pyjinhx"
+              "name": "punctuation.separator.key-value.html"
+            },
+            "3": {
+              "name": "string.quoted.double.html punctuation.definition.string.begin.html"
             }
           },
-          "end": "(/?>)",
+          "end": "\"",
           "endCaptures": {
-            "1": {
-              "name": "punctuation.definition.tag.end.pyjinhx"
+            "0": {
+              "name": "string.quoted.double.html punctuation.definition.string.end.html"
             }
           },
           "patterns": [
             {
-              "include": "source.pyjinhx.jinja"
-            },
-            {
-              "begin": "\"(?=\\s*$)",
-              "beginCaptures": {
-                "0": {
-                  "name": "string.quoted.double.html punctuation.definition.string.begin.html"
-                }
-              },
-              "end": "\"",
-              "endCaptures": {
-                "0": {
-                  "name": "string.quoted.double.html punctuation.definition.string.end.html"
-                }
-              },
-              "patterns": [
-                {
-                  "include": "$self"
-                }
-              ]
-            },
-            {
-              "begin": "\"(?=\\s*</?[A-Za-z])",
-              "beginCaptures": {
-                "0": {
-                  "name": "string.quoted.double.html punctuation.definition.string.begin.html"
-                }
-              },
-              "end": "\"",
-              "endCaptures": {
-                "0": {
-                  "name": "string.quoted.double.html punctuation.definition.string.end.html"
-                }
-              },
-              "patterns": [
-                {
-                  "include": "$self"
-                }
-              ]
-            },
-            {
-              "begin": "\"",
-              "beginCaptures": {
-                "0": {
-                  "name": "punctuation.definition.string.begin.html"
-                }
-              },
-              "end": "\"",
-              "endCaptures": {
-                "0": {
-                  "name": "punctuation.definition.string.end.html"
-                }
-              },
-              "name": "string.quoted.double.html",
-              "patterns": [
-                {
-                  "include": "source.pyjinhx.jinja"
-                }
-              ]
-            },
-            {
-              "match": "'[^']*'",
-              "name": "string.quoted.single.html"
-            },
-            {
-              "match": "([a-zA-Z_][\\w:-]*)(?=\\s*=)",
-              "name": "entity.other.attribute-name.html"
+              "include": "$self"
             }
           ]
+        },
+        {
+          "include": "source.pyjinhx.jinja"
+        },
+        {
+          "include": "text.html.basic#attribute"
         }
       ]
     },
