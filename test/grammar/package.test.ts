@@ -76,11 +76,12 @@ test("folding: indentation by default, markers only for multi-line pjx blocks", 
   }
 });
 
-test("no bare { pair, so typing {#css cannot leave a stray }", () => {
-  const opens = config.autoClosingPairs.map((pair: { open: string }) => pair.open);
-  assert.ok(!opens.includes("{"));
-  assert.ok(!opens.includes("{#"));
-  assert.ok(opens.includes("{{") && opens.includes("{%"));
+test("{ auto-closes everywhere (the pyjinhx configuration is the only one in effect); {# has no pair", () => {
+  const closes = new Map<string, string>(config.autoClosingPairs.map((pair: { open: string; close: string }) => [pair.open, pair.close]));
+  assert.equal(closes.get("{"), "}");
+  assert.equal(closes.get("{{"), " }}");
+  assert.equal(closes.get("{%"), " %}");
+  assert.equal(closes.has("{#"), false);
 });
 
 test("Emmet is not enabled by default: it cannot be scoped away from code regions", () => {
