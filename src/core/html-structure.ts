@@ -279,6 +279,15 @@ function tagHasSlot(parsed: ParsedTag): boolean {
 }
 
 /**
+ * Re-indenting prefixes every line, so a slot value with a multi-line token
+ * (comment, script, pre, css block...) would change its bytes: keep it verbatim.
+ */
+function canReindent(slotValue: string): boolean {
+  const { tokens, complete } = tokenize(slotValue);
+  return complete && !tokens.some((token) => token.value.includes("\n"));
+}
+
+/**
  * Render a slotted tag in "exploded" form: tag name alone, each attribute on its
  * own indented line, slot values recursively formatted, and the closing
  * `>` / `/>` on its own line at the tag's indent.
@@ -292,7 +301,7 @@ function renderExplodedTag(parsed: ParsedTag, baseIndent: string): string {
       lines.push(attrIndent + attr.name);
       continue;
     }
-    if (isHtmlSlotValue(attr.value)) {
+    if (isHtmlSlotValue(attr.value) && canReindent(attr.value)) {
       lines.push(`${attrIndent}${attr.name}="`);
       const formatted = formatHtmlStructure(attr.value).replace(/\n+$/, "");
       for (const line of formatted.split("\n")) {

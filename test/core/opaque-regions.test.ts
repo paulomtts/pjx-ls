@@ -93,3 +93,27 @@ test("an unterminated script or comment returns the text unchanged", () => {
     assert.equal(formatPyjinhxTemplate(input), input);
   }
 });
+
+test("a slot value holding an opaque region is kept verbatim and stable over 3 passes", () => {
+  const input = '<div>\n<Card body="<div><pre>  a\n\n   b</pre></div>" />\n</div>';
+  const once = formatPyjinhxTemplate(input);
+  assert.equal(
+    once,
+    '<div>\n  <Card\n    body="<div><pre>  a\n\n   b</pre></div>"\n  />\n</div>\n',
+  );
+  const twice = formatPyjinhxTemplate(once);
+  assert.equal(twice, once);
+  assert.equal(formatPyjinhxTemplate(twice), once);
+});
+
+test("a slot value holding a script, comment or css block is not re-indented", () => {
+  for (const slot of [
+    "<div><script>\nif (a) {\n  go();\n}\n</script></div>",
+    "<div><!--\n  keep\n--></div>",
+    "<div>{#css\n.a {}\n#}</div>",
+  ]) {
+    const out = formatPyjinhxTemplate(`<Card body="${slot}" />`);
+    assert.equal(out, `<Card\n  body="${slot}"\n/>\n`);
+    assert.equal(formatPyjinhxTemplate(out), out);
+  }
+});
