@@ -3,10 +3,22 @@
   "scopeName": "text.pyjinhx",
   "patterns": [
     {
-      "include": "#pyjinhx-interpolation"
+      "include": "#pyjinhx-block-def-legacy"
     },
     {
-      "include": "#pyjinhx-def-header"
+      "include": "#pyjinhx-block-python"
+    },
+    {
+      "include": "#pyjinhx-block-css"
+    },
+    {
+      "include": "#pyjinhx-block-js"
+    },
+    {
+      "include": "#pyjinhx-block-def"
+    },
+    {
+      "include": "#pyjinhx-interpolation"
     },
     {
       "include": "#pyjinhx-comment"
@@ -27,48 +39,80 @@
         {
           "begin": "(</?)([A-Z][A-Za-z0-9]*)",
           "beginCaptures": {
-            "1": { "name": "punctuation.definition.tag.begin.pyjinhx" },
-            "2": { "name": "entity.name.tag.pyjinhx" }
+            "1": {
+              "name": "punctuation.definition.tag.begin.pyjinhx"
+            },
+            "2": {
+              "name": "entity.name.tag.pyjinhx"
+            }
           },
           "end": "(/?>)",
           "endCaptures": {
-            "1": { "name": "punctuation.definition.tag.end.pyjinhx" }
+            "1": {
+              "name": "punctuation.definition.tag.end.pyjinhx"
+            }
           },
           "patterns": [
-            { "include": "#pyjinhx-interpolation" },
+            {
+              "include": "#pyjinhx-interpolation"
+            },
             {
               "begin": "\"(?=\\s*$)",
               "beginCaptures": {
-                "0": { "name": "string.quoted.double.html punctuation.definition.string.begin.html" }
+                "0": {
+                  "name": "string.quoted.double.html punctuation.definition.string.begin.html"
+                }
               },
               "end": "\"",
               "endCaptures": {
-                "0": { "name": "string.quoted.double.html punctuation.definition.string.end.html" }
+                "0": {
+                  "name": "string.quoted.double.html punctuation.definition.string.end.html"
+                }
               },
-              "patterns": [{ "include": "$self" }]
+              "patterns": [
+                {
+                  "include": "$self"
+                }
+              ]
             },
             {
               "begin": "\"(?=\\s*</?[A-Za-z])",
               "beginCaptures": {
-                "0": { "name": "string.quoted.double.html punctuation.definition.string.begin.html" }
+                "0": {
+                  "name": "string.quoted.double.html punctuation.definition.string.begin.html"
+                }
               },
               "end": "\"",
               "endCaptures": {
-                "0": { "name": "string.quoted.double.html punctuation.definition.string.end.html" }
+                "0": {
+                  "name": "string.quoted.double.html punctuation.definition.string.end.html"
+                }
               },
-              "patterns": [{ "include": "$self" }]
+              "patterns": [
+                {
+                  "include": "$self"
+                }
+              ]
             },
             {
               "begin": "\"",
               "beginCaptures": {
-                "0": { "name": "punctuation.definition.string.begin.html" }
+                "0": {
+                  "name": "punctuation.definition.string.begin.html"
+                }
               },
               "end": "\"",
               "endCaptures": {
-                "0": { "name": "punctuation.definition.string.end.html" }
+                "0": {
+                  "name": "punctuation.definition.string.end.html"
+                }
               },
               "name": "string.quoted.double.html",
-              "patterns": [{ "include": "#pyjinhx-interpolation" }]
+              "patterns": [
+                {
+                  "include": "#pyjinhx-interpolation"
+                }
+              ]
             },
             {
               "match": "'[^']*'",
@@ -104,81 +148,260 @@
         }
       ]
     },
-    "pyjinhx-def-header": {
-      "patterns": [
-        {
-          "name": "meta.pyjinhx-def-header",
-          "begin": "(\\{#-?)(def)\\b",
-          "beginCaptures": {
-            "1": {
-              "name": "keyword.control.import.pyjinhx"
-            },
-            "2": {
-              "name": "keyword.control.import.pyjinhx"
-            }
-          },
-          "end": "(-?#\\})",
-          "endCaptures": {
-            "1": {
-              "name": "keyword.control.import.pyjinhx"
-            }
-          },
-          "patterns": [
-            {
-              "include": "#pyjinhx-def-signature"
-            }
-          ]
-        }
-      ]
-    },
     "pyjinhx-comment": {
       "name": "comment.block.pyjinhx",
       "begin": "\\{#-?",
       "beginCaptures": {
-        "0": { "name": "punctuation.definition.comment.begin.pyjinhx" }
+        "0": {
+          "name": "punctuation.definition.comment.begin.pyjinhx"
+        }
       },
       "end": "-?#\\}",
       "endCaptures": {
-        "0": { "name": "punctuation.definition.comment.end.pyjinhx" }
+        "0": {
+          "name": "punctuation.definition.comment.end.pyjinhx"
+        }
       }
     },
-    "pyjinhx-def-signature": {
+    "pyjinhx-block-def": {
+      "name": "meta.block.def.pyjinhx",
+      "begin": "(\\{#)(def)(?=\\s|$|#\\})",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.block.begin.pyjinhx"
+        },
+        "2": {
+          "name": "keyword.control.pyjinhx"
+        }
+      },
+      "end": "#\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.block.end.pyjinhx"
+        }
+      },
+      "contentName": "meta.embedded.block.python source.python",
       "patterns": [
         {
-          "match": "((?:\"(?:[^\"\\\\]|\\\\.)*\")|(?:'(?:[^'\\\\]|\\\\.)*'))",
-          "name": "string.quoted.python"
+          "begin": "(^|\\G)(?!.*#\\})",
+          "while": "(^|\\G)(?!.*#\\})",
+          "patterns": [
+            {
+              "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*:(?!:))",
+              "captures": {
+                "1": {
+                  "name": "variable.parameter.pyjinhx"
+                }
+              }
+            },
+            {
+              "include": "source.python"
+            }
+          ]
         },
         {
-          "match": "\\b(True|False|None)\\b",
+          "match": "(?!#\\})(.+?)(?=#\\})",
           "captures": {
             "1": {
-              "name": "constant.language.python"
+              "patterns": [
+                {
+                  "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*:(?!:))",
+                  "captures": {
+                    "1": {
+                      "name": "variable.parameter.pyjinhx"
+                    }
+                  }
+                },
+                {
+                  "include": "source.python"
+                }
+              ]
             }
           }
+        }
+      ]
+    },
+    "pyjinhx-block-def-legacy": {
+      "name": "meta.block.def.pyjinhx",
+      "begin": "\\A(\\{#)(?:[ \\t]+)(def)(?=\\s|$|#\\})",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.block.begin.pyjinhx"
+        },
+        "2": {
+          "name": "keyword.control.pyjinhx"
+        }
+      },
+      "end": "#\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.block.end.pyjinhx"
+        }
+      },
+      "contentName": "meta.embedded.block.python source.python",
+      "patterns": [
+        {
+          "begin": "(^|\\G)(?!.*#\\})",
+          "while": "(^|\\G)(?!.*#\\})",
+          "patterns": [
+            {
+              "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*:(?!:))",
+              "captures": {
+                "1": {
+                  "name": "variable.parameter.pyjinhx"
+                }
+              }
+            },
+            {
+              "include": "source.python"
+            }
+          ]
         },
         {
-          "match": "\\b(int|str|float|bool|bytes|list|dict|set|tuple|Any|Optional|Union|Literal|Sequence|Mapping|Callable|TypeVar|Protocol)\\b",
+          "match": "(?!#\\})(.+?)(?=#\\})",
           "captures": {
             "1": {
-              "name": "support.type.python"
+              "patterns": [
+                {
+                  "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*:(?!:))",
+                  "captures": {
+                    "1": {
+                      "name": "variable.parameter.pyjinhx"
+                    }
+                  }
+                },
+                {
+                  "include": "source.python"
+                }
+              ]
             }
           }
+        }
+      ]
+    },
+    "pyjinhx-block-css": {
+      "name": "meta.block.css.pyjinhx",
+      "begin": "(\\{#)(css)[ \\t]*$",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.block.begin.pyjinhx"
+        },
+        "2": {
+          "name": "keyword.control.pyjinhx"
+        }
+      },
+      "end": "#\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.block.end.pyjinhx"
+        }
+      },
+      "contentName": "meta.embedded.block.css source.css",
+      "patterns": [
+        {
+          "begin": "(^|\\G)(?!.*#\\})",
+          "while": "(^|\\G)(?!.*#\\})",
+          "patterns": [
+            {
+              "include": "source.css"
+            }
+          ]
         },
         {
-          "match": "\\b([a-z_][\\w]*)\\b(?=\\s*:)",
+          "match": "(?!#\\})(.+?)(?=#\\})",
           "captures": {
             "1": {
-              "name": "variable.parameter.python"
+              "patterns": [
+                {
+                  "include": "source.css"
+                }
+              ]
             }
           }
+        }
+      ]
+    },
+    "pyjinhx-block-js": {
+      "name": "meta.block.js.pyjinhx",
+      "begin": "(\\{#)(js)[ \\t]*$",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.block.begin.pyjinhx"
+        },
+        "2": {
+          "name": "keyword.control.pyjinhx"
+        }
+      },
+      "end": "#\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.block.end.pyjinhx"
+        }
+      },
+      "contentName": "meta.embedded.block.js source.js",
+      "patterns": [
+        {
+          "begin": "(^|\\G)(?!.*#\\})",
+          "while": "(^|\\G)(?!.*#\\})",
+          "patterns": [
+            {
+              "include": "source.js"
+            }
+          ]
         },
         {
-          "match": "[:=,]",
-          "name": "punctuation.separator.pyjinhx-def"
+          "match": "(?!#\\})(.+?)(?=#\\})",
+          "captures": {
+            "1": {
+              "patterns": [
+                {
+                  "include": "source.js"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "pyjinhx-block-python": {
+      "name": "meta.block.python.pyjinhx",
+      "begin": "^(\\{#)(python)[ \\t]*$",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.block.begin.pyjinhx"
+        },
+        "2": {
+          "name": "keyword.control.pyjinhx"
+        }
+      },
+      "end": "#\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.block.end.pyjinhx"
+        }
+      },
+      "contentName": "meta.embedded.block.python source.python",
+      "patterns": [
+        {
+          "begin": "(^|\\G)(?!.*#\\})",
+          "while": "(^|\\G)(?!.*#\\})",
+          "patterns": [
+            {
+              "include": "source.python"
+            }
+          ]
         },
         {
-          "match": "[\\[\\]{}()]",
-          "name": "punctuation.bracket.pyjinhx"
+          "match": "(?!#\\})(.+?)(?=#\\})",
+          "captures": {
+            "1": {
+              "patterns": [
+                {
+                  "include": "source.python"
+                }
+              ]
+            }
+          }
         }
       ]
     }
