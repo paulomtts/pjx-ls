@@ -15,12 +15,12 @@ test("tokens carry 1-based line numbers", async () => {
 });
 
 test("the root scope can be source.python", async () => {
-  const tokens = await tokenizePjx("def f(x):\n    return x", "jinja", "source.python");
+  const tokens = await tokenizePjx("def f(x):\n    return x", "source.python");
   assert.ok(scopesOf(tokens, "def").includes("storage.type.function.python"));
 });
 
 test("the vendored CSS, JS and Python grammars load", async () => {
-  const python = await tokenizePjx("import os", "plain", "source.python");
+  const python = await tokenizePjx("import os", "source.python");
   assert.ok(scopesOf(python, "import").includes("keyword.control.import.python"));
 });
 

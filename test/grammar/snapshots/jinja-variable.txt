@@ -1,0 +1,22 @@
+1: "<" meta.tag.structure.p.start.html punctuation.definition.tag.begin.html
+1: "p" meta.tag.structure.p.start.html entity.name.tag.html
+1: ">" meta.tag.structure.p.start.html punctuation.definition.tag.end.html
+1: "{{" meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+1: "url_for" meta.scope.jinja.variable variable.other.jinja
+1: "(" meta.scope.jinja.variable punctuation.other.jinja
+1: "'" meta.scope.jinja.variable string.quoted.single.jinja punctuation.definition.string.begin.jinja
+1: "x" meta.scope.jinja.variable string.quoted.single.jinja
+1: "'" meta.scope.jinja.variable string.quoted.single.jinja punctuation.definition.string.end.jinja
+1: "," meta.scope.jinja.variable punctuation.other.jinja
+1: "id" meta.scope.jinja.variable variable.other.jinja
+1: "=" meta.scope.jinja.variable keyword.operator.assignment.jinja
+1: "item" meta.scope.jinja.variable variable.other.jinja
+1: "." meta.scope.jinja.variable punctuation.other.jinja
+1: "id" meta.scope.jinja.variable variable.other.jinja.attribute
+1: ")" meta.scope.jinja.variable punctuation.other.jinja
+1: "|" meta.scope.jinja.variable punctuation.other.jinja
+1: "safe" meta.scope.jinja.variable variable.other.jinja.filter
+1: "}}" meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+1: "</" meta.tag.structure.p.end.html punctuation.definition.tag.begin.html
+1: "p" meta.tag.structure.p.end.html entity.name.tag.html
+1: ">" meta.tag.structure.p.end.html punctuation.definition.tag.end.html

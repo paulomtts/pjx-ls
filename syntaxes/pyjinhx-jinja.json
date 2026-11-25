@@ -1,6 +1,6 @@
 {
-	"name": "jinja",
-	"scopeName": "source.jinja",
+	"name": "pyjinhx-jinja",
+	"scopeName": "source.pyjinhx.jinja",
 	"comment": "Jinja",
 	"fileTypes": [
 		"j2",

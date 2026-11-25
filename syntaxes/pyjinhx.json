@@ -3,6 +3,9 @@
   "scopeName": "text.pyjinhx",
   "patterns": [
     {
+      "include": "#pyjinhx-raw"
+    },
+    {
       "include": "#pyjinhx-block-def-legacy"
     },
     {
@@ -18,16 +21,13 @@
       "include": "#pyjinhx-block-def"
     },
     {
-      "include": "#pyjinhx-interpolation"
-    },
-    {
       "include": "#pyjinhx-comment"
     },
     {
       "include": "#pyjinhx-component-tag"
     },
     {
-      "include": "text.html.jinja"
+      "include": "source.pyjinhx.jinja"
     },
     {
       "include": "text.html.basic"
@@ -54,7 +54,7 @@
           },
           "patterns": [
             {
-              "include": "#pyjinhx-interpolation"
+              "include": "source.pyjinhx.jinja"
             },
             {
               "begin": "\"(?=\\s*$)",
@@ -110,7 +110,7 @@
               "name": "string.quoted.double.html",
               "patterns": [
                 {
-                  "include": "#pyjinhx-interpolation"
+                  "include": "source.pyjinhx.jinja"
                 }
               ]
             },
@@ -123,28 +123,6 @@
               "name": "entity.other.attribute-name.html"
             }
           ]
-        }
-      ]
-    },
-    "pyjinhx-interpolation": {
-      "patterns": [
-        {
-          "name": "meta.pyjinhx-interpolation",
-          "begin": "(\\{\\{-?)",
-          "beginCaptures": {
-            "1": {
-              "name": "constant.character.format.placeholder.other.python"
-            }
-          },
-          "end": "(-?\\}\\})",
-          "endCaptures": {
-            "1": {
-              "name": "constant.character.format.placeholder.other.python"
-            }
-          },
-          "contentName": "constant.character.format.placeholder.other.python",
-          "applyEndPatternLast": true,
-          "patterns": []
         }
       ]
     },
@@ -404,6 +382,11 @@
           }
         }
       ]
+    },
+    "pyjinhx-raw": {
+      "name": "meta.scope.jinja.raw",
+      "begin": "\\{%[-+]?\\s*raw\\s*-?%\\}",
+      "end": "\\{%[-+]?\\s*endraw\\s*[-+]?%\\}"
     }
   }
 }

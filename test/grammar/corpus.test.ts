@@ -20,14 +20,11 @@ const decode = (name: string) =>
 const isEmptyHighlight = (block: Block) =>
   (block.keyword === "css" || block.keyword === "js") && block.close_line !== null && block.close_line - block.open_line <= 1;
 
-// `{{ }}` still ends at its first `}}`; Jinja balances braces, so this passes once task 4 lands.
-const AWAITING_JINJA_GRAMMAR = new Set(["known_gap_braces_in_expression"]);
-
 for (const file of readdirSync(corpus).filter((name) => name.endsWith(".pjx")).sort()) {
   const name = file.replace(/\.pjx$/, "");
   const expected: Expected = JSON.parse(readFileSync(`${corpus}${name}.json`, "utf8"));
 
-  test(`corpus ${name}`, { todo: AWAITING_JINJA_GRAMMAR.has(name) && "needs the bundled Jinja grammar" }, async () => {
+  test(`corpus ${name}`, async () => {
     const source = decode(file);
     const tokens = await tokenizePjx(source);
     const got = blocksOf(tokens);
