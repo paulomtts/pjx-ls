@@ -67,7 +67,7 @@
       },
       { "scopeName": "source.pyjinhx.jinja", "path": "./syntaxes/pyjinhx-jinja.json" },
       { "scopeName": "pyjinhx.injection", "path": "./syntaxes/pyjinhx-injection.json", "injectTo": ["text.pyjinhx", "source.python"] },
-      { "scopeName": "pyjinhx.python-template", "path": "./syntaxes/pyjinhx-python-template.json", "injectTo": ["source.python"], "embeddedLanguages": { "meta.embedded.block.pyjinhx": "pyjinhx" } },
+      { "scopeName": "pyjinhx.python-template", "path": "./syntaxes/pyjinhx-python-template.json", "injectTo": ["source.python"], "embeddedLanguages": { "meta.embedded.block.pyjinhx": "pyjinhx", "source.css": "css", "source.js": "javascript" } },
       { "scopeName": "pyjinhx.injection.comments", "path": "./syntaxes/pyjinhx-injection-comments.json", "injectTo": ["text.pyjinhx", "source.python"] },
       { "scopeName": "pyjinhx.injection.attributes", "path": "./syntaxes/pyjinhx-injection-attributes.json", "injectTo": ["text.pyjinhx", "source.python"] }
     ]

@@ -30,6 +30,8 @@ the way it colours that language everywhere else.
   A markup-valued attribute (a slot) is highlighted as embedded PyJinHx.
 - **Jinja everywhere it renders** — inside tags, attribute values, `<script>` and
   `<style>`, but never inside a `{#css`/`{#js`/`{#python` body or a comment.
+- Component tags are scoped `support.class.component`, so most themes colour them like
+  classes. That is intended.
 - The extension no longer ships colour overrides; colours come from your theme.
 - The block grammar and test corpus are vendored from PyJinHx
   (`scripts/sync-pyjinhx.mjs`) and CI fails when they drift.
@@ -60,6 +62,14 @@ the same block if you have other formatters installed.
 
 `.pjx` files are formatted anywhere. The extension does not register for the `html`,
 `jinja` or `jinja-html` languages, so it never competes with their formatters.
+
+## Emmet
+
+Emmet is enabled for `.pjx` files (`"emmet.includeLanguages": {"pyjinhx": "html"}` is a
+default of this extension), so `div.a` + Tab expands. To turn it off, set
+`emmet.includeLanguages` in your own settings without a `pyjinhx` key. A user-level
+`emmet.includeLanguages` replaces the default as a whole, so keep
+`"pyjinhx": "html"` in it if you add other languages.
 
 ## Known limitations
 
