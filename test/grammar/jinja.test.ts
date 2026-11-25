@@ -36,3 +36,15 @@ test("nothing applies inside {% raw %}", async () => {
   assert.ok(inner.scopes.includes("meta.scope.jinja.raw"));
   assert.ok(!inner.scopes.some((scope) => scope.startsWith("meta.block.") || scope.startsWith("comment.")));
 });
+
+test("{% raw %} and {% endraw %} are scoped like the Jinja grammar scopes them", async () => {
+  const tokens = await tokenizePjx("{% raw %}x{% endraw %}");
+  for (const word of ["raw", "endraw"]) {
+    assert.ok(scopesOf(tokens, word).includes("keyword.control.jinja"), word);
+  }
+  const delimiters = tokens.filter((token) => token.text === "{%" || token.text === "%}");
+  assert.equal(delimiters.length, 4);
+  for (const token of delimiters) {
+    assert.ok(token.scopes.includes("entity.other.jinja.delimiter.tag"), token.text);
+  }
+});
