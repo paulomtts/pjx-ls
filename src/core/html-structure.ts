@@ -7,6 +7,8 @@ const JINJA_BLOCKS = new Set(["if", "for", "macro", "block", "filter", "with", "
 const VOID_ELEMENTS = new Set([
   "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr",
 ]);
+// pyjinhx only recognises `{#python` with the opener in column 0.
+const PYTHON_BLOCK = /^\{#-?python\b/;
 const DEF_HEADER = /^\{#-?\s*def\b/;
 
 type TokenType = "opaque" | "jinja" | "jinja_expr" | "open" | "close" | "self_close" | "text";
@@ -502,7 +504,7 @@ function formatLf(text: string): string {
       const trimmed = token.value.trim();
       const kind = jinjaTag(trimmed)?.kind;
       const level = kind === "close" || kind === "mid" ? Math.max(0, depth - 1) : depth;
-      emit(index, INDENT.repeat(level) + trimmed);
+      emit(index, (PYTHON_BLOCK.test(trimmed) ? "" : INDENT.repeat(level)) + trimmed);
       if (kind === "open") depth += 1;
       if (kind === "close") depth = level;
       // A {#def … #} header is always separated from the rest of the file by a

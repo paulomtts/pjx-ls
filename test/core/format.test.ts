@@ -157,3 +157,13 @@ test("a whitespace-only inline element keeps its space", () => {
   assert.equal(formatPyjinhxTemplate("<p><span> </span>text</p>"), "<p>\n  <span> </span>text\n</p>\n");
   assert.equal(formatPyjinhxTemplate("<p><b></b>x</p>"), "<p>\n  <b></b>x\n</p>\n");
 });
+
+test("a nested {#python block keeps its opener in column 0", () => {
+  const input =
+    '{#def title: str #}\n<div>\n{#python\nclass X:\n    def f(self):\n        return "<div>"\n#}\n<p>{{ title }}</p>\n</div>';
+  assert.equal(
+    formatPyjinhxTemplate(input),
+    '{#def title: str #}\n\n<div>\n{#python\nclass X:\n    def f(self):\n        return "<div>"\n#}\n  <p>{{ title }}</p>\n</div>\n',
+  );
+});
+
