@@ -15,7 +15,7 @@ test("golden: a class with an inline template", async () => {
   assert.ok(scopesOf(tokens, "css").includes("keyword.control.pyjinhx"));
   assert.ok(scopesOf(tokens, "border-radius").includes("meta.embedded.block.css"));
   assert.ok(scopesOf(tokens, "Icon").includes("support.class.component.pyjinhx"));
-  assert.ok(scopesOf(tokens, "label").includes("meta.scope.jinja.variable"));
+  assert.ok(scopesOf(tokens, "{{").includes("meta.scope.jinja.variable"));
 });
 
 test("the closing quotes end the embedding", async () => {

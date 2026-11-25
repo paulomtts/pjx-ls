@@ -1,0 +1,21 @@
+{
+  "scopeName": "pyjinhx.python-template",
+  "injectionSelector": "L:source.python -string -comment -text.pyjinhx",
+  "patterns": [
+    {
+      "begin": "^(\\s+)(template)\\s*(?::[^=]+)?(=)\\s*([rR]?)(\"\"\"|''')",
+      "beginCaptures": {
+        "2": { "name": "variable.other.pyjinhx" },
+        "3": { "name": "keyword.operator.assignment.python" },
+        "4": { "name": "storage.type.string.python" },
+        "5": { "name": "string.quoted.multi.python punctuation.definition.string.begin.python" }
+      },
+      "end": "(\\5)",
+      "endCaptures": {
+        "1": { "name": "string.quoted.multi.python punctuation.definition.string.end.python" }
+      },
+      "contentName": "meta.embedded.block.pyjinhx text.pyjinhx",
+      "patterns": [{ "include": "text.pyjinhx" }]
+    }
+  ]
+}
