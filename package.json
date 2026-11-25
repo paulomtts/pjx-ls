@@ -8,16 +8,9 @@
   "type": "module",
   "main": "./dist/extension.cjs",
   "icon": "icons/icon.png",
-  "engines": {
-    "vscode": "^1.80.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/paulomtts/pjx-ls.git"
-  },
-  "bugs": {
-    "url": "https://github.com/paulomtts/pjx-ls/issues"
-  },
+  "engines": { "vscode": "^1.80.0" },
+  "repository": { "type": "git", "url": "https://github.com/paulomtts/pjx-ls.git" },
+  "bugs": { "url": "https://github.com/paulomtts/pjx-ls/issues" },
   "homepage": "https://github.com/paulomtts/pjx-ls#readme",
   "keywords": [
     "pyjinhx",
@@ -43,16 +36,10 @@
     "onLanguage:jinja-html",
     "onLanguage:pyjinhx"
   ],
-  "categories": [
-    "Formatters",
-    "Programming Languages"
-  ],
+  "categories": ["Formatters", "Programming Languages"],
   "contributes": {
     "commands": [
-      {
-        "command": "pyjinhx.formatSlots",
-        "title": "PyJinHx: Format Slotted Component Tags"
-      }
+      { "command": "pyjinhx.formatSlots", "title": "PyJinHx: Format Slotted Component Tags" }
     ],
     "configuration": {
       "title": "PyJinHx",
@@ -69,21 +56,15 @@
         "textMateRules": [
           {
             "scope": "entity.name.tag.pyjinhx",
-            "settings": {
-              "foreground": "#4EC9B0"
-            }
+            "settings": { "foreground": "#4EC9B0" }
           },
           {
             "scope": "keyword.control.import.pyjinhx",
-            "settings": {
-              "foreground": "#C586C0"
-            }
+            "settings": { "foreground": "#C586C0" }
           },
           {
             "scope": "punctuation.bracket.pyjinhx",
-            "settings": {
-              "foreground": "#FFD700"
-            }
+            "settings": { "foreground": "#FFD700" }
           }
         ]
       }
@@ -91,13 +72,8 @@
     "languages": [
       {
         "id": "pyjinhx",
-        "extensions": [
-          ".pjx"
-        ],
-        "aliases": [
-          "PyJinHx",
-          "pjx"
-        ],
+        "extensions": [".pjx"],
+        "aliases": ["PyJinHx", "pjx"],
         "configuration": "./language-configuration.json",
         "icon": {
           "light": "./icons/file.png",
@@ -106,65 +82,12 @@
       }
     ],
     "grammars": [
-      {
-        "language": "pyjinhx",
-        "scopeName": "text.pyjinhx",
-        "path": "./syntaxes/pyjinhx.json"
-      },
-      {
-        "scopeName": "pyjinhx.injection",
-        "path": "./syntaxes/pyjinhx-injection.json",
-        "injectTo": [
-          "text.html.basic",
-          "text.html.jinja",
-          "text.pyjinhx"
-        ]
-      },
-      {
-        "scopeName": "pyjinhx.injection.tags",
-        "path": "./syntaxes/pyjinhx-injection-tags.json",
-        "injectTo": [
-          "text.html.basic",
-          "text.html.jinja",
-          "text.pyjinhx"
-        ]
-      },
-      {
-        "scopeName": "pyjinhx.injection.def-header",
-        "path": "./syntaxes/pyjinhx-injection-def-header.json",
-        "injectTo": [
-          "text.html.basic",
-          "text.html.jinja",
-          "text.pyjinhx"
-        ]
-      },
-      {
-        "scopeName": "pyjinhx.injection.def-header-in-comment",
-        "path": "./syntaxes/pyjinhx-injection-def-header-in-comment.json",
-        "injectTo": [
-          "text.html.basic",
-          "text.html.jinja",
-          "text.pyjinhx"
-        ]
-      },
-      {
-        "scopeName": "pyjinhx.injection.interpolation",
-        "path": "./syntaxes/pyjinhx-injection-interpolation.json",
-        "injectTo": [
-          "text.html.basic",
-          "text.html.jinja",
-          "text.pyjinhx"
-        ]
-      },
-      {
-        "scopeName": "pyjinhx.injection.interpolation-in-jinja",
-        "path": "./syntaxes/pyjinhx-injection-interpolation-in-jinja.json",
-        "injectTo": [
-          "text.html.basic",
-          "text.html.jinja",
-          "text.pyjinhx"
-        ]
-      }
+      { "language": "pyjinhx", "scopeName": "text.pyjinhx", "path": "./syntaxes/pyjinhx.json" },
+      { "scopeName": "pyjinhx.injection", "path": "./syntaxes/pyjinhx-injection.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
+      { "scopeName": "pyjinhx.injection.tags", "path": "./syntaxes/pyjinhx-injection-tags.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
+      { "scopeName": "pyjinhx.injection.def-header", "path": "./syntaxes/pyjinhx-injection-def-header.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
+      { "scopeName": "pyjinhx.injection.interpolation", "path": "./syntaxes/pyjinhx-injection-interpolation.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
+      { "scopeName": "pyjinhx.injection.interpolation-in-jinja", "path": "./syntaxes/pyjinhx-injection-interpolation-in-jinja.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] }
     ]
   },
   "devDependencies": {
