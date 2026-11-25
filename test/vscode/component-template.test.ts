@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { TEMPLATE_SELECTOR } from "../../src/config.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -8,11 +10,11 @@ import {
 const make = (over: Partial<TemplateDocumentLike> = {}): TemplateDocumentLike => ({
   uri: { scheme: "file", fsPath: "/proj/app/components/x/y.html" },
   fileName: "/proj/app/components/x/y.html",
-  languageId: "html",
+  languageId: "pyjinhx",
   ...over,
 });
 
-test("accepts a file-scheme html under /components/", () => {
+test("accepts a file-scheme .html under /components/ when its language is pyjinhx", () => {
   assert.equal(isComponentTemplate(make()), true);
 });
 
@@ -48,7 +50,7 @@ test("still requires /components/ for .html files", () => {
       make({
         fileName: "/home/me/scratch/page.html",
         uri: { scheme: "file", fsPath: "/home/me/scratch/page.html" },
-        languageId: "html",
+        languageId: "pyjinhx",
       }),
     ),
     false,
@@ -80,9 +82,10 @@ test("rejects wrong extension", () => {
   );
 });
 
-test("accepts the jinja and jinja-html language ids", () => {
-  assert.equal(isComponentTemplate(make({ languageId: "jinja" })), true);
-  assert.equal(isComponentTemplate(make({ languageId: "jinja-html" })), true);
+test("leaves plain html, jinja and jinja-html documents alone", () => {
+  for (const languageId of ["html", "jinja", "jinja-html"]) {
+    assert.equal(isComponentTemplate(make({ languageId })), false, languageId);
+  }
 });
 
 test("rejects unsupported languageId", () => {
@@ -96,4 +99,10 @@ test("requires the leading slash on /components/ (no substring trap)", () => {
     ),
     false,
   );
+});
+
+test("the formatter selector and activation events cover only the pyjinhx language", () => {
+  assert.deepEqual(TEMPLATE_SELECTOR, [{ language: "pyjinhx", scheme: "file" }]);
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+  assert.deepEqual(pkg.activationEvents, ["onLanguage:pyjinhx"]);
 });

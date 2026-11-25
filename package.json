@@ -31,9 +31,6 @@
     "package": "npm run check && npm run build && vsce package"
   },
   "activationEvents": [
-    "onLanguage:html",
-    "onLanguage:jinja",
-    "onLanguage:jinja-html",
     "onLanguage:pyjinhx"
   ],
   "categories": ["Formatters", "Programming Languages"],

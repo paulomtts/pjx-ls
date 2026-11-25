@@ -1,10 +1,7 @@
 import * as vscode from "vscode";
 import { formatPyjinhxTemplate } from "../core/format.ts";
 import { isComponentTemplate } from "./component-template.ts";
-import { FORMAT_SLOTS_COMMAND } from "../config.ts";
-
-// Only .pjx: claiming plain html would compete with the user's HTML formatter.
-const TEMPLATE_SELECTOR: vscode.DocumentSelector = [{ language: "pyjinhx", scheme: "file" }];
+import { FORMAT_SLOTS_COMMAND, TEMPLATE_SELECTOR } from "../config.ts";
 
 function fullDocumentEdit(document: vscode.TextDocument, formattedText: string): vscode.TextEdit {
   const lastLine = document.lineAt(document.lineCount - 1);

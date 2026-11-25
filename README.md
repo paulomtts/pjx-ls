@@ -4,7 +4,8 @@ Syntax highlighting and an opinionated formatter for the
 [PyJinHx](https://github.com/paulomtts/pyjinhx) Python component framework — Jinja +
 HTML templates with PascalCase components, slots, and `{#def … #}` signature headers.
 
-Works on `.pjx` files and on PyJinHx component templates written as `.html`/Jinja.
+Works on `.pjx` files. Plain `.html`/Jinja files are never touched by the formatter
+or its command.
 
 ## Features
 
@@ -42,8 +43,8 @@ The extension is the only formatter registered for `.pjx`, so VS Code uses it
 automatically; add `"editor.defaultFormatter": "paulomtts.pyjinhx-syntax-support"` to
 the same block if you have other formatters installed.
 
-`.pjx` files are formatted anywhere. `.html`/Jinja templates are formatted only when
-their path contains `/components/`, to avoid reformatting unrelated HTML.
+`.pjx` files are formatted anywhere. The extension does not register for the `html`,
+`jinja` or `jinja-html` languages, so it never competes with their formatters.
 
 ## Commands
 
