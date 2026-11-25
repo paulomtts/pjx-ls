@@ -73,3 +73,8 @@ test("the spaced {# def form follows pyjinhx's LEGACY_HEADER_RE", async () => {
   assert.deepEqual(await blocksIn("<p></p>\n{# def a: int #}"), []);
   assert.deepEqual(await blocksIn("\n<p></p>\n{# def a: int #}"), []);
 });
+
+test("a legacy {# def inside a mid-file HTML comment is plain comment text", async () => {
+  assert.deepEqual(await blocksIn("<p>start</p>\n<!-- TODO: {# def a: int #} was the old header -->"), []);
+  assert.deepEqual(await blocksIn("<!-- {# def a: int #} -->"), []);
+});

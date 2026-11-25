@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { blocksOf } from "./blocks.ts";
 import { assertSnapshot, dumpTokens } from "./snapshot.ts";
 import { scopesOf, tokenizePjx } from "./tokenize.ts";
 
@@ -47,4 +48,10 @@ test("{% raw %} and {% endraw %} are scoped like the Jinja grammar scopes them",
   for (const token of delimiters) {
     assert.ok(token.scopes.includes("entity.other.jinja.delimiter.tag"), token.text);
   }
+});
+
+test("raw regions accept the + modifiers and keep blocks out", async () => {
+  const tokens = await tokenizePjx("{%+ raw %}\n{#css\n#}\n{%+ endraw +%}\n<p></p>");
+  assert.deepEqual(blocksOf(tokens), []);
+  assert.ok(scopesOf(tokens, "{#css").includes("meta.scope.jinja.raw"));
 });
