@@ -39,3 +39,24 @@ test("the blank line after a def header is idempotent (not doubled)", () => {
   const formatted = `{#def x: str #}\n\n<div class="x">\n  <span>hi</span>\n</div>\n`;
   assert.equal(formatPyjinhxTemplate(formatted), formatted);
 });
+
+test("no whitespace is introduced between inline siblings", () => {
+  for (const input of [
+    "<p>a<!-- c -->b</p>",
+    "<p>x{{ a }}y</p>",
+    "<p>a<b>c</b>d</p>",
+  ]) {
+    assert.equal(formatPyjinhxTemplate(input), `${input}\n`);
+  }
+  assert.equal(
+    formatPyjinhxTemplate("<p>Hello <b>world</b>!</p>"),
+    "<p>Hello\n  <b>world</b>!</p>\n",
+  );
+});
+
+test("whitespace between inline siblings is preserved as a break", () => {
+  assert.equal(
+    formatPyjinhxTemplate("<p>a <!-- c --> b</p>"),
+    "<p>a\n  <!-- c -->\n  b</p>\n",
+  );
+});

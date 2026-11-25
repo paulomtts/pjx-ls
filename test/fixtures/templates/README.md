@@ -22,7 +22,7 @@ work to do; the goldens show the result.
 | 10 | `slot-nested-markup` | A slot value with multiple nested fragments |
 | 11 | `quote-safety` | Single quotes + `{{ }}` inside double-quoted attrs survive intact |
 | 12 | `realistic-component` | Capstone: def header + slots + components + nested Jinja |
-| 13 | `known-limitation-inline-whitespace` | **Intentionally** demonstrates a preserved quirk |
+| 13 | `inline-whitespace-preserved` | Spacing between text and interpolations is kept |
 
 ## Notes on behavior
 

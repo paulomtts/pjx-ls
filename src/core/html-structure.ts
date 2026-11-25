@@ -12,6 +12,8 @@ export interface Token {
   type: TokenType;
   value: string;
   name?: string;
+  /** Whether whitespace (or the start of the text) precedes this token in the source. */
+  spaceBefore: boolean;
 }
 
 interface Parsed {
@@ -156,6 +158,8 @@ function tokenize(text: string): { tokens: Token[]; complete: boolean } {
   const tokens: Token[] = [];
   let complete = true;
   let index = 0;
+  const add = (start: number, token: Omit<Token, "spaceBefore">) =>
+    tokens.push({ ...token, spaceBefore: start === 0 || /\s/.test(text[start - 1]) });
 
   while (index < text.length) {
     const character = text[index];
@@ -166,7 +170,7 @@ function tokenize(text: string): { tokens: Token[]; complete: boolean } {
       break;
     }
     if (opaque) {
-      tokens.push({ type: "opaque", value: opaque.value });
+      add(index, { type: "opaque", value: opaque.value });
       index = opaque.endIndex + 1;
       continue;
     }
@@ -176,7 +180,7 @@ function tokenize(text: string): { tokens: Token[]; complete: boolean } {
         complete = false;
         break;
       }
-      tokens.push({ type: "jinja", value: parsed.value });
+      add(index, { type: "jinja", value: parsed.value });
       index = parsed.endIndex + 1;
       continue;
     }
@@ -186,7 +190,7 @@ function tokenize(text: string): { tokens: Token[]; complete: boolean } {
         complete = false;
         break;
       }
-      tokens.push({ type: "jinja", value: parsed.value });
+      add(index, { type: "jinja", value: parsed.value });
       index = parsed.endIndex + 1;
       continue;
     }
@@ -196,7 +200,7 @@ function tokenize(text: string): { tokens: Token[]; complete: boolean } {
         complete = false;
         break;
       }
-      tokens.push({ type: "jinja_expr", value: parsed.value });
+      add(index, { type: "jinja_expr", value: parsed.value });
       index = parsed.endIndex + 1;
       continue;
     }
@@ -208,11 +212,11 @@ function tokenize(text: string): { tokens: Token[]; complete: boolean } {
       }
       const tagValue = parsed.value.trim();
       if (tagValue.startsWith("</")) {
-        tokens.push({ type: "close", value: tagValue, name: tagName(tagValue) });
+        add(index, { type: "close", value: tagValue, name: tagName(tagValue) });
       } else if (tagValue.endsWith("/>")) {
-        tokens.push({ type: "self_close", value: tagValue, name: tagName(tagValue) });
+        add(index, { type: "self_close", value: tagValue, name: tagName(tagValue) });
       } else {
-        tokens.push({ type: "open", value: tagValue, name: tagName(tagValue) });
+        add(index, { type: "open", value: tagValue, name: tagName(tagValue) });
       }
       index = parsed.endIndex + 1;
       continue;
@@ -237,7 +241,7 @@ function tokenize(text: string): { tokens: Token[]; complete: boolean } {
     if (index > textStart) {
       const textValue = text.slice(textStart, index).trim();
       if (textValue.length > 0) {
-        tokens.push({ type: "text", value: textValue });
+        add(textStart, { type: "text", value: textValue });
       }
       continue;
     }
@@ -375,7 +379,7 @@ function tryInlineElement(tokens: Token[], startIndex: number): { endIndex: numb
       return { endIndex: index, value: `${openToken.value}${inner}${token.value}` };
     }
     if (token.type === "text" || token.type === "jinja_expr") {
-      inner += token.value;
+      inner += (token.spaceBefore && inner ? " " : "") + token.value;
       continue;
     }
     return null;
@@ -391,13 +395,33 @@ export function formatHtmlStructure(text: string): string {
 
   const lines: string[] = [];
   let depth = 0;
+  let glued = false;
+
+  // A token with no whitespace before it joins the previous line when text is
+  // involved (or the previous token was itself joined): a new line there would
+  // add a space to the rendered output.
+  const emit = (index: number, line: string): void => {
+    const token = tokens[index];
+    const isTextual = (candidate: Token | undefined) =>
+      candidate?.type === "text" || candidate?.type === "jinja_expr";
+    glued =
+      !token.spaceBefore &&
+      lines.length > 0 &&
+      lines[lines.length - 1] !== "" &&
+      (isTextual(token) || isTextual(tokens[index - 1]) || glued);
+    if (glued) {
+      lines[lines.length - 1] += line.trimStart();
+    } else {
+      lines.push(line);
+    }
+  };
 
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index];
     const baseIndent = INDENT.repeat(depth);
 
     if (token.type === "opaque") {
-      lines.push(baseIndent + token.value);
+      emit(index, baseIndent + token.value);
       continue;
     }
 
@@ -405,21 +429,21 @@ export function formatHtmlStructure(text: string): string {
       const trimmed = token.value.trim();
       if (JINJA_BLOCK_CLOSE.test(trimmed)) {
         depth = Math.max(0, depth - 1);
-        lines.push(INDENT.repeat(depth) + trimmed);
+        emit(index, INDENT.repeat(depth) + trimmed);
         continue;
       }
       if (JINJA_BLOCK_MID.test(trimmed)) {
         depth = Math.max(0, depth - 1);
-        lines.push(INDENT.repeat(depth) + trimmed);
+        emit(index, INDENT.repeat(depth) + trimmed);
         depth += 1;
         continue;
       }
       if (JINJA_BLOCK_OPEN.test(trimmed)) {
-        lines.push(INDENT.repeat(depth) + trimmed);
+        emit(index, INDENT.repeat(depth) + trimmed);
         depth += 1;
         continue;
       }
-      lines.push(INDENT.repeat(depth) + trimmed);
+      emit(index, INDENT.repeat(depth) + trimmed);
       // A {#def … #} header is always separated from the rest of the file by a
       // blank line (a trailing one is removed by the final trimEnd()).
       if (DEF_HEADER.test(trimmed)) {
@@ -429,22 +453,22 @@ export function formatHtmlStructure(text: string): string {
     }
 
     if (token.type === "jinja_expr" || token.type === "text") {
-      lines.push(baseIndent + token.value.trim());
+      emit(index, baseIndent + token.value.trim());
       continue;
     }
 
     if (token.type === "close") {
       depth = Math.max(0, depth - 1);
-      lines.push(INDENT.repeat(depth) + token.value.trim());
+      emit(index, INDENT.repeat(depth) + token.value.trim());
       continue;
     }
 
     if (token.type === "self_close") {
       const parsed = parseTag(token.value);
       if (tagHasSlot(parsed)) {
-        lines.push(renderExplodedTag(parsed, baseIndent));
+        emit(index, renderExplodedTag(parsed, baseIndent));
       } else {
-        lines.push(baseIndent + token.value.trim());
+        emit(index, baseIndent + token.value.trim());
       }
       continue;
     }
@@ -452,14 +476,14 @@ export function formatHtmlStructure(text: string): string {
     if (token.type === "open") {
       const parsed = parseTag(token.value);
       if (tagHasSlot(parsed)) {
-        lines.push(renderExplodedTag(parsed, baseIndent));
+        emit(index, renderExplodedTag(parsed, baseIndent));
         depth += 1;
         continue;
       }
 
       const inlineElement = tryInlineElement(tokens, index);
       if (inlineElement) {
-        lines.push(baseIndent + inlineElement.value.trim());
+        emit(index, baseIndent + inlineElement.value.trim());
         index = inlineElement.endIndex;
         continue;
       }
@@ -477,12 +501,12 @@ export function formatHtmlStructure(text: string): string {
         const parts = tagText.split("\n");
         const firstLine = baseIndent + parts[0].trimStart();
         const rest = parts.slice(1).join("\n");
-        lines.push(rest ? `${firstLine}\n${rest}` : firstLine);
+        emit(index, rest ? `${firstLine}\n${rest}` : firstLine);
         if (trailingBracket) {
           lines.push(baseIndent + trailingBracket);
         }
       } else {
-        lines.push(baseIndent + tagText + trailingBracket);
+        emit(index, baseIndent + tagText + trailingBracket);
       }
       depth += 1;
     }

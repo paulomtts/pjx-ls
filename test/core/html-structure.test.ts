@@ -9,10 +9,10 @@ test("nested block elements indent 2 spaces per level", () => {
   );
 });
 
-test("inline element collapses text+expr children WITHOUT separators (known quirk)", () => {
+test("inline element keeps the source spacing between text and expr children", () => {
   assert.equal(
     formatHtmlStructure("<p>Hello {{ name }} world</p>"),
-    "<p>Hello{{ name }}world</p>\n",
+    "<p>Hello {{ name }} world</p>\n",
   );
 });
 
@@ -34,17 +34,17 @@ test("single-line open tag with element children keeps '>' attached", () => {
   );
 });
 
-test("mixed text + element children go block", () => {
+test("text glued to an element stays on one line", () => {
   assert.equal(
     formatHtmlStructure("<div>some leading text<span>child element here</span></div>"),
-    "<div>\n  some leading text\n  <span>child element here</span>\n</div>\n",
+    "<div>some leading text<span>child element here</span></div>\n",
   );
 });
 
 test("jinja if block nests and dedents", () => {
   assert.equal(
     formatHtmlStructure("<div>{% if x %}{{ a }}{% endif %}</div>"),
-    "<div>\n  {% if x %}\n    {{ a }}\n  {% endif %}\n</div>\n",
+    "<div>\n  {% if x %}{{ a }}{% endif %}</div>\n",
   );
 });
 
