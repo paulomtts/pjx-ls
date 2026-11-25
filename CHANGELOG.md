@@ -25,6 +25,18 @@ adheres to [Semantic Versioning](https://semver.org/).
   only. The old `.html` and Jinja files are no longer touched.
 - Slot values are only recognised on component tags.
 
+### Fixed
+- Python templates end at their closing quotes (a half-typed tag no longer colours the
+  rest of the file) and only a class-body `template` (4 spaces or a tab) is matched.
+- Jinja and `{#css`/`{#js`/`{#python`/`{#def` blocks inside HTML, JS and CSS comments
+  are still recognised, since they render; a mid-file `{# def` is plain comment text.
+- All-caps tags (`<BR>`, `<DIV>`) are HTML, as in pyjinhx; a value after a
+  Jinja-built attribute name (`data-{{ k }}="v"`) is a normal value.
+- The spaced `{# def` header may follow blank lines, whitespace and one empty `{# #}`.
+- `{% raw %}`/`{% endraw %}` delimiters are scoped; `{#` no longer auto-closes.
+- The drift check compares against the ref recorded in `SOURCE.json`; the sync script
+  refuses a dirty checkout.
+
 ### Added
 - Jinja inside tags, attribute values, `<script>` and `<style>`, and attribute names
   glued to Jinja (`big{% endif %}`); never inside `{#css`/`{#js`/`{#python` bodies.
