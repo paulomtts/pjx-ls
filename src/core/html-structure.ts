@@ -114,7 +114,7 @@ function readJinja(text: string, startIndex: number, marker: string, endMarker: 
   };
 }
 
-const RAW_TEXT_ELEMENT = /^<(script|style|textarea|pre)\b/i;
+const RAW_TEXT_ELEMENT = /^<(script|style|textarea|pre)(?=[\s/>])/i;
 
 /**
  * Read a region whose contents must reach the output untouched: HTML comments,

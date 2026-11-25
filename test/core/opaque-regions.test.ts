@@ -143,3 +143,14 @@ test("%} and }} inside a quoted jinja string do not end the tag", () => {
     '<div>{{ "a\\"}}" }}</div>\n',
   );
 });
+
+test("a pre-* or script-* custom element is not a raw text element", () => {
+  assert.equal(
+    formatPyjinhxTemplate("<div>\n<pre-view>\n<p>x</p>\n</pre-view>\n</div>"),
+    "<div>\n  <pre-view>\n    <p>x</p>\n  </pre-view>\n</div>\n",
+  );
+  assert.equal(
+    formatPyjinhxTemplate('<div>\n<script-loader src="x"></script-loader>\n<p>x</p>\n</div>'),
+    '<div>\n  <script-loader src="x"></script-loader>\n  <p>x</p>\n</div>\n',
+  );
+});
