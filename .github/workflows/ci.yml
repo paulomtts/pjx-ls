@@ -5,9 +5,12 @@ on:
     branches:
       - master
   pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
 
 jobs:
   build:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
 
     steps:
@@ -32,3 +35,30 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # Separate from `build` so a red run names its cause: pyjinhx changed its
+  # block grammar or corpus. Fix: node scripts/sync-pyjinhx.mjs <checkout>,
+  # read the corpus diff, adjust the grammar, commit.
+  pyjinhx-drift:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Check out pyjinhx
+        uses: actions/checkout@v4
+        with:
+          repository: paulomtts/pyjinhx
+          # The PR #1075 branch until it merges, then master; after a release
+          # that carries the corpus, the latest release tag.
+          ref: feat/fewer-files
+          path: pyjinhx
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Compare the vendored block grammar and corpus
+        run: node scripts/sync-pyjinhx.mjs --check pyjinhx
