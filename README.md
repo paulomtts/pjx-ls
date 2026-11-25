@@ -10,14 +10,29 @@ or its command.
 ## Features
 
 ### Highlighting
-- **Component tags** — PascalCase tags like `<PJXButton/>` are colored distinctly
-  from plain HTML elements, wherever they appear (including inside slots).
-- **`{#def … #}` headers** — parameters, types, strings, and literal brackets are
-  colored Python-style; the header markers use the import color.
-- **Interpolation** — `{{ … }}` is colored like a Python f-string interpolation, in
-  body text, attributes, and slot values alike.
-- **Slots** — a markup-valued attribute is highlighted as embedded PyJinHx (tags,
-  attributes, text) with the wrapping quotes colored as strings.
+Each region is tokenized by the grammar of its own language, so your theme colours it
+the way it colours that language everywhere else.
+
+| Region | Grammar |
+|---|---|
+| Markup and attributes | VS Code's HTML grammar |
+| `{{ … }}`, `{% … %}`, `{% raw %}` | the bundled Jinja grammar (`source.pyjinhx.jinja`) |
+| `{#css` … `#}` and `<style>` | CSS |
+| `{#js` … `#}` and `<script>` | JavaScript |
+| `{#def` … `#}` and `{#python` … `#}` | Python (prop names in `{#def` are `variable.parameter`) |
+| `template = """…"""` in a `.py` file | PyJinHx (blocks, component tags, Jinja) |
+
+- **Blocks** follow Jinja: the first `#}` ends a block, as it ends any comment. The
+  keyword touches `{#` (`{# css` and `{#-css` are plain comments), `{#css` and `{#js`
+  end their line, and `{#python` opens in column 0.
+- **Component tags** — PascalCase tags get `entity.name.tag.component` plus
+  `support.class.component`, the scopes themes already colour for JSX components.
+  A markup-valued attribute (a slot) is highlighted as embedded PyJinHx.
+- **Jinja everywhere it renders** — inside tags, attribute values, `<script>` and
+  `<style>`, but never inside a `{#css`/`{#js`/`{#python` body or a comment.
+- The extension no longer ships colour overrides; colours come from your theme.
+- The block grammar and test corpus are vendored from PyJinHx
+  (`scripts/sync-pyjinhx.mjs`) and CI fails when they drift.
 
 ### Formatting
 - Re-indents the HTML/Jinja structure (two-space) and **explodes** slotted component
@@ -62,8 +77,8 @@ the same block if you have other formatters installed.
 
 ## Requirements
 
-VS Code (or Cursor) `^1.80.0`. Jinja block highlighting is enhanced if a Jinja
-grammar (e.g. *Better Jinja*) is installed, but is not required.
+VS Code (or Cursor) `^1.80.0`. No other extension is needed: the Jinja grammar is
+bundled (see `THIRD_PARTY_NOTICES.md`).
 
 ## Development
 
@@ -73,6 +88,8 @@ npm run check    # type-check (tsc --noEmit)
 npm test         # unit tests (node --test; requires Node >= 23.6)
 npm run build    # bundle to dist/extension.cjs
 npm run package  # produce a .vsix
+node scripts/sync-pyjinhx.mjs [--check] [<pyjinhx checkout>]  # vendor pyjinhx's block grammar and corpus
+UPDATE_SNAPSHOTS=1 npm test  # rewrite the grammar goldens in test/grammar/snapshots
 ```
 
 ## License
