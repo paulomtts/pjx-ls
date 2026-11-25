@@ -25,27 +25,25 @@ Works on `.pjx` files and on PyJinHx component templates written as `.html`/Jinj
 - Always keeps a blank line between a `{#def … #}` header and the rest of the file.
 - **Idempotent** — running it again changes nothing.
 - Available as **Format Document**, the **PyJinHx: Format Slotted Component Tags**
-  command, and **format-on-save**.
+  command, and **format-on-save** (opt-in through VS Code's own setting, see below).
 
 ## Setup
 
-Install from the Marketplace, then to format `.pjx` on save add to your settings:
+Install from the Marketplace. Formatting on save is off by default; enable it for
+`.pjx` only, in your settings:
 
 ```jsonc
 "[pyjinhx]": {
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "paulomtts.pyjinhx-syntax-support"
+  "editor.formatOnSave": true
 }
 ```
 
+The extension is the only formatter registered for `.pjx`, so VS Code uses it
+automatically; add `"editor.defaultFormatter": "paulomtts.pyjinhx-syntax-support"` to
+the same block if you have other formatters installed.
+
 `.pjx` files are formatted anywhere. `.html`/Jinja templates are formatted only when
 their path contains `/components/`, to avoid reformatting unrelated HTML.
-
-## Settings
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `pyjinhx.formatSlotsOnSave` | `false` | Format `.pjx` templates on save (opt-in). |
 
 ## Commands
 

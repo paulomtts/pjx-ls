@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { formatPyjinhxTemplate } from "../core/format.ts";
 import { isComponentTemplate } from "./component-template.ts";
-import { CONFIG_SECTION, FORMAT_ON_SAVE_KEY, FORMAT_SLOTS_COMMAND } from "../config.ts";
+import { FORMAT_SLOTS_COMMAND } from "../config.ts";
 
 // Only .pjx: claiming plain html would compete with the user's HTML formatter.
 const TEMPLATE_SELECTOR: vscode.DocumentSelector = [{ language: "pyjinhx", scheme: "file" }];
@@ -21,31 +21,13 @@ function nextFormattedText(document: vscode.TextDocument): string | null {
   return formatted === document.getText() ? null : formatted;
 }
 
-export function registerFormatting(
-  context: vscode.ExtensionContext,
-  output: vscode.OutputChannel,
-): void {
+export function registerFormatting(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(TEMPLATE_SELECTOR, {
       provideDocumentFormattingEdits(document) {
         const formatted = nextFormattedText(document);
         return formatted === null ? [] : [fullDocumentEdit(document, formatted)];
       },
-    }),
-  );
-
-  context.subscriptions.push(
-    vscode.workspace.onWillSaveTextDocument((event) => {
-      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-      if (!config.get(FORMAT_ON_SAVE_KEY, false) || event.document.languageId !== "pyjinhx") {
-        return;
-      }
-      const formatted = nextFormattedText(event.document);
-      if (formatted === null) {
-        return;
-      }
-      output.appendLine(`Formatting slots before save: ${event.document.uri.fsPath}`);
-      event.waitUntil(Promise.resolve([fullDocumentEdit(event.document, formatted)]));
     }),
   );
 

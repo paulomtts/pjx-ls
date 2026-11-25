@@ -41,16 +41,6 @@
     "commands": [
       { "command": "pyjinhx.formatSlots", "title": "PyJinHx: Format Slotted Component Tags" }
     ],
-    "configuration": {
-      "title": "PyJinHx",
-      "properties": {
-        "pyjinhx.formatSlotsOnSave": {
-          "type": "boolean",
-          "default": false,
-          "description": "Format .pjx templates on save (re-indent and expand slotted component tags). Off by default."
-        }
-      }
-    },
     "configurationDefaults": {
       "editor.tokenColorCustomizations": {
         "textMateRules": [
