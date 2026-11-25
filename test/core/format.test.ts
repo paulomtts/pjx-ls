@@ -145,3 +145,10 @@ test("a set block whose filter argument contains = is still a block", () => {
     '<div>\n  {% set x | replace("a", "=") %}\n    <b>y</b>\n  {% endset %}\n</div>\n',
   );
 });
+
+test("a slotted tag glued to text is not exploded", () => {
+  assert.equal(
+    formatPyjinhxTemplate('<p>Hi<Card body="<b>x</b>" />!</p>'),
+    '<p>\n  Hi<Card body="<b>x</b>" />!\n</p>\n',
+  );
+});

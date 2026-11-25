@@ -426,6 +426,18 @@ function isBlockTag(token: Token | undefined): boolean {
   return isTag && BLOCK_ELEMENTS.has(token.name?.toLowerCase() ?? "");
 }
 
+const isTextual = (token: Token | undefined) => token?.type === "text" || token?.type === "jinja_expr";
+
+/**
+ * Exploding a tag breaks the line before it, and after it when it is self-closing
+ * (an open tag's content stays glued to its `>`): that shows next to glued text.
+ */
+function touchesText(tokens: Token[], index: number): boolean {
+  const next = tokens[index + 1];
+  const after = tokens[index].type === "self_close" && next && !next.spaceBefore && isTextual(next);
+  return (!tokens[index].spaceBefore && isTextual(tokens[index - 1])) || Boolean(after);
+}
+
 /** True when every tag and Jinja block opens and closes in matching order. */
 function isBalanced(tokens: Token[]): boolean {
   const stack: string[] = [];
@@ -514,7 +526,7 @@ function formatLf(text: string): string {
 
     if (token.type === "self_close") {
       const parsed = parseTag(token.value);
-      if (tagHasSlot(parsed)) {
+      if (tagHasSlot(parsed) && !touchesText(tokens, index)) {
         emit(index, renderExplodedTag(parsed, baseIndent));
       } else {
         emit(index, baseIndent + token.value.trim());
@@ -524,7 +536,7 @@ function formatLf(text: string): string {
 
     if (token.type === "open") {
       const parsed = parseTag(token.value);
-      if (tagHasSlot(parsed)) {
+      if (tagHasSlot(parsed) && !touchesText(tokens, index)) {
         emit(index, renderExplodedTag(parsed, baseIndent));
         depth += 1;
         continue;
