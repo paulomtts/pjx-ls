@@ -87,3 +87,9 @@ test("an unterminated construct returns the text unchanged", () => {
   const input = "<div>\n<p>x</p>\n{# never closed\n<span>";
   assert.equal(formatPyjinhxTemplate(input), input);
 });
+
+test("an unterminated script or comment returns the text unchanged", () => {
+  for (const input of ["<div>\n<script>\nif (a < b) {\n</div>", "<div>\n<!-- open\n<p>x</p>"]) {
+    assert.equal(formatPyjinhxTemplate(input), input);
+  }
+});

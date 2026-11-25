@@ -91,7 +91,7 @@ test("macro block raw open keywords each nest depth +1", () => {
   );
   assert.equal(
     formatHtmlStructure("{% raw %}<span>x</span>{% endraw %}"),
-    "{% raw %}\n  <span>x</span>\n{% endraw %}\n",
+    "{% raw %}<span>x</span>{% endraw %}\n",
   );
 });
 

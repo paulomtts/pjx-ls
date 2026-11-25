@@ -1,12 +1,12 @@
 import { INDENT } from "../config.ts";
 import { isHtmlSlotValue, readDoubleQuotedContent } from "./slots.ts";
 
-const JINJA_BLOCK_OPEN = /^\{%\s*(?:if|for|macro|block|filter|raw)\b/;
+const JINJA_BLOCK_OPEN = /^\{%\s*(?:if|for|macro|block|filter)\b/;
 const JINJA_BLOCK_MID = /^\{%\s*(?:elif|else)\b/;
-const JINJA_BLOCK_CLOSE = /^\{%\s*end(?:if|for|macro|block|filter|raw)\b/;
+const JINJA_BLOCK_CLOSE = /^\{%\s*end(?:if|for|macro|block|filter)\b/;
 const DEF_HEADER = /^\{#-?\s*def\b/;
 
-type TokenType = "jinja" | "jinja_expr" | "open" | "close" | "self_close" | "text";
+type TokenType = "opaque" | "jinja" | "jinja_expr" | "open" | "close" | "self_close" | "text";
 
 export interface Token {
   type: TokenType;
@@ -92,42 +92,98 @@ function readJinja(text: string, startIndex: number, marker: string, endMarker: 
   };
 }
 
+const RAW_TEXT_ELEMENT = /^<(script|style|textarea|pre)\b/i;
+
+/**
+ * Read a region whose contents must reach the output untouched: HTML comments,
+ * `<!…>` declarations, `{% raw %}` blocks and script/style/textarea/pre elements.
+ * Returns undefined when `startIndex` begins no such region, null when it never
+ * terminates.
+ */
+function readOpaque(text: string, startIndex: number): Parsed | null | undefined {
+  const rest = text.slice(startIndex);
+  let closing: RegExp;
+  if (rest.startsWith("<!--")) {
+    closing = /-->/;
+  } else if (rest.startsWith("<!")) {
+    closing = />/;
+  } else if (/^\{%-?\s*raw\s*-?%\}/.test(rest)) {
+    closing = /\{%-?\s*endraw\s*-?%\}/;
+  } else {
+    const element = RAW_TEXT_ELEMENT.exec(rest);
+    if (!element) return undefined;
+    closing = new RegExp(`</${element[1]}\\s*>`, "i");
+  }
+  const close = closing.exec(rest.slice(1));
+  if (!close) return null;
+  const end = startIndex + 1 + close.index + close[0].length;
+  return { value: text.slice(startIndex, end), endIndex: end - 1 };
+}
+
 function tagName(tagValue: string): string {
   const match = tagValue.match(/^<\/?\s*([A-Za-z][A-Za-z0-9]*)/);
   return match ? match[1] : "";
 }
 
 export function tokenizeHtmlTemplate(text: string): Token[] {
+  return tokenize(text).tokens;
+}
+
+/** `complete` is false when an unterminated construct cut the scan short. */
+function tokenize(text: string): { tokens: Token[]; complete: boolean } {
   const tokens: Token[] = [];
+  let complete = true;
   let index = 0;
 
   while (index < text.length) {
     const character = text[index];
 
+    const opaque = character === "<" || character === "{" ? readOpaque(text, index) : undefined;
+    if (opaque === null) {
+      complete = false;
+      break;
+    }
+    if (opaque) {
+      tokens.push({ type: "opaque", value: opaque.value });
+      index = opaque.endIndex + 1;
+      continue;
+    }
     if (character === "{" && text[index + 1] === "#") {
       const parsed = readJinja(text, index, "{#", "#}");
-      if (!parsed) break;
+      if (!parsed) {
+        complete = false;
+        break;
+      }
       tokens.push({ type: "jinja", value: parsed.value });
       index = parsed.endIndex + 1;
       continue;
     }
     if (character === "{" && text[index + 1] === "%") {
       const parsed = readJinja(text, index, "{%", "%}");
-      if (!parsed) break;
+      if (!parsed) {
+        complete = false;
+        break;
+      }
       tokens.push({ type: "jinja", value: parsed.value });
       index = parsed.endIndex + 1;
       continue;
     }
     if (character === "{" && text[index + 1] === "{") {
       const parsed = readJinja(text, index, "{{", "}}");
-      if (!parsed) break;
+      if (!parsed) {
+        complete = false;
+        break;
+      }
       tokens.push({ type: "jinja_expr", value: parsed.value });
       index = parsed.endIndex + 1;
       continue;
     }
     if (character === "<") {
       const parsed = readTag(text, index);
-      if (!parsed) break;
+      if (!parsed) {
+        complete = false;
+        break;
+      }
       const tagValue = parsed.value.trim();
       if (tagValue.startsWith("</")) {
         tokens.push({ type: "close", value: tagValue, name: tagName(tagValue) });
@@ -166,7 +222,7 @@ export function tokenizeHtmlTemplate(text: string): Token[] {
     index += 1;
   }
 
-  return tokens;
+  return { tokens, complete };
 }
 
 // ── Tag attribute parsing & slot-aware rendering ───────────────────────────
@@ -270,7 +326,7 @@ function hasElementChildren(tokens: Token[], startIndex: number): boolean {
       depth += jinjaDepthDelta(token.value);
       continue;
     }
-    if (token.type === "open") return true;
+    if (token.type === "open" || token.type === "opaque") return true;
     if (token.type === "self_close") continue;
     if (token.type === "close") return false;
   }
@@ -297,8 +353,8 @@ function tryInlineElement(tokens: Token[], startIndex: number): { endIndex: numb
 }
 
 export function formatHtmlStructure(text: string): string {
-  const tokens = tokenizeHtmlTemplate(text);
-  if (tokens.length === 0) {
+  const { tokens, complete } = tokenize(text);
+  if (tokens.length === 0 || !complete) {
     return text;
   }
 
@@ -308,6 +364,11 @@ export function formatHtmlStructure(text: string): string {
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index];
     const baseIndent = INDENT.repeat(depth);
+
+    if (token.type === "opaque") {
+      lines.push(baseIndent + token.value);
+      continue;
+    }
 
     if (token.type === "jinja") {
       const trimmed = token.value.trim();
