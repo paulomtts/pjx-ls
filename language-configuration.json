@@ -10,7 +10,6 @@
   ],
   "colorizedBracketPairs": [],
   "autoClosingPairs": [
-    { "open": "{", "close": "}" },
     { "open": "{{", "close": " }}" },
     { "open": "{%", "close": " %}" },
     { "open": "<!--", "close": " -->", "notIn": ["comment", "string"] },
@@ -30,8 +29,8 @@
   ],
   "folding": {
     "markers": {
-      "start": "^\\s*(?:\\{%-?\\s*(?:block|filter|for|if|macro|call|raw|with)\\b|<(?!br\\b|hr\\b|img\\b|input\\b|meta\\b|link\\b)[A-Za-z][\\w:.-]*(?:\\s[^>]*)?>\\s*$)",
-      "end": "^\\s*(?:\\{%-?\\s*end(?:block|filter|for|if|macro|call|raw|with)\\b|</[A-Za-z][\\w:.-]*>)"
+      "start": "^\\s*\\{#(?:css|js|python|def)\\s*$",
+      "end": "^\\s*#\\}\\s*$"
     }
   }
 }

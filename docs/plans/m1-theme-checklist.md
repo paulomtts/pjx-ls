@@ -26,6 +26,6 @@ Editor behaviour (Cursor):
 
 - [ ] Inside a `{#css` body, "Toggle Line Comment" writes `/* */`; in `{#js`, `//`;
       in `{#python` and `{#def`, `#`.
-- [ ] In markup, `div.a` + Tab expands (Emmet).
-- [ ] Typing `{{`, `{%` and `{#` auto-closes with ` }}`, ` %}` and ` #}`.
-- [ ] Folding arrows appear for `<div>` ... `</div>` and `{% if %}` ... `{% endif %}`.
+- [ ] With `"emmet.includeLanguages": {"pyjinhx": "html"}` set, `div.a` + Tab expands in markup (Emmet is off by default).
+- [ ] Typing `{{`, `{%` auto-closes with ` }}`, ` %}`; typing `{#css` leaves no stray `}`.
+- [ ] Folding: indented tags and `{% if %}` bodies fold by indentation; `{#css` ... `#}` folds as a block.

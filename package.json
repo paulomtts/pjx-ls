@@ -38,9 +38,6 @@
     "commands": [
       { "command": "pyjinhx.formatSlots", "title": "PyJinHx: Format Slotted Component Tags" }
     ],
-    "configurationDefaults": {
-      "emmet.includeLanguages": { "pyjinhx": "html" }
-    },
     "languages": [
       {
         "id": "pyjinhx",

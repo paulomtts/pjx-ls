@@ -65,13 +65,21 @@ the same block if you have other formatters installed.
 
 ## Emmet
 
-Emmet is enabled for `.pjx` files (`"emmet.includeLanguages": {"pyjinhx": "html"}` is a
-default of this extension), so `div.a` + Tab expands. To turn it off, set
-`emmet.includeLanguages` in your own settings without a `pyjinhx` key. A user-level
-`emmet.includeLanguages` replaces the default as a whole, so keep
-`"pyjinhx": "html"` in it if you add other languages.
+Emmet is not enabled for `.pjx` by default: it cannot tell markup from a `{{ }}`
+expression or a `{#js`/`{#python` body, so it would offer abbreviations (`a.b`,
+`os.path`) inside code. To use it in markup anyway, add this to your settings:
+
+```jsonc
+"emmet.includeLanguages": { "pyjinhx": "html" }
+```
 
 ## Known limitations
+
+- A `template = """…"""` at 4 spaces (or one tab) is highlighted as PyJinHx wherever it
+  appears, including inside a module-level function; TextMate cannot tell a class body
+  from a function body.
+- In `<style>` and CSS comments, Jinja names can pick up a theme's `source.css variable`
+  colour, because the injected Jinja still sits inside the CSS scope.
 
 - Whitespace next to block-level tags (the `BLOCK_ELEMENTS` list in
   `src/core/html-structure.ts`) is treated as non-rendering. That is wrong for

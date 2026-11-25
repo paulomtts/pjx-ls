@@ -22,12 +22,12 @@
           "name": "string.quoted.double.html punctuation.definition.string.end.html"
         }
       },
-      "name": "string.quoted.double.html",
       "patterns": [
         {
           "include": "source.pyjinhx.jinja"
         }
-      ]
+      ],
+      "contentName": "string.quoted.double.html"
     },
     {
       "begin": "(?<=\\}\\}|%\\})\\s*(=)\\s*(')",
@@ -45,12 +45,12 @@
           "name": "string.quoted.single.html punctuation.definition.string.end.html"
         }
       },
-      "name": "string.quoted.single.html",
       "patterns": [
         {
           "include": "source.pyjinhx.jinja"
         }
-      ]
+      ],
+      "contentName": "string.quoted.single.html"
     }
   ]
 }

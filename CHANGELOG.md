@@ -19,7 +19,7 @@ adheres to [Semantic Versioning](https://semver.org/).
   string can no longer swallow the closer. `{#-css`, `{# css`, `{#css x #}` and an
   indented `{#python` are plain comments; `{# def` is a header on the first line only.
 - **Removed** the extension's hard-coded colours (`editor.tokenColorCustomizations`);
-  themes colour the standard scopes. Added `emmet.includeLanguages` for `.pjx`.
+  themes colour the standard scopes. Emmet is not enabled by default (see the README).
 - **Removed** the grammar injections into `text.html.basic` and `text.html.jinja`: the
   grammar applies to `.pjx` files and to `template = """…"""` strings in `.py` files
   only. The old `.html` and Jinja files are no longer touched.
@@ -27,13 +27,14 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 - Python templates end at their closing quotes (a half-typed tag no longer colours the
-  rest of the file) and only a class-body `template` (4 spaces or a tab) is matched.
+  rest of the file) and only a `template` at 4 spaces or one tab is matched. That is a heuristic: a
+  template at that indentation in a module-level function is matched too.
 - Jinja and `{#css`/`{#js`/`{#python`/`{#def` blocks inside HTML, JS and CSS comments
   are still recognised, since they render; a mid-file `{# def` is plain comment text.
 - All-caps tags (`<BR>`, `<DIV>`) are HTML, as in pyjinhx; a value after a
   Jinja-built attribute name (`data-{{ k }}="v"`) is a normal value.
 - The spaced `{# def` header may follow blank lines, whitespace and one empty `{# #}`.
-- `{% raw %}`/`{% endraw %}` delimiters are scoped; `{#` no longer auto-closes.
+- `{% raw %}`/`{% endraw %}` delimiters are scoped.
 - The drift check compares against the ref recorded in `SOURCE.json`; the sync script
   refuses a dirty checkout.
 
@@ -42,8 +43,9 @@ adheres to [Semantic Versioning](https://semver.org/).
   glued to Jinja (`big{% endif %}`); never inside `{#css`/`{#js`/`{#python` bodies.
 - `template = r"""…"""` inside a Python class is highlighted as PyJinHx.
 - `{% raw %}…{% endraw %}` suspends every pyjinhx rule.
-- Auto-closing for `{{ }}`, `{% %}`, `{# #}` and `<!-- -->`; folding for tags and Jinja
-  blocks.
+- Auto-closing for `{{ }}`, `{% %}` and `<!-- -->` (no bare `{` pair, so typing
+  `{#css` leaves no stray `}`); folding by indentation plus `{#css`/`{#js`/`{#python`/
+  `{#def` … `#}` blocks.
 - `scripts/sync-pyjinhx.mjs` vendors pyjinhx's `block_grammar.json` and its
   conformance corpus; a CI job fails when they drift.
 
