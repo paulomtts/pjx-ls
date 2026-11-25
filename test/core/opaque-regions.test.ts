@@ -2,71 +2,79 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { formatPyjinhxTemplate } from "../../src/core/format.ts";
 
-// Each case is [name, input, regions that must survive byte-for-byte].
-const cases: [string, string, string[]][] = [
+// Each case is [name, input, exact output]; opaque regions keep their bytes.
+const cases: [string, string, string][] = [
   [
     "script body with a comparison is not split",
     "<div>\n<script>\n  if (1 < 2) { go(); }\n</script>\n</div>",
-    ["<script>\n  if (1 < 2) { go(); }\n</script>"],
+    "<div>\n  <script>\n  if (1 < 2) { go(); }\n</script>\n</div>\n",
   ],
   [
     'script string containing "</div>" is not a close tag',
     '<div>\n<script>\n  const s = "</div>";\n</script>\n<p>x</p>\n</div>',
-    ['<script>\n  const s = "</div>";\n</script>'],
+    '<div>\n  <script>\n  const s = "</div>";\n</script>\n  <p>x</p>\n</div>\n',
   ],
   [
     "style body is not collapsed",
     "<div>\n<style>\n.a > .b {\n    color: red;\n}\n</style>\n</div>",
-    ["<style>\n.a > .b {\n    color: red;\n}\n</style>"],
+    "<div>\n  <style>\n.a > .b {\n    color: red;\n}\n</style>\n</div>\n",
   ],
   [
     "html comment does not open an element",
     "<div>\n<!-- a comment -->\n<p>x</p>\n</div>",
-    ["<!-- a comment -->"],
+    "<div>\n  <!-- a comment -->\n  <p>x</p>\n</div>\n",
   ],
   [
     "multi-line html comment keeps its inner layout",
     "<div>\n<!--\n   keep   <b>this\n-->\n</div>",
-    ["<!--\n   keep   <b>this\n-->"],
+    "<div>\n  <!--\n   keep   <b>this\n-->\n</div>\n",
   ],
   [
     "pre keeps its whitespace",
     "<div>\n<pre>\n  a\n     b <b>\n</pre>\n</div>",
-    ["<pre>\n  a\n     b <b>\n</pre>"],
+    "<div>\n  <pre>\n  a\n     b <b>\n</pre>\n</div>\n",
   ],
   [
     "textarea keeps its whitespace",
     "<div>\n<textarea>\n  <p>\n    raw\n</textarea>\n</div>",
-    ["<textarea>\n  <p>\n    raw\n</textarea>"],
+    "<div>\n  <textarea>\n  <p>\n    raw\n</textarea>\n</div>\n",
   ],
   [
     "jinja comment with markup inside",
     "<div>\n{# <div> if (a < b) #}\n</div>",
-    ["{# <div> if (a < b) #}"],
+    "<div>\n  {# <div> if (a < b) #}\n</div>\n",
   ],
   [
     "css block body is byte-identical",
     "{#css\n.a   >   .b {\n      color: red;\n}\n#}\n<p>x</p>",
-    ["{#css\n.a   >   .b {\n      color: red;\n}\n#}"],
+    "{#css\n.a   >   .b {\n      color: red;\n}\n#}\n<p>x</p>\n",
   ],
   [
     "js block body is byte-identical",
     '{#js\nif (1 < 2) {\n        f("</div>");\n}\n#}\n<p>x</p>',
-    ['{#js\nif (1 < 2) {\n        f("</div>");\n}\n#}'],
+    '{#js\nif (1 < 2) {\n        f("</div>");\n}\n#}\n<p>x</p>\n',
   ],
   [
     "raw block is opaque",
     "<div>\n{% raw %}\n<b>  {{ not_jinja }}\n   {% if %}\n{% endraw %}\n</div>",
-    ["{% raw %}\n<b>  {{ not_jinja }}\n   {% if %}\n{% endraw %}"],
+    "<div>\n  {% raw %}\n<b>  {{ not_jinja }}\n   {% if %}\n{% endraw %}\n</div>\n",
+  ],
+  [
+    "opaque regions nested two levels deep",
+    "<section>\n<div>\n<pre>  a\nb</pre>\n<!-- c\n d -->\n</div>\n</section>",
+    "<section>\n  <div>\n    <pre>  a\nb</pre>\n    <!-- c\n d -->\n  </div>\n</section>\n",
+  ],
+  [
+    "pre inside a list item",
+    "<ul>\n<li><pre>  a\n b</pre></li>\n</ul>",
+    "<ul>\n  <li>\n    <pre>  a\n b</pre>\n  </li>\n</ul>\n",
   ],
 ];
 
-for (const [name, input, regions] of cases) {
+for (const [name, input, expected] of cases) {
   test(`opaque: ${name}`, () => {
     const out = formatPyjinhxTemplate(input);
-    for (const region of regions) {
-      assert.ok(out.includes(region), `region mangled:\n${out}`);
-    }
+    assert.equal(out, expected);
     assert.equal(formatPyjinhxTemplate(out), out, "formatting must be idempotent");
   });
 }

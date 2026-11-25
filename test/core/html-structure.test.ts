@@ -80,7 +80,7 @@ test("a bare double-quote inside {{ }} in an attribute does not terminate the ta
   );
 });
 
-test("macro block raw open keywords each nest depth +1", () => {
+test("macro and block nest one level, and a raw block stays opaque", () => {
   assert.equal(
     formatHtmlStructure("{% macro foo() %}<span>x</span>{% endmacro %}"),
     "{% macro foo() %}\n  <span>x</span>\n{% endmacro %}\n",
