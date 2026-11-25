@@ -49,7 +49,7 @@ test("a half-typed tag does not outlive the closing quotes", async () => {
     const other = scopesOf(tokens, "other");
     assert.ok(!other.includes("meta.embedded.block.pyjinhx"), half);
     assert.ok(!other.some((scope) => scope.startsWith("meta.tag") || scope.startsWith("meta.scope.jinja")), `${half}: ${other.join(" ")}`);
-    assert.ok(other.includes("variable.other.readwrite.python"), `${half}: ${other.join(" ")}`);
+    assert.deepEqual(other, ["source.python"], half);
   }
 });
 
