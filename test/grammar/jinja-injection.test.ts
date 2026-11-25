@@ -85,3 +85,11 @@ test("an attribute name built with Jinja takes a normal value", async () => {
   }
   assert.ok(scopesOf(await tokenizePjx('<div data-{{ k }}="v {{ w }}">'), "w").includes("meta.scope.jinja.variable"));
 });
+
+test("the = after a Jinja-built attribute name is only a key-value separator", async () => {
+  const tokens = await tokenizePjx('<div data-{{ k }}="v">');
+  const equals = scopesOf(tokens, "=");
+  assert.ok(equals.includes("punctuation.separator.key-value.html"));
+  assert.ok(!equals.some((scope) => scope.startsWith("string.quoted")), equals.join(" "));
+  assert.ok(scopesOf(tokens, "v").includes("string.quoted.double.html"));
+});

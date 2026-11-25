@@ -23,10 +23,8 @@ test("injections target only text.pyjinhx and source.python", () => {
   }
 });
 
-test("no colour customization is contributed; Emmet works in pyjinhx files", () => {
-  const defaults = pkg.contributes.configurationDefaults;
-  assert.equal(defaults["editor.tokenColorCustomizations"], undefined);
-  assert.deepEqual(defaults["emmet.includeLanguages"], { pyjinhx: "html" });
+test("no colour customization is contributed", () => {
+  assert.equal(pkg.contributes.configurationDefaults?.["editor.tokenColorCustomizations"], undefined);
 });
 
 test("text.pyjinhx maps embedded scopes to languages and keeps attribute values completable", () => {
@@ -57,16 +55,34 @@ test("{# #} stays the block comment and Jinja delimiters auto-close", () => {
   assert.equal(closes.get("<!--"), " -->");
 });
 
-test("folding markers cover Jinja blocks and tags", () => {
+test("folding: indentation by default, markers only for multi-line pjx blocks", () => {
   const start = new RegExp(config.folding.markers.start);
   const end = new RegExp(config.folding.markers.end);
-  for (const line of ["{% if x %}", "  {%- for i in items %}", "<div class='a'>", "<Card title='x'>"]) {
+  for (const line of ["{#css", "{#js", "{#python", "{#def", "  {#css  "]) {
     assert.ok(start.test(line), line);
   }
-  for (const line of ["{% endif %}", "  {%- endfor -%}", "</div>", "</Card>"]) {
+  for (const line of ["#}", "  #}  "]) {
     assert.ok(end.test(line), line);
   }
-  for (const line of ["<br>", "<p>text</p>", "{{ x }}", "{% set a = 1 %}"]) {
+  // Tags and Jinja blocks fold by indentation, so no marker may claim them.
+  for (const line of [
+    "{#css x #}", "{#def a: int #}", "{# css tweaks #}", '<Item value="{{ x }}"/>', "<div>", "<BR>",
+    "{% if open %}x{% endif %}", "{% raw %}{% endraw %}", "{%- for i in xs %}", "{%+ if a %}",
+  ]) {
     assert.ok(!start.test(line), line);
   }
+  for (const line of ["</div>", "{% endif %}", "x #}"]) {
+    assert.ok(!end.test(line), line);
+  }
+});
+
+test("no bare { pair, so typing {#css cannot leave a stray }", () => {
+  const opens = config.autoClosingPairs.map((pair: { open: string }) => pair.open);
+  assert.ok(!opens.includes("{"));
+  assert.ok(!opens.includes("{#"));
+  assert.ok(opens.includes("{{") && opens.includes("{%"));
+});
+
+test("Emmet is not enabled by default: it cannot be scoped away from code regions", () => {
+  assert.equal(pkg.contributes.configurationDefaults?.["emmet.includeLanguages"], undefined);
 });

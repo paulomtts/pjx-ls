@@ -70,3 +70,10 @@ test("a PascalCase name with a lowercase letter is a component", async () => {
     assert.ok(scopesOf(await tokenizePjx(`<${tag}/>`), tag).includes("support.class.component.pyjinhx"), tag);
   }
 });
+
+test("valid HTML custom elements are not flagged as invalid", async () => {
+  for (const source of ['<my-el class="a">x</my-el>', "<x-card-2></x-card-2>"]) {
+    const tokens = await tokenizePjx(source);
+    assert.ok(!tokens.some((token) => token.scopes.some((scope) => scope.startsWith("invalid"))), source);
+  }
+});
