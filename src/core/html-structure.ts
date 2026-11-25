@@ -1,9 +1,11 @@
 import { INDENT } from "../config.ts";
 import { isHtmlSlotValue, readDoubleQuotedContent } from "./slots.ts";
 
-const JINJA_BLOCK_OPEN = /^\{%\s*(?:if|for|macro|block|filter)\b/;
-const JINJA_BLOCK_MID = /^\{%\s*(?:elif|else)\b/;
-const JINJA_BLOCK_CLOSE = /^\{%\s*end(?:if|for|macro|block|filter)\b/;
+const JINJA_TAG_NAME = /^\{%[-+]?\s*(\w+)/;
+const JINJA_BLOCKS = new Set(["if", "for", "macro", "block", "filter", "with", "call", "set"]);
+const VOID_ELEMENTS = new Set([
+  "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr",
+]);
 const DEF_HEADER = /^\{#-?\s*def\b/;
 
 type TokenType = "opaque" | "jinja" | "jinja_expr" | "open" | "close" | "self_close" | "text";
@@ -14,6 +16,26 @@ export interface Token {
   name?: string;
   /** Whether whitespace (or the start of the text) precedes this token in the source. */
   spaceBefore: boolean;
+}
+
+interface JinjaTag {
+  kind: "open" | "mid" | "close";
+  name: string;
+}
+
+/** Classify a `{% … %}` tag; undefined for tags that do not affect nesting. */
+function jinjaTag(value: string): JinjaTag | undefined {
+  const name = JINJA_TAG_NAME.exec(value.trim())?.[1];
+  if (!name) return undefined;
+  if (name === "elif" || name === "else") return { kind: "mid", name };
+  if (name.startsWith("end") && JINJA_BLOCKS.has(name.slice(3))) {
+    return { kind: "close", name: name.slice(3) };
+  }
+  // `{% set x = 1 %}` is a statement; only the bare `{% set x %}` form opens a block.
+  if (JINJA_BLOCKS.has(name) && !(name === "set" && value.includes("="))) {
+    return { kind: "open", name };
+  }
+  return undefined;
 }
 
 interface Parsed {
@@ -213,7 +235,7 @@ function tokenize(text: string): { tokens: Token[]; complete: boolean } {
       const tagValue = parsed.value.trim();
       if (tagValue.startsWith("</")) {
         add(index, { type: "close", value: tagValue, name: tagName(tagValue) });
-      } else if (tagValue.endsWith("/>")) {
+      } else if (tagValue.endsWith("/>") || VOID_ELEMENTS.has(tagName(tagValue).toLowerCase())) {
         add(index, { type: "self_close", value: tagValue, name: tagName(tagValue) });
       } else {
         add(index, { type: "open", value: tagValue, name: tagName(tagValue) });
@@ -310,7 +332,7 @@ function tagHasSlot(parsed: ParsedTag): boolean {
  */
 function canReindent(slotValue: string): boolean {
   const { tokens, complete } = tokenize(slotValue);
-  return complete && !tokens.some((token) => token.value.includes("\n"));
+  return complete && isBalanced(tokens) && !tokens.some((token) => token.value.includes("\n"));
 }
 
 /**
@@ -345,22 +367,9 @@ function renderExplodedTag(parsed: ParsedTag, baseIndent: string): string {
 
 // ── Structural re-indentation ──────────────────────────────────────────────
 
-function jinjaDepthDelta(value: string): number {
-  const trimmed = value.trim();
-  if (JINJA_BLOCK_CLOSE.test(trimmed)) return -1;
-  if (JINJA_BLOCK_OPEN.test(trimmed)) return 1;
-  if (JINJA_BLOCK_MID.test(trimmed)) return 0;
-  return 0;
-}
-
 function hasElementChildren(tokens: Token[], startIndex: number): boolean {
-  let depth = 0;
   for (let index = startIndex + 1; index < tokens.length; index += 1) {
     const token = tokens[index];
-    if (token.type === "jinja") {
-      depth += jinjaDepthDelta(token.value);
-      continue;
-    }
     if (token.type === "open" || token.type === "opaque") return true;
     if (token.type === "self_close") continue;
     if (token.type === "close") return false;
@@ -387,9 +396,27 @@ function tryInlineElement(tokens: Token[], startIndex: number): { endIndex: numb
   return null;
 }
 
+/** True when every tag and Jinja block opens and closes in matching order. */
+function isBalanced(tokens: Token[]): boolean {
+  const stack: string[] = [];
+  for (const token of tokens) {
+    if (token.type === "open") {
+      stack.push(`<${token.name?.toLowerCase()}`);
+    } else if (token.type === "close") {
+      if (stack.pop() !== `<${token.name?.toLowerCase()}`) return false;
+    } else if (token.type === "jinja") {
+      const tag = jinjaTag(token.value);
+      if (tag?.kind === "open") stack.push(tag.name);
+      if (tag?.kind === "close" && stack.pop() !== tag.name) return false;
+      if (tag?.kind === "mid" && !["if", "for"].includes(stack[stack.length - 1])) return false;
+    }
+  }
+  return stack.length === 0;
+}
+
 export function formatHtmlStructure(text: string): string {
   const { tokens, complete } = tokenize(text);
-  if (tokens.length === 0 || !complete) {
+  if (tokens.length === 0 || !complete || !isBalanced(tokens)) {
     return text;
   }
 
@@ -427,23 +454,11 @@ export function formatHtmlStructure(text: string): string {
 
     if (token.type === "jinja") {
       const trimmed = token.value.trim();
-      if (JINJA_BLOCK_CLOSE.test(trimmed)) {
-        depth = Math.max(0, depth - 1);
-        emit(index, INDENT.repeat(depth) + trimmed);
-        continue;
-      }
-      if (JINJA_BLOCK_MID.test(trimmed)) {
-        depth = Math.max(0, depth - 1);
-        emit(index, INDENT.repeat(depth) + trimmed);
-        depth += 1;
-        continue;
-      }
-      if (JINJA_BLOCK_OPEN.test(trimmed)) {
-        emit(index, INDENT.repeat(depth) + trimmed);
-        depth += 1;
-        continue;
-      }
-      emit(index, INDENT.repeat(depth) + trimmed);
+      const kind = jinjaTag(trimmed)?.kind;
+      const level = kind === "close" || kind === "mid" ? Math.max(0, depth - 1) : depth;
+      emit(index, INDENT.repeat(level) + trimmed);
+      if (kind === "open") depth += 1;
+      if (kind === "close") depth = level;
       // A {#def … #} header is always separated from the rest of the file by a
       // blank line (a trailing one is removed by the final trimEnd()).
       if (DEF_HEADER.test(trimmed)) {

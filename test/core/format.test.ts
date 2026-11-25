@@ -60,3 +60,38 @@ test("whitespace between inline siblings is preserved as a break", () => {
     "<p>a\n  <!-- c -->\n  b</p>\n",
   );
 });
+
+test("void elements do not open a level", () => {
+  assert.equal(
+    formatPyjinhxTemplate('<div>\n<br>\n<input type="x">\n<img src="a.png">\n<p>y</p>\n</div>'),
+    '<div>\n  <br>\n  <input type="x">\n  <img src="a.png">\n  <p>y</p>\n</div>\n',
+  );
+});
+
+test("{%- and {%+ block tags nest like plain ones", () => {
+  assert.equal(
+    formatPyjinhxTemplate("<div>\n{%- if a -%}\n<b>y</b>\n{%- endif -%}\n{%+ for i in x %}\n<i>z</i>\n{%+ endfor %}\n</div>"),
+    "<div>\n  {%- if a -%}\n    <b>y</b>\n  {%- endif -%}\n  {%+ for i in x %}\n    <i>z</i>\n  {%+ endfor %}\n</div>\n",
+  );
+});
+
+test("set, with, call and filter blocks nest; inline set does not", () => {
+  assert.equal(
+    formatPyjinhxTemplate(
+      "<div>\n{% set a %}\n<b>1</b>\n{% endset %}\n{% set b = 2 %}\n{% with c=3 %}\n<b>2</b>\n{% endwith %}\n{% call f() %}\n<b>3</b>\n{% endcall %}\n</div>",
+    ),
+    "<div>\n  {% set a %}\n    <b>1</b>\n  {% endset %}\n  {% set b = 2 %}\n  {% with c=3 %}\n    <b>2</b>\n  {% endwith %}\n  {% call f() %}\n    <b>3</b>\n  {% endcall %}\n</div>\n",
+  );
+});
+
+test("unbalanced structure is returned unchanged", () => {
+  for (const input of [
+    '<section>\n{% if a %}\n<div class="a">\n{% else %}\n<div class="b">\n{% endif %}\n<p>x</p>\n</div>\n</section>',
+    "<div>\n<p>x</p>",
+    "<div>\n<p>x</p>\n</span>\n</div>",
+    "<div>\n{% if a %}\n<p>x</p>\n</div>",
+    "<p>x</p>\n</div>",
+  ]) {
+    assert.equal(formatPyjinhxTemplate(input), input);
+  }
+});
