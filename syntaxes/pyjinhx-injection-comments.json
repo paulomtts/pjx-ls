@@ -1,0 +1,14 @@
+{
+  "scopeName": "pyjinhx.injection.comments",
+  "injectionSelector": "L:text.pyjinhx comment.block.html -comment.block.pyjinhx -comment.block.jinja -meta.scope.jinja -meta.block",
+  "patterns": [
+    { "include": "text.pyjinhx#pyjinhx-raw" },
+    { "include": "text.pyjinhx#pyjinhx-block-def-legacy" },
+    { "include": "text.pyjinhx#pyjinhx-block-python" },
+    { "include": "text.pyjinhx#pyjinhx-block-css" },
+    { "include": "text.pyjinhx#pyjinhx-block-js" },
+    { "include": "text.pyjinhx#pyjinhx-block-def" },
+    { "include": "text.pyjinhx#pyjinhx-comment" },
+    { "include": "source.pyjinhx.jinja" }
+  ]
+}
