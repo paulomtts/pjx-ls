@@ -414,7 +414,15 @@ function isBalanced(tokens: Token[]): boolean {
   return stack.length === 0;
 }
 
+/** Format with `\n` line endings, restoring the document's own EOL afterwards. */
 export function formatHtmlStructure(text: string): string {
+  if (!text.includes("\r\n")) return formatLf(text);
+  // A file mixing CRLF and bare LF cannot be restored byte-for-byte.
+  if (/(?<!\r)\n/.test(text)) return text;
+  return formatLf(text.replaceAll("\r\n", "\n")).replaceAll("\n", "\r\n");
+}
+
+function formatLf(text: string): string {
   const { tokens, complete } = tokenize(text);
   if (tokens.length === 0 || !complete || !isBalanced(tokens)) {
     return text;

@@ -95,3 +95,20 @@ test("unbalanced structure is returned unchanged", () => {
     assert.equal(formatPyjinhxTemplate(input), input);
   }
 });
+
+test("CRLF input keeps CRLF line endings and opaque bytes", () => {
+  assert.equal(
+    formatPyjinhxTemplate("<div>\r\n<p>x</p>\r\n<pre>\r\n  a\r\n</pre>\r\n</div>\r\n"),
+    "<div>\r\n  <p>x</p>\r\n  <pre>\r\n  a\r\n</pre>\r\n</div>\r\n",
+  );
+});
+
+test("an already formatted CRLF document is left alone", () => {
+  const formatted = "<div>\r\n  <p>x</p>\r\n</div>\r\n";
+  assert.equal(formatPyjinhxTemplate(formatted), formatted);
+});
+
+test("mixed line endings are returned unchanged", () => {
+  const input = "<div>\r\n<p>x</p>\n</div>";
+  assert.equal(formatPyjinhxTemplate(input), input);
+});
