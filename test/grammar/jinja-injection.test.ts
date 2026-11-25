@@ -72,3 +72,16 @@ test("{% raw %} inside an HTML comment is raw", async () => {
   const tokens = await tokenizePjx("<!-- {% raw %}{{ x }}{% endraw %} -->");
   assert.ok(!scopesOf(tokens, "x").includes("meta.scope.jinja.variable"));
 });
+
+test("an attribute name built with Jinja takes a normal value", async () => {
+  for (const source of ['<div data-{{ k }}="v {{ w }}" x>', "<Card data-{{ k }}='v' x/>", '<div a-{% if x %}b{% endif %}="w">']) {
+    const tokens = await tokenizePjx(source);
+    assert.ok(!tokens.some((token) => token.scopes.some((scope) => scope.startsWith("invalid"))), source);
+    const value = tokens.find((token) => token.text === "=");
+    assert.ok(value?.scopes.includes("punctuation.separator.key-value.html"), source);
+    const string = tokens.find((token) => token.text === "v " || token.text === "v" || token.text === "w");
+    assert.ok(string?.scopes.some((scope) => scope.startsWith("string.quoted")), source);
+    assert.ok(scopesOf(tokens, "x").some((scope) => scope.startsWith("entity.other.attribute-name")) || source.includes("{% if"));
+  }
+  assert.ok(scopesOf(await tokenizePjx('<div data-{{ k }}="v {{ w }}">'), "w").includes("meta.scope.jinja.variable"));
+});
