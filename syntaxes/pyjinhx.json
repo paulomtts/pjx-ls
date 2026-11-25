@@ -36,7 +36,7 @@
   "repository": {
     "pyjinhx-component-tag": {
       "name": "meta.tag.component.pyjinhx",
-      "begin": "(</?)([A-Z][A-Za-z0-9]*)(?=[\\s/>]|$)",
+      "begin": "(</?)([A-Z](?=[A-Za-z0-9]*[a-z])[A-Za-z0-9]*)(?=[\\s/>]|$)",
       "beginCaptures": {
         "1": {
           "name": "punctuation.definition.tag.begin.html"
