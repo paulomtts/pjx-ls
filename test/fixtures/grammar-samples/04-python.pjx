@@ -1,0 +1,13 @@
+{#python
+from typing import Literal
+from pyjinhx import BaseComponent
+
+class Counter(BaseComponent):
+    remaining: int = 0
+    tone: Literal["a", "b"] = "a"
+
+    @property
+    def label(self) -> str:
+        return f"{self.remaining} left"  # a comment
+#}
+<div class="counter">{{ label }}</div>

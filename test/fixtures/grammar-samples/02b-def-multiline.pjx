@@ -1,0 +1,8 @@
+<!-- header not first -->
+{#def
+    title: str,
+    items: list[dict[str, Any]] | None = None,
+    when: datetime.datetime = datetime.datetime.now(),
+    active: bool = False
+#}
+<span>{{ title }}</span>
