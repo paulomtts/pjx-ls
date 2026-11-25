@@ -1,0 +1,18 @@
+1: "{#" meta.block.python.pyjinhx punctuation.definition.block.begin.pyjinhx
+1: "python" meta.block.python.pyjinhx keyword.control.pyjinhx
+2: "x" meta.block.python.pyjinhx meta.embedded.block.python source.python
+2: "=" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.assignment.python
+2: "1" meta.block.python.pyjinhx meta.embedded.block.python source.python constant.numeric.dec.python
+3: "#}" meta.block.python.pyjinhx punctuation.definition.block.end.pyjinhx
+4: "<" meta.tag.structure.p.start.html punctuation.definition.tag.begin.html
+4: "p" meta.tag.structure.p.start.html entity.name.tag.html
+4: ">" meta.tag.structure.p.start.html punctuation.definition.tag.end.html
+4: "</" meta.tag.structure.p.end.html punctuation.definition.tag.begin.html
+4: "p" meta.tag.structure.p.end.html entity.name.tag.html
+4: ">" meta.tag.structure.p.end.html punctuation.definition.tag.end.html
+5: "{#" meta.block.python.pyjinhx punctuation.definition.block.begin.pyjinhx
+5: "python" meta.block.python.pyjinhx keyword.control.pyjinhx
+6: "y" meta.block.python.pyjinhx meta.embedded.block.python source.python
+6: "=" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.assignment.python
+6: "2" meta.block.python.pyjinhx meta.embedded.block.python source.python constant.numeric.dec.python
+7: "#}" meta.block.python.pyjinhx punctuation.definition.block.end.pyjinhx

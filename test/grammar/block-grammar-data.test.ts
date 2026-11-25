@@ -32,7 +32,7 @@ test("every keyword has a meta.block rule", () => {
 test("a keyword must touch the opener", async () => {
   assert.equal(data.keyword_touches_opener, true);
   for (const keyword of keywords) {
-    assert.deepEqual(await blocksIn(`{# ${keyword}\nx\n#}\n<p></p>`), [], keyword);
+    assert.deepEqual(await blocksIn(`<p></p>\n{# ${keyword}\nx\n#}`), [], keyword);
   }
 });
 
@@ -54,4 +54,10 @@ test("python opens only in column 0", async () => {
   assert.equal(data.keywords.python.opener_column, 0);
   assert.deepEqual(await blocksIn(" {#python\nx = 1\n#}\n<p></p>"), []);
   assert.equal((await blocksIn("{#python\nx = 1\n#}\n<p></p>")).length, 1);
+});
+
+test("the spaced {# def form is a header in first position only", async () => {
+  assert.equal(data.keywords.def.legacy_spaced_form.first_position_only, true);
+  assert.deepEqual(await blocksIn("{# def a: int #}\n<p></p>"), [{ keyword: "def", open_line: 1, close_line: 1 }]);
+  assert.deepEqual(await blocksIn("<p></p>\n{# def a: int #}"), []);
 });

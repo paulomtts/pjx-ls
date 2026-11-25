@@ -1,0 +1,28 @@
+1: "{#" meta.block.css.pyjinhx punctuation.definition.block.begin.pyjinhx
+1: "css" meta.block.css.pyjinhx keyword.control.pyjinhx
+2: "." meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+2: "a" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.class.css
+2: "{" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+2: "color" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+2: ":" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.separator.key-value.css
+2: "red" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-value.css support.constant.color.w3c-standard-color-name.css
+2: ";" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.terminator.rule.css
+2: "}" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+3: "#}" meta.block.css.pyjinhx punctuation.definition.block.end.pyjinhx
+4: "<" meta.tag.structure.p.start.html punctuation.definition.tag.begin.html
+4: "p" meta.tag.structure.p.start.html entity.name.tag.html
+4: ">" meta.tag.structure.p.start.html punctuation.definition.tag.end.html
+4: "</" meta.tag.structure.p.end.html punctuation.definition.tag.begin.html
+4: "p" meta.tag.structure.p.end.html entity.name.tag.html
+4: ">" meta.tag.structure.p.end.html punctuation.definition.tag.end.html
+5: "{#" meta.block.css.pyjinhx punctuation.definition.block.begin.pyjinhx
+5: "css" meta.block.css.pyjinhx keyword.control.pyjinhx
+6: "." meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+6: "b" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.class.css
+6: "{" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+6: "color" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+6: ":" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.separator.key-value.css
+6: "blue" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-value.css support.constant.color.w3c-standard-color-name.css
+6: ";" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.terminator.rule.css
+6: "}" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+7: "#}" meta.block.css.pyjinhx punctuation.definition.block.end.pyjinhx

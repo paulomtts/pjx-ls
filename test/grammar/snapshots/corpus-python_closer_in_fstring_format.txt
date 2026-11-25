@@ -1,0 +1,21 @@
+1: "{#" meta.block.python.pyjinhx punctuation.definition.block.begin.pyjinhx
+1: "python" meta.block.python.pyjinhx keyword.control.pyjinhx
+2: "n" meta.block.python.pyjinhx meta.embedded.block.python source.python
+2: "=" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.assignment.python
+2: "3" meta.block.python.pyjinhx meta.embedded.block.python source.python constant.numeric.dec.python
+3: "x" meta.block.python.pyjinhx meta.embedded.block.python source.python
+3: "=" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.assignment.python
+3: "f" meta.block.python.pyjinhx meta.embedded.block.python source.python meta.fstring.python string.interpolated.python string.quoted.single.python storage.type.string.python
+3: "\"" meta.block.python.pyjinhx meta.embedded.block.python source.python meta.fstring.python punctuation.definition.string.begin.python string.interpolated.python string.quoted.single.python
+3: "{" meta.block.python.pyjinhx meta.embedded.block.python source.python meta.fstring.python constant.character.format.placeholder.other.python
+3: "n" meta.block.python.pyjinhx meta.embedded.block.python source.python meta.fstring.python
+3: ":" meta.block.python.pyjinhx meta.embedded.block.python source.python meta.fstring.python punctuation.separator.colon.python
+3: "#}" meta.block.python.pyjinhx punctuation.definition.block.end.pyjinhx
+3: "\"" 
+4: "#}" 
+5: "<" meta.tag.structure.p.start.html punctuation.definition.tag.begin.html
+5: "p" meta.tag.structure.p.start.html entity.name.tag.html
+5: ">" meta.tag.structure.p.start.html punctuation.definition.tag.end.html
+5: "</" meta.tag.structure.p.end.html punctuation.definition.tag.begin.html
+5: "p" meta.tag.structure.p.end.html entity.name.tag.html
+5: ">" meta.tag.structure.p.end.html punctuation.definition.tag.end.html

@@ -1,0 +1,18 @@
+1: "<" meta.tag.structure.p.start.html punctuation.definition.tag.begin.html
+1: "p" meta.tag.structure.p.start.html entity.name.tag.html
+1: ">" meta.tag.structure.p.start.html punctuation.definition.tag.end.html
+1: "</" meta.tag.structure.p.end.html punctuation.definition.tag.begin.html
+1: "p" meta.tag.structure.p.end.html entity.name.tag.html
+1: ">" meta.tag.structure.p.end.html punctuation.definition.tag.end.html
+2: "{#" meta.block.python.pyjinhx punctuation.definition.block.begin.pyjinhx
+2: "python" meta.block.python.pyjinhx keyword.control.pyjinhx
+3: "x" meta.block.python.pyjinhx meta.embedded.block.python source.python
+3: "=" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.assignment.python
+3: "1" meta.block.python.pyjinhx meta.embedded.block.python source.python constant.numeric.dec.python
+4: "<" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.comparison.python
+4: "p" meta.block.python.pyjinhx meta.embedded.block.python source.python
+4: ">" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.comparison.python
+4: "<" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.comparison.python
+4: "/" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.arithmetic.python
+4: "p" meta.block.python.pyjinhx meta.embedded.block.python source.python
+4: ">" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.comparison.python
