@@ -23,11 +23,18 @@ const onigLib = oniguruma.loadWASM(wasm).then(() => ({
 }));
 
 /**
- * The extension's own grammars plus HTML, and optionally the vendored Jinja
- * grammars: users without a Jinja extension get the first set only.
+ * The extension's own grammars plus the vendored HTML, CSS, JavaScript and Python
+ * grammars, and optionally the vendored Jinja grammars: users without a Jinja
+ * extension get the first set only.
  */
 function makeRegistry(withJinja: boolean): vsctm.Registry {
-  const paths = new Map<string, string>([["text.html.basic", vendored("html.tmLanguage.json")]]);
+  const paths = new Map<string, string>([
+    ["text.html.basic", vendored("html.tmLanguage.json")],
+    ["source.css", vendored("css.tmLanguage.json")],
+    ["source.js", vendored("JavaScript.tmLanguage.json")],
+    ["source.python", vendored("MagicPython.tmLanguage.json")],
+    ["source.regexp.python", vendored("MagicRegExp.tmLanguage.json")],
+  ]);
   if (withJinja) {
     paths.set("text.html.jinja", vendored("jinja-html.json"));
     paths.set("source.jinja", vendored("jinja.json"));
@@ -49,22 +56,30 @@ const registries = { jinja: makeRegistry(true), plain: makeRegistry(false) };
 export type GrammarMode = keyof typeof registries;
 export const GRAMMAR_MODES = Object.keys(registries) as GrammarMode[];
 
+export type RootScope = "text.pyjinhx" | "source.python";
+
 export interface ScopedToken {
+  /** 1-based line of the token. */
+  line: number;
   text: string;
   scopes: string[];
 }
 
-/** Tokenize a whole `.pjx` document with the real pyjinhx grammar stack. */
-export async function tokenizePjx(source: string, mode: GrammarMode = "jinja"): Promise<ScopedToken[]> {
-  const grammar = await registries[mode].loadGrammar("text.pyjinhx");
-  if (!grammar) throw new Error("text.pyjinhx grammar failed to load");
+/** Tokenize a whole document (a `.pjx` file by default) with the real grammar stack. */
+export async function tokenizePjx(
+  source: string,
+  mode: GrammarMode = "jinja",
+  root: RootScope = "text.pyjinhx",
+): Promise<ScopedToken[]> {
+  const grammar = await registries[mode].loadGrammar(root);
+  if (!grammar) throw new Error(`${root} grammar failed to load`);
   let stack = vsctm.INITIAL;
   const tokens: ScopedToken[] = [];
-  for (const line of source.split("\n")) {
+  for (const [index, line] of source.split("\n").entries()) {
     const result = grammar.tokenizeLine(line, stack);
     stack = result.ruleStack;
     for (const token of result.tokens) {
-      tokens.push({ text: line.slice(token.startIndex, token.endIndex), scopes: token.scopes });
+      tokens.push({ line: index + 1, text: line.slice(token.startIndex, token.endIndex), scopes: token.scopes });
     }
   }
   return tokens;
