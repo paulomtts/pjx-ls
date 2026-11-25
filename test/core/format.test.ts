@@ -172,3 +172,10 @@ test("a header whose closer is followed by more text on the same line is left al
   const input = '{#def title: str = "a #} b", x #}\n<p>{{ title }}</p>';
   assert.equal(formatPyjinhxTemplate(input), input);
 });
+
+test("blank lines before a leading {# comment are kept", () => {
+  assert.equal(
+    formatPyjinhxTemplate("\n\n{# note #}\n{# def a: str #}\n<p>x</p>"),
+    "\n\n{# note #}\n{# def a: str #}\n\n<p>x</p>\n",
+  );
+});

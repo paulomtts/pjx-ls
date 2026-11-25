@@ -487,6 +487,9 @@ export function formatHtmlStructure(text: string): string {
 }
 
 function formatLf(text: string): string {
+  // Blank lines before a leading `{#` comment or header are the author's layout.
+  const lead = /^(?:[ \t]*\n)+(?=[ \t]*\{#)/.exec(text)?.[0];
+  if (lead) return lead + formatLf(text.slice(lead.length));
   const { tokens, complete } = tokenize(text);
   if (tokens.length === 0 || !complete || !isBalanced(tokens) || hasTextAfterHeader(tokens)) {
     return text;
