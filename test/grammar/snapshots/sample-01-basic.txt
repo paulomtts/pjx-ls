@@ -1,0 +1,168 @@
+1: "{#" comment.block.pyjinhx punctuation.definition.comment.begin.pyjinhx
+1: " A plain prose comment " comment.block.pyjinhx
+1: "#}" comment.block.pyjinhx punctuation.definition.comment.end.pyjinhx
+2: "<" meta.tag.structure.div.start.html punctuation.definition.tag.begin.html
+2: "div" meta.tag.structure.div.start.html entity.name.tag.html
+2: "id" meta.tag.structure.div.start.html meta.attribute.id.html entity.other.attribute-name.html
+2: "=" meta.tag.structure.div.start.html meta.attribute.id.html punctuation.separator.key-value.html
+2: "\"" meta.tag.structure.div.start.html meta.attribute.id.html string.quoted.double.html punctuation.definition.string.begin.html
+2: "{{" meta.tag.structure.div.start.html meta.attribute.id.html string.quoted.double.html meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+2: "id" meta.tag.structure.div.start.html meta.attribute.id.html string.quoted.double.html meta.scope.jinja.variable variable.other.jinja
+2: "}}" meta.tag.structure.div.start.html meta.attribute.id.html string.quoted.double.html meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+2: "\"" meta.tag.structure.div.start.html meta.attribute.id.html string.quoted.double.html punctuation.definition.string.end.html
+2: "class" meta.tag.structure.div.start.html meta.attribute.class.html entity.other.attribute-name.html
+2: "=" meta.tag.structure.div.start.html meta.attribute.class.html punctuation.separator.key-value.html
+2: "\"" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html punctuation.definition.string.begin.html
+2: "card " meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html
+2: "{{" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+2: "'" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable string.quoted.single.jinja punctuation.definition.string.begin.jinja
+2: "on" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable string.quoted.single.jinja
+2: "'" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable string.quoted.single.jinja punctuation.definition.string.end.jinja
+2: "if" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable keyword.control.jinja
+2: "active" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable variable.other.jinja
+2: "else" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable keyword.control.jinja
+2: "'" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable string.quoted.single.jinja punctuation.definition.string.begin.jinja
+2: "off" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable string.quoted.single.jinja
+2: "'" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable string.quoted.single.jinja punctuation.definition.string.end.jinja
+2: "}}" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+2: "\"" meta.tag.structure.div.start.html meta.attribute.class.html string.quoted.double.html punctuation.definition.string.end.html
+2: "hx-get" meta.tag.structure.div.start.html meta.attribute.unrecognized.hx-get.html entity.other.attribute-name.html
+2: "=" meta.tag.structure.div.start.html meta.attribute.unrecognized.hx-get.html punctuation.separator.key-value.html
+2: "\"" meta.tag.structure.div.start.html meta.attribute.unrecognized.hx-get.html string.quoted.double.html punctuation.definition.string.begin.html
+2: "/x" meta.tag.structure.div.start.html meta.attribute.unrecognized.hx-get.html string.quoted.double.html
+2: "\"" meta.tag.structure.div.start.html meta.attribute.unrecognized.hx-get.html string.quoted.double.html punctuation.definition.string.end.html
+2: ">" meta.tag.structure.div.start.html punctuation.definition.tag.end.html
+3: "{%" meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+3: "if" meta.scope.jinja.tag keyword.control.jinja
+3: "items" meta.scope.jinja.tag variable.other.jinja
+3: "%}" meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+4: "<" meta.tag.structure.ul.start.html punctuation.definition.tag.begin.html
+4: "ul" meta.tag.structure.ul.start.html entity.name.tag.html
+4: ">" meta.tag.structure.ul.start.html punctuation.definition.tag.end.html
+5: "{%" meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+5: "for" meta.scope.jinja.tag keyword.control.jinja
+5: "item" meta.scope.jinja.tag variable.other.jinja
+5: "in" meta.scope.jinja.tag keyword.control.jinja
+5: "items" meta.scope.jinja.tag variable.other.jinja
+5: "|" meta.scope.jinja.tag punctuation.other.jinja
+5: "sort" meta.scope.jinja.tag variable.other.jinja
+5: "(" meta.scope.jinja.tag punctuation.other.jinja
+5: "attribute" meta.scope.jinja.tag variable.other.jinja
+5: "=" meta.scope.jinja.tag keyword.operator.assignment.jinja
+5: "\"" meta.scope.jinja.tag string.quoted.double.jinja punctuation.definition.string.begin.jinja
+5: "name" meta.scope.jinja.tag string.quoted.double.jinja
+5: "\"" meta.scope.jinja.tag string.quoted.double.jinja punctuation.definition.string.end.jinja
+5: ")" meta.scope.jinja.tag punctuation.other.jinja
+5: "%}" meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+6: "<" meta.tag.structure.li.start.html punctuation.definition.tag.begin.html
+6: "li" meta.tag.structure.li.start.html entity.name.tag.html
+6: ">" meta.tag.structure.li.start.html punctuation.definition.tag.end.html
+6: "{{" meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+6: "item" meta.scope.jinja.variable variable.other.jinja
+6: "." meta.scope.jinja.variable punctuation.other.jinja
+6: "name" meta.scope.jinja.variable variable.other.jinja.attribute
+6: "|" meta.scope.jinja.variable punctuation.other.jinja
+6: "upper" meta.scope.jinja.variable variable.other.jinja.filter
+6: "}}" meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+6: "</" meta.tag.structure.li.end.html punctuation.definition.tag.begin.html
+6: "li" meta.tag.structure.li.end.html entity.name.tag.html
+6: ">" meta.tag.structure.li.end.html punctuation.definition.tag.end.html
+7: "{%" meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+7: "endfor" meta.scope.jinja.tag keyword.control.jinja
+7: "%}" meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+8: "</" meta.tag.structure.ul.end.html punctuation.definition.tag.begin.html
+8: "ul" meta.tag.structure.ul.end.html entity.name.tag.html
+8: ">" meta.tag.structure.ul.end.html punctuation.definition.tag.end.html
+9: "{%" meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+9: "else" meta.scope.jinja.tag keyword.control.jinja
+9: "%}" meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+10: "<" meta.tag.structure.p.start.html punctuation.definition.tag.begin.html
+10: "p" meta.tag.structure.p.start.html entity.name.tag.html
+10: ">" meta.tag.structure.p.start.html punctuation.definition.tag.end.html
+10: "Nothing " 
+10: "&" constant.character.entity.named.amp.html punctuation.definition.entity.html
+10: "amp" constant.character.entity.named.amp.html
+10: ";" constant.character.entity.named.amp.html punctuation.definition.entity.html
+10: " nobody" 
+10: "</" meta.tag.structure.p.end.html punctuation.definition.tag.begin.html
+10: "p" meta.tag.structure.p.end.html entity.name.tag.html
+10: ">" meta.tag.structure.p.end.html punctuation.definition.tag.end.html
+11: "{%" meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+11: "endif" meta.scope.jinja.tag keyword.control.jinja
+11: "%}" meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+12: "<" meta.tag.component.pyjinhx punctuation.definition.tag.begin.html
+12: "Card" meta.tag.component.pyjinhx entity.name.tag.component.pyjinhx support.class.component.pyjinhx
+12: "title" meta.tag.component.pyjinhx meta.attribute.title.html entity.other.attribute-name.html
+12: "=" meta.tag.component.pyjinhx meta.attribute.title.html punctuation.separator.key-value.html
+12: "\"" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html punctuation.definition.string.begin.html
+12: "Hello" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html
+12: "\"" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html punctuation.definition.string.end.html
+12: "count" meta.tag.component.pyjinhx meta.attribute.unrecognized.count.html entity.other.attribute-name.html
+12: "=" meta.tag.component.pyjinhx meta.attribute.unrecognized.count.html punctuation.separator.key-value.html
+12: "\"" meta.tag.component.pyjinhx meta.attribute.unrecognized.count.html string.quoted.double.html punctuation.definition.string.begin.html
+12: "{{" meta.tag.component.pyjinhx meta.attribute.unrecognized.count.html string.quoted.double.html meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+12: "items" meta.tag.component.pyjinhx meta.attribute.unrecognized.count.html string.quoted.double.html meta.scope.jinja.variable variable.other.jinja
+12: "|" meta.tag.component.pyjinhx meta.attribute.unrecognized.count.html string.quoted.double.html meta.scope.jinja.variable punctuation.other.jinja
+12: "length" meta.tag.component.pyjinhx meta.attribute.unrecognized.count.html string.quoted.double.html meta.scope.jinja.variable variable.other.jinja.filter
+12: "}}" meta.tag.component.pyjinhx meta.attribute.unrecognized.count.html string.quoted.double.html meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+12: "\"" meta.tag.component.pyjinhx meta.attribute.unrecognized.count.html string.quoted.double.html punctuation.definition.string.end.html
+12: "disabled" meta.tag.component.pyjinhx meta.attribute.disabled.html entity.other.attribute-name.html
+12: ">" meta.tag.component.pyjinhx punctuation.definition.tag.end.html
+13: "<" meta.tag.component.pyjinhx punctuation.definition.tag.begin.html
+13: "PJXButton" meta.tag.component.pyjinhx entity.name.tag.component.pyjinhx support.class.component.pyjinhx
+13: "label" meta.tag.component.pyjinhx meta.attribute.label.html entity.other.attribute-name.html
+13: "=" meta.tag.component.pyjinhx meta.attribute.label.html punctuation.separator.key-value.html
+13: "\"" meta.tag.component.pyjinhx meta.attribute.label.html string.quoted.double.html punctuation.definition.string.begin.html
+13: "Save" meta.tag.component.pyjinhx meta.attribute.label.html string.quoted.double.html
+13: "\"" meta.tag.component.pyjinhx meta.attribute.label.html string.quoted.double.html punctuation.definition.string.end.html
+13: "variant" meta.tag.component.pyjinhx meta.attribute.unrecognized.variant.html entity.other.attribute-name.html
+13: "=" meta.tag.component.pyjinhx meta.attribute.unrecognized.variant.html punctuation.separator.key-value.html
+13: "'" meta.tag.component.pyjinhx meta.attribute.unrecognized.variant.html string.quoted.single.html punctuation.definition.string.begin.html
+13: "primary" meta.tag.component.pyjinhx meta.attribute.unrecognized.variant.html string.quoted.single.html
+13: "'" meta.tag.component.pyjinhx meta.attribute.unrecognized.variant.html string.quoted.single.html punctuation.definition.string.end.html
+13: "@click" meta.tag.component.pyjinhx meta.attribute.unrecognized.@click.html entity.other.attribute-name.html
+13: "=" meta.tag.component.pyjinhx meta.attribute.unrecognized.@click.html punctuation.separator.key-value.html
+13: "\"" meta.tag.component.pyjinhx meta.attribute.unrecognized.@click.html string.quoted.double.html punctuation.definition.string.begin.html
+13: "save()" meta.tag.component.pyjinhx meta.attribute.unrecognized.@click.html string.quoted.double.html
+13: "\"" meta.tag.component.pyjinhx meta.attribute.unrecognized.@click.html string.quoted.double.html punctuation.definition.string.end.html
+13: "/>" meta.tag.component.pyjinhx punctuation.definition.tag.end.html
+14: "<" meta.tag.component.pyjinhx punctuation.definition.tag.begin.html
+14: "Stack" meta.tag.component.pyjinhx entity.name.tag.component.pyjinhx support.class.component.pyjinhx
+14: ">" meta.tag.component.pyjinhx punctuation.definition.tag.end.html
+14: "<" meta.tag.component.pyjinhx punctuation.definition.tag.begin.html
+14: "Badge" meta.tag.component.pyjinhx entity.name.tag.component.pyjinhx support.class.component.pyjinhx
+14: "tone" meta.tag.component.pyjinhx meta.attribute.unrecognized.tone.html entity.other.attribute-name.html
+14: "=" meta.tag.component.pyjinhx meta.attribute.unrecognized.tone.html punctuation.separator.key-value.html
+14: "\"" meta.tag.component.pyjinhx meta.attribute.unrecognized.tone.html string.quoted.double.html punctuation.definition.string.begin.html
+14: "info" meta.tag.component.pyjinhx meta.attribute.unrecognized.tone.html string.quoted.double.html
+14: "\"" meta.tag.component.pyjinhx meta.attribute.unrecognized.tone.html string.quoted.double.html punctuation.definition.string.end.html
+14: "/>" meta.tag.component.pyjinhx punctuation.definition.tag.end.html
+14: "</" meta.tag.component.pyjinhx punctuation.definition.tag.begin.html
+14: "Stack" meta.tag.component.pyjinhx entity.name.tag.component.pyjinhx support.class.component.pyjinhx
+14: ">" meta.tag.component.pyjinhx punctuation.definition.tag.end.html
+15: "</" meta.tag.component.pyjinhx punctuation.definition.tag.begin.html
+15: "Card" meta.tag.component.pyjinhx entity.name.tag.component.pyjinhx support.class.component.pyjinhx
+15: ">" meta.tag.component.pyjinhx punctuation.definition.tag.end.html
+16: "<" meta.tag.component.pyjinhx punctuation.definition.tag.begin.html
+16: "PJXModal" meta.tag.component.pyjinhx entity.name.tag.component.pyjinhx support.class.component.pyjinhx
+17: "title" meta.tag.component.pyjinhx meta.attribute.title.html entity.other.attribute-name.html
+17: "=" meta.tag.component.pyjinhx meta.attribute.title.html punctuation.separator.key-value.html
+17: "\"" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html punctuation.definition.string.begin.html
+17: "Confirm" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html
+17: "\"" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html punctuation.definition.string.end.html
+18: "footer" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx entity.other.attribute-name.html
+18: "=" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx punctuation.separator.key-value.html
+18: "\"" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx string.quoted.double.html punctuation.definition.string.begin.html
+18: "<" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx meta.tag.component.pyjinhx punctuation.definition.tag.begin.html
+18: "PJXButton" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx meta.tag.component.pyjinhx entity.name.tag.component.pyjinhx support.class.component.pyjinhx
+18: "label" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx meta.tag.component.pyjinhx meta.attribute.label.html entity.other.attribute-name.html
+18: "=" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx meta.tag.component.pyjinhx meta.attribute.label.html punctuation.separator.key-value.html
+18: "'" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx meta.tag.component.pyjinhx meta.attribute.label.html string.quoted.single.html punctuation.definition.string.begin.html
+18: "OK" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx meta.tag.component.pyjinhx meta.attribute.label.html string.quoted.single.html
+18: "'" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx meta.tag.component.pyjinhx meta.attribute.label.html string.quoted.single.html punctuation.definition.string.end.html
+18: "/>" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx meta.tag.component.pyjinhx punctuation.definition.tag.end.html
+18: "\"" meta.tag.component.pyjinhx meta.attribute.slot.pyjinhx string.quoted.double.html punctuation.definition.string.end.html
+19: "/>" meta.tag.component.pyjinhx punctuation.definition.tag.end.html
+20: "</" meta.tag.structure.div.end.html punctuation.definition.tag.begin.html
+20: "div" meta.tag.structure.div.end.html entity.name.tag.html
+20: ">" meta.tag.structure.div.end.html punctuation.definition.tag.end.html

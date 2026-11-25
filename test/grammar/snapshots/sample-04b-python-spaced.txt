@@ -1,0 +1,14 @@
+1: "{#" comment.block.pyjinhx punctuation.definition.comment.begin.pyjinhx
+1: " python" comment.block.pyjinhx
+2: "class Counter(BaseComponent):" comment.block.pyjinhx
+3: "    remaining: int = 0" comment.block.pyjinhx
+4: "#}" comment.block.pyjinhx punctuation.definition.comment.end.pyjinhx
+5: "<" meta.tag.structure.div.start.html punctuation.definition.tag.begin.html
+5: "div" meta.tag.structure.div.start.html entity.name.tag.html
+5: ">" meta.tag.structure.div.start.html punctuation.definition.tag.end.html
+5: "{{" meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+5: "remaining" meta.scope.jinja.variable variable.other.jinja
+5: "}}" meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+5: "</" meta.tag.structure.div.end.html punctuation.definition.tag.begin.html
+5: "div" meta.tag.structure.div.end.html entity.name.tag.html
+5: ">" meta.tag.structure.div.end.html punctuation.definition.tag.end.html

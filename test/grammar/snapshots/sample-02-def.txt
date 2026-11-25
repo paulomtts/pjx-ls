@@ -1,0 +1,51 @@
+1: "{#" meta.block.def.pyjinhx punctuation.definition.block.begin.pyjinhx
+1: "def" meta.block.def.pyjinhx keyword.control.pyjinhx
+1: "title" meta.block.def.pyjinhx meta.embedded.block.python source.python variable.parameter.pyjinhx
+1: ":" meta.block.def.pyjinhx meta.embedded.block.python source.python punctuation.separator.colon.python
+1: "str" meta.block.def.pyjinhx meta.embedded.block.python source.python support.type.python
+1: "," meta.block.def.pyjinhx meta.embedded.block.python source.python punctuation.separator.element.python
+1: "tone" meta.block.def.pyjinhx meta.embedded.block.python source.python variable.parameter.pyjinhx
+1: ":" meta.block.def.pyjinhx meta.embedded.block.python source.python punctuation.separator.colon.python
+1: "Literal" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.item-access.python meta.indexed-name.python
+1: "[" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.item-access.python punctuation.definition.arguments.begin.python
+1: "\"" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.item-access.python meta.item-access.arguments.python string.quoted.single.python punctuation.definition.string.begin.python
+1: "a" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.item-access.python meta.item-access.arguments.python string.quoted.single.python
+1: "\"" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.item-access.python meta.item-access.arguments.python string.quoted.single.python punctuation.definition.string.end.python
+1: "," meta.block.def.pyjinhx meta.embedded.block.python source.python meta.item-access.python meta.item-access.arguments.python punctuation.separator.element.python
+1: "\"" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.item-access.python meta.item-access.arguments.python string.quoted.single.python punctuation.definition.string.begin.python
+1: "b" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.item-access.python meta.item-access.arguments.python string.quoted.single.python
+1: "\"" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.item-access.python meta.item-access.arguments.python string.quoted.single.python punctuation.definition.string.end.python
+1: "]" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.item-access.python punctuation.definition.arguments.end.python
+1: "=" meta.block.def.pyjinhx meta.embedded.block.python source.python keyword.operator.assignment.python
+1: "\"" meta.block.def.pyjinhx meta.embedded.block.python source.python string.quoted.single.python punctuation.definition.string.begin.python
+1: "a" meta.block.def.pyjinhx meta.embedded.block.python source.python string.quoted.single.python
+1: "\"" meta.block.def.pyjinhx meta.embedded.block.python source.python string.quoted.single.python punctuation.definition.string.end.python
+1: "," meta.block.def.pyjinhx meta.embedded.block.python source.python punctuation.separator.element.python
+1: "size" meta.block.def.pyjinhx meta.embedded.block.python source.python variable.parameter.pyjinhx
+1: ":" meta.block.def.pyjinhx meta.embedded.block.python source.python punctuation.separator.colon.python
+1: "pkg" meta.block.def.pyjinhx meta.embedded.block.python source.python
+1: "." meta.block.def.pyjinhx meta.embedded.block.python source.python meta.member.access.python punctuation.separator.period.python
+1: "mod" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.member.access.python meta.attribute.python
+1: "." meta.block.def.pyjinhx meta.embedded.block.python source.python meta.member.access.python punctuation.separator.period.python
+1: "CONST" meta.block.def.pyjinhx meta.embedded.block.python source.python meta.member.access.python constant.other.caps.python
+1: "," meta.block.def.pyjinhx meta.embedded.block.python source.python punctuation.separator.element.python
+1: "count" meta.block.def.pyjinhx meta.embedded.block.python source.python variable.parameter.pyjinhx
+1: ":" meta.block.def.pyjinhx meta.embedded.block.python source.python punctuation.separator.colon.python
+1: "int" meta.block.def.pyjinhx meta.embedded.block.python source.python support.type.python
+1: "=" meta.block.def.pyjinhx meta.embedded.block.python source.python keyword.operator.assignment.python
+1: "0" meta.block.def.pyjinhx meta.embedded.block.python source.python constant.numeric.dec.python
+1: "#}" meta.block.def.pyjinhx punctuation.definition.block.end.pyjinhx
+2: "<" meta.tag.inline.span.start.html punctuation.definition.tag.begin.html
+2: "span" meta.tag.inline.span.start.html entity.name.tag.html
+2: "class" meta.tag.inline.span.start.html meta.attribute.class.html entity.other.attribute-name.html
+2: "=" meta.tag.inline.span.start.html meta.attribute.class.html punctuation.separator.key-value.html
+2: "\"" meta.tag.inline.span.start.html meta.attribute.class.html string.quoted.double.html punctuation.definition.string.begin.html
+2: "badge" meta.tag.inline.span.start.html meta.attribute.class.html string.quoted.double.html
+2: "\"" meta.tag.inline.span.start.html meta.attribute.class.html string.quoted.double.html punctuation.definition.string.end.html
+2: ">" meta.tag.inline.span.start.html punctuation.definition.tag.end.html
+2: "{{" meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+2: "title" meta.scope.jinja.variable variable.other.jinja
+2: "}}" meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+2: "</" meta.tag.inline.span.end.html punctuation.definition.tag.begin.html
+2: "span" meta.tag.inline.span.end.html entity.name.tag.html
+2: ">" meta.tag.inline.span.end.html punctuation.definition.tag.end.html
