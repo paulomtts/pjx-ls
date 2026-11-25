@@ -313,8 +313,30 @@
     },
     "pyjinhx-raw": {
       "name": "meta.scope.jinja.raw",
-      "begin": "\\{%[-+]?\\s*raw\\s*-?%\\}",
-      "end": "\\{%[-+]?\\s*endraw\\s*[-+]?%\\}"
+      "begin": "(\\{%[-+]?)\\s*(raw)\\s*(-?%\\})",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.other.jinja.delimiter.tag"
+        },
+        "2": {
+          "name": "keyword.control.jinja"
+        },
+        "3": {
+          "name": "entity.other.jinja.delimiter.tag"
+        }
+      },
+      "end": "(\\{%[-+]?)\\s*(endraw)\\s*([-+]?%\\})",
+      "endCaptures": {
+        "1": {
+          "name": "entity.other.jinja.delimiter.tag"
+        },
+        "2": {
+          "name": "keyword.control.jinja"
+        },
+        "3": {
+          "name": "entity.other.jinja.delimiter.tag"
+        }
+      }
     },
     "pyjinhx-def-prop": {
       "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*:(?!:))",
