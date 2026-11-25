@@ -5,6 +5,52 @@
     {
       "match": "[^\\s/=>\"'<{}]+(?=\\{[{%#])",
       "name": "entity.other.attribute-name.html"
+    },
+    {
+      "begin": "(?<=\\}\\}|%\\})\\s*(=)\\s*(\")",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.separator.key-value.html"
+        },
+        "2": {
+          "name": "string.quoted.double.html punctuation.definition.string.begin.html"
+        }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": {
+          "name": "string.quoted.double.html punctuation.definition.string.end.html"
+        }
+      },
+      "name": "string.quoted.double.html",
+      "patterns": [
+        {
+          "include": "source.pyjinhx.jinja"
+        }
+      ]
+    },
+    {
+      "begin": "(?<=\\}\\}|%\\})\\s*(=)\\s*(')",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.separator.key-value.html"
+        },
+        "2": {
+          "name": "string.quoted.single.html punctuation.definition.string.begin.html"
+        }
+      },
+      "end": "'",
+      "endCaptures": {
+        "0": {
+          "name": "string.quoted.single.html punctuation.definition.string.end.html"
+        }
+      },
+      "name": "string.quoted.single.html",
+      "patterns": [
+        {
+          "include": "source.pyjinhx.jinja"
+        }
+      ]
     }
   ]
 }
