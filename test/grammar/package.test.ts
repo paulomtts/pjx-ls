@@ -41,7 +41,11 @@ test("text.pyjinhx maps embedded scopes to languages and keeps attribute values 
 
 test("the Python template injection embeds pyjinhx", () => {
   const template = grammars.find((grammar) => grammar.scopeName === "pyjinhx.python-template");
-  assert.equal(template?.embeddedLanguages?.["meta.embedded.block.pyjinhx"], "pyjinhx");
+  assert.deepEqual(template?.embeddedLanguages, {
+    "meta.embedded.block.pyjinhx": "pyjinhx",
+    "source.css": "css",
+    "source.js": "javascript",
+  });
 });
 
 test("{# #} stays the block comment and Jinja delimiters auto-close", () => {
@@ -49,7 +53,7 @@ test("{# #} stays the block comment and Jinja delimiters auto-close", () => {
   const closes = new Map<string, string>(config.autoClosingPairs.map((pair: { open: string; close: string }) => [pair.open, pair.close]));
   assert.equal(closes.get("{{"), " }}");
   assert.equal(closes.get("{%"), " %}");
-  assert.equal(closes.get("{#"), " #}");
+  assert.equal(closes.has("{#"), false, "typing {#css must not yield {#css #}");
   assert.equal(closes.get("<!--"), " -->");
 });
 
