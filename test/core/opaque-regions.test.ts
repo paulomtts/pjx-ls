@@ -128,3 +128,18 @@ test("raw blocks with + or - whitespace control are opaque", () => {
     assert.equal(formatPyjinhxTemplate(`<div>\n${raw}\n</div>`), `<div>\n  ${raw}\n</div>\n`);
   }
 });
+
+test("%} and }} inside a quoted jinja string do not end the tag", () => {
+  assert.equal(
+    formatPyjinhxTemplate('<div>\n{% set x = "%}" %}\n<p>{{ x }}</p>\n</div>'),
+    '<div>\n  {% set x = "%}" %}\n  <p>{{ x }}</p>\n</div>\n',
+  );
+  assert.equal(
+    formatPyjinhxTemplate("<div>\n{{ '}}' ~ y }}\n<p>x</p>\n</div>"),
+    "<div>\n  {{ '}}' ~ y }}\n  <p>x</p>\n</div>\n",
+  );
+  assert.equal(
+    formatPyjinhxTemplate('<div>\n{{ "a\\"}}" }}\n</div>'),
+    '<div>{{ "a\\"}}" }}</div>\n',
+  );
+});

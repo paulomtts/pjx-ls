@@ -81,8 +81,30 @@ function readTag(text: string, startIndex: number): Parsed | null {
   return null;
 }
 
+/** Index of the first `endMarker` at or after `from`, skipping quoted strings (backslash escapes honoured). */
+function findEndOutsideStrings(text: string, from: number, endMarker: string): number {
+  let index = from;
+  while (index < text.length) {
+    const character = text[index];
+    if (character === '"' || character === "'") {
+      index += 1;
+      while (index < text.length && text[index] !== character) {
+        index += text[index] === "\\" ? 2 : 1;
+      }
+      if (index >= text.length) return -1;
+    } else if (text.startsWith(endMarker, index)) {
+      return index;
+    }
+    index += 1;
+  }
+  return -1;
+}
+
 function readJinja(text: string, startIndex: number, marker: string, endMarker: string): Parsed | null {
-  const endIndex = text.indexOf(endMarker, startIndex + marker.length);
+  const bodyStart = startIndex + marker.length;
+  // Comments are prose: an apostrophe in them is not a string.
+  const endIndex =
+    marker === "{#" ? text.indexOf(endMarker, bodyStart) : findEndOutsideStrings(text, bodyStart, endMarker);
   if (endIndex === -1) {
     return null;
   }
