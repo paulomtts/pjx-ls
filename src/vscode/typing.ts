@@ -1,19 +1,27 @@
 import * as vscode from "vscode";
-import { strayBraceAfterBlockOpener } from "../core/block-opener.ts";
+import { BraceTracker } from "../core/block-opener.ts";
 
 /**
- * `{` auto-closes to `{}`; typing `#` inside it starts a block opener, so the `}` goes.
- * Acts on a single-cursor, single-character `#` keystroke only (not paste, not multi-cursor).
+ * `{` auto-closes to `{}`; typing `#` right after that starts a block opener, so the
+ * `}` the editor inserted goes. Single-cursor keystrokes only (not paste, not multi-cursor),
+ * and a `}` the user typed or that was already there stays.
  */
 export function registerTyping(context: vscode.ExtensionContext): void {
+  const trackers = new Map<string, BraceTracker>();
   context.subscriptions.push(
+    vscode.workspace.onDidCloseTextDocument((document) => trackers.delete(document.uri.toString())),
     vscode.workspace.onDidChangeTextDocument(({ document, contentChanges }) => {
-      const editor = vscode.window.activeTextEditor;
+      if (document.languageId !== "pyjinhx") return;
+      const key = document.uri.toString();
+      const tracker = trackers.get(key) ?? trackers.set(key, new BraceTracker()).get(key)!;
+      if (contentChanges.length !== 1) return tracker.reset();
       const [change] = contentChanges;
-      if (document.languageId !== "pyjinhx" || editor?.document !== document) return;
-      if (contentChanges.length !== 1 || change.text !== "#" || change.rangeLength !== 0) return;
-      const stray = strayBraceAfterBlockOpener(document.getText(), change.rangeOffset);
-      if (stray === null) return;
+      const stray = tracker.onChange(
+        { offset: change.rangeOffset, text: change.text, rangeLength: change.rangeLength },
+        document.getText(),
+      );
+      const editor = vscode.window.activeTextEditor;
+      if (stray === null || editor?.document !== document) return;
       const range = new vscode.Range(document.positionAt(stray), document.positionAt(stray + 1));
       void editor.edit((edit) => edit.delete(range), { undoStopBefore: false, undoStopAfter: false });
     }),

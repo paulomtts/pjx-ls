@@ -43,8 +43,9 @@ adheres to [Semantic Versioning](https://semver.org/).
   glued to Jinja (`big{% endif %}`); never inside `{#css`/`{#js`/`{#python` bodies.
 - `template = r"""…"""` inside a Python class is highlighted as PyJinHx.
 - `{% raw %}…{% endraw %}` suspends every pyjinhx rule.
-- Typing `#` inside an auto-closed `{}` in markup removes the `}`, so block openers
-  leave no stray brace.
+- Typing `#` right after an auto-closed `{}` in markup removes the editor's `}`, so
+  block openers leave no stray brace; `#}` on its own line outdents; `<` is an
+  `autoCloseBefore` character.
 - Auto-closing for `{{ }}`, `{% %}` and `<!-- -->`; folding by indentation plus `{#css`/`{#js`/`{#python`/
   `{#def` … `#}` blocks.
 - `scripts/sync-pyjinhx.mjs` vendors pyjinhx's `block_grammar.json` and its

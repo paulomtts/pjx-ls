@@ -75,9 +75,16 @@ expression or a `{#js`/`{#python` body, so it would offer abbreviations (`a.b`,
 
 ## Typing
 
-`{` auto-closes to `{}`. When you then type `#` in markup, the extension removes the `}`,
-so `{#css` and `{#def` openers leave no stray brace. It acts on a single-cursor `#`
-keystroke only, and not inside block bodies, `<script>` or `<style>`.
+`{` auto-closes to `{}`. When you then type `#` in markup, the extension removes the `}`
+the editor just inserted, so `{#css` and `{#def` openers leave no stray brace. A `}` you
+typed or that was already there stays. It acts on a single-cursor `#` keystroke only, and
+not inside block bodies, `<script>` or `<style>` (tag mentions in comments and
+`{% raw %}` regions do not count). Typing `#}` on its own line outdents it, so a
+`{#python` closer lands in column 0.
+
+This handler, the bracket pairs and the folding apply to `.pjx` files only. Inside
+`template = """…"""` in a `.py` file the document language is Python, so the editor uses
+Python's configuration there; only the highlighting is PyJinHx.
 
 ## Known limitations
 

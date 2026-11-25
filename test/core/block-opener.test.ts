@@ -34,10 +34,15 @@ test("after a block is closed, markup counts again", () => {
 });
 
 test("tag mentions in HTML comments, Jinja comments and raw regions are not code", () => {
-  assert.equal(at("<!-- add a <script> tag here -->\n{|}"), 36);
-  assert.equal(at("{% raw %}<script>{% endraw %}\n{|}"), 32);
-  assert.equal(at("{# a <style> note #}\n{|}"), 24);
-  assert.equal(at("<!-- note\n{|}"), 13);
+  const stray = (marked: string) => marked.indexOf("|") + 1;
+  for (const marked of [
+    "<!-- add a <script> tag here -->\n{|}",
+    "{% raw %}<script>{% endraw %}\n{|}",
+    "{# a <style> note #}\n{|}",
+    "<!-- note\n{|}",
+  ]) {
+    assert.equal(at(marked), stray(marked), marked);
+  }
   assert.equal(at("<!-- x --><script>\n{|}"), null);
 });
 
