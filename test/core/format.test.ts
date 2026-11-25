@@ -42,22 +42,21 @@ test("the blank line after a def header is idempotent (not doubled)", () => {
 
 test("no whitespace is introduced between inline siblings", () => {
   for (const input of [
-    "<p>a<!-- c -->b</p>",
     "<p>x{{ a }}y</p>",
-    "<p>a<b>c</b>d</p>",
   ]) {
     assert.equal(formatPyjinhxTemplate(input), `${input}\n`);
   }
+  assert.equal(formatPyjinhxTemplate("<p>a<!-- c -->b</p>"), "<p>\n  a<!-- c -->b\n</p>\n");
   assert.equal(
     formatPyjinhxTemplate("<p>Hello <b>world</b>!</p>"),
-    "<p>Hello\n  <b>world</b>!</p>\n",
+    "<p>\n  Hello\n  <b>world</b>!\n</p>\n",
   );
 });
 
 test("whitespace between inline siblings is preserved as a break", () => {
   assert.equal(
     formatPyjinhxTemplate("<p>a <!-- c --> b</p>"),
-    "<p>a\n  <!-- c -->\n  b</p>\n",
+    "<p>\n  a\n  <!-- c -->\n  b\n</p>\n",
   );
 });
 
@@ -111,4 +110,26 @@ test("an already formatted CRLF document is left alone", () => {
 test("mixed line endings are returned unchanged", () => {
   const input = "<div>\r\n<p>x</p>\n</div>";
   assert.equal(formatPyjinhxTemplate(input), input);
+});
+
+test("glued inline tags stay on one line", () => {
+  for (const input of [
+    "<span>a</span><span>b</span>",
+    "<b>x</b><i>y</i>",
+    '<a href="#">{% if a %}<b>x</b>{% else %}<i>y</i>{% endif %}</a>',
+  ]) {
+    assert.equal(formatPyjinhxTemplate(input), `${input}\n`);
+  }
+  assert.equal(formatPyjinhxTemplate("<p><Icon/><Icon/></p>"), "<p>\n  <Icon/><Icon/>\n</p>\n");
+});
+
+test("glued block-level tags break onto their own lines", () => {
+  assert.equal(
+    formatPyjinhxTemplate("<div><div><p>a</p></div></div>"),
+    "<div>\n  <div>\n    <p>a</p>\n  </div>\n</div>\n",
+  );
+});
+
+test("an inline element glued to text keeps its place", () => {
+  assert.equal(formatPyjinhxTemplate("<p>a<b>c</b>d</p>"), "<p>\n  a<b>c</b>d\n</p>\n");
 });

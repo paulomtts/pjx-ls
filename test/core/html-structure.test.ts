@@ -37,14 +37,14 @@ test("single-line open tag with element children keeps '>' attached", () => {
 test("text glued to an element stays on one line", () => {
   assert.equal(
     formatHtmlStructure("<div>some leading text<span>child element here</span></div>"),
-    "<div>some leading text<span>child element here</span></div>\n",
+    "<div>\n  some leading text<span>child element here</span>\n</div>\n",
   );
 });
 
 test("jinja if block nests and dedents", () => {
   assert.equal(
     formatHtmlStructure("<div>{% if x %}{{ a }}{% endif %}</div>"),
-    "<div>\n  {% if x %}{{ a }}{% endif %}</div>\n",
+    "<div>\n  {% if x %}{{ a }}{% endif %}\n</div>\n",
   );
 });
 
@@ -82,11 +82,11 @@ test("a bare double-quote inside {{ }} in an attribute does not terminate the ta
 
 test("macro and block nest one level, and a raw block stays opaque", () => {
   assert.equal(
-    formatHtmlStructure("{% macro foo() %}<span>x</span>{% endmacro %}"),
+    formatHtmlStructure("{% macro foo() %} <span>x</span> {% endmacro %}"),
     "{% macro foo() %}\n  <span>x</span>\n{% endmacro %}\n",
   );
   assert.equal(
-    formatHtmlStructure("{% block content %}<span>x</span>{% endblock %}"),
+    formatHtmlStructure("{% block content %} <span>x</span> {% endblock %}"),
     "{% block content %}\n  <span>x</span>\n{% endblock %}\n",
   );
   assert.equal(
@@ -98,10 +98,10 @@ test("macro and block nest one level, and a raw block stays opaque", () => {
 test("unknown jinja tags (set, include) are depth-neutral", () => {
   assert.equal(
     formatHtmlStructure("<div>{% set x = 1 %}<span>y</span></div>"),
-    "<div>\n  {% set x = 1 %}\n  <span>y</span>\n</div>\n",
+    "<div>\n  {% set x = 1 %}<span>y</span>\n</div>\n",
   );
   assert.equal(
-    formatHtmlStructure("<div>{% include 'p.html' %}<span>y</span></div>"),
+    formatHtmlStructure("<div>{% include 'p.html' %} <span>y</span></div>"),
     "<div>\n  {% include 'p.html' %}\n  <span>y</span>\n</div>\n",
   );
 });
@@ -109,7 +109,7 @@ test("unknown jinja tags (set, include) are depth-neutral", () => {
 test("a non-def {# comment #} is depth-neutral", () => {
   assert.equal(
     formatHtmlStructure("<div>{# a comment #}<span>x</span></div>"),
-    "<div>\n  {# a comment #}\n  <span>x</span>\n</div>\n",
+    "<div>\n  {# a comment #}<span>x</span>\n</div>\n",
   );
 });
 

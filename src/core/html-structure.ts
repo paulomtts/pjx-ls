@@ -408,6 +408,20 @@ function tryInlineElement(tokens: Token[], startIndex: number): { endIndex: numb
   return null;
 }
 
+const BLOCK_ELEMENTS = new Set([
+  "html", "head", "body", "title", "meta", "link", "script", "style", "address", "article", "aside",
+  "blockquote", "details", "dd", "div", "dl", "dt", "fieldset", "figure", "footer", "form", "h1",
+  "h2", "h3", "h4", "h5", "h6", "header", "hr", "li", "main", "nav", "ol", "p", "pre", "section",
+  "table", "tbody", "td", "tfoot", "th", "thead", "tr", "ul",
+]);
+
+/** Whitespace next to a block-level tag collapses, so a line break there never renders. */
+function isBlockTag(token: Token | undefined): boolean {
+  if (!token) return true;
+  const isTag = token.type === "open" || token.type === "close" || token.type === "self_close";
+  return isTag && BLOCK_ELEMENTS.has(token.name?.toLowerCase() ?? "");
+}
+
 /** True when every tag and Jinja block opens and closes in matching order. */
 function isBalanced(tokens: Token[]): boolean {
   const stack: string[] = [];
@@ -442,20 +456,16 @@ function formatLf(text: string): string {
 
   const lines: string[] = [];
   let depth = 0;
-  let glued = false;
 
-  // A token with no whitespace before it joins the previous line when text is
-  // involved (or the previous token was itself joined): a new line there would
-  // add a space to the rendered output.
+  // A token with no whitespace before it joins the previous line unless one side
+  // is a block-level tag: a new line between other neighbours would add a space
+  // to the rendered output.
   const emit = (index: number, line: string): void => {
-    const token = tokens[index];
-    const isTextual = (candidate: Token | undefined) =>
-      candidate?.type === "text" || candidate?.type === "jinja_expr";
-    glued =
-      !token.spaceBefore &&
+    const glued =
+      !tokens[index].spaceBefore &&
       lines.length > 0 &&
       lines[lines.length - 1] !== "" &&
-      (isTextual(token) || isTextual(tokens[index - 1]) || glued);
+      !isBlockTag(tokens[index]) && !isBlockTag(tokens[index - 1]);
     if (glued) {
       lines[lines.length - 1] += line.trimStart();
     } else {
