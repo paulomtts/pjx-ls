@@ -9,6 +9,9 @@
       "include": "#pyjinhx-def-header"
     },
     {
+      "include": "#pyjinhx-comment"
+    },
+    {
       "include": "#pyjinhx-component-tag"
     },
     {
@@ -127,6 +130,17 @@
           ]
         }
       ]
+    },
+    "pyjinhx-comment": {
+      "name": "comment.block.pyjinhx",
+      "begin": "\\{#-?",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.comment.begin.pyjinhx" }
+      },
+      "end": "-?#\\}",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.comment.end.pyjinhx" }
+      }
     },
     "pyjinhx-def-signature": {
       "patterns": [
