@@ -138,7 +138,17 @@ function readJinja(text: string, startIndex: number, marker: string, endMarker: 
   };
 }
 
-const RAW_TEXT_ELEMENT = /^<(script|style|textarea|pre)(?=[\s/>])/i;
+const COMMENT_OPEN = /<!--/y;
+const DECLARATION_OPEN = /<!/y;
+const RAW_OPEN = /\{%[-+]?\s*raw\s*[-+]?%\}/y;
+const RAW_TEXT_OPEN = /<(script|style|textarea|pre)(?=[\s/>])/iy;
+
+/** Index just past the first match of `closing` after `from`, or -1. */
+function endOfFirst(closing: RegExp, text: string, from: number): number {
+  closing.lastIndex = from;
+  const close = closing.exec(text);
+  return close ? close.index + close[0].length : -1;
+}
 
 /**
  * Read a region whose contents must reach the output untouched: HTML comments,
@@ -147,22 +157,24 @@ const RAW_TEXT_ELEMENT = /^<(script|style|textarea|pre)(?=[\s/>])/i;
  * terminates.
  */
 function readOpaque(text: string, startIndex: number): Parsed | null | undefined {
-  const rest = text.slice(startIndex);
+  const opens = (opener: RegExp) => {
+    opener.lastIndex = startIndex;
+    return opener.exec(text);
+  };
   let closing: RegExp;
-  if (rest.startsWith("<!--")) {
-    closing = /-->/;
-  } else if (rest.startsWith("<!")) {
-    closing = />/;
-  } else if (/^\{%[-+]?\s*raw\s*[-+]?%\}/.test(rest)) {
-    closing = /\{%[-+]?\s*endraw\s*[-+]?%\}/;
+  if (opens(COMMENT_OPEN)) {
+    closing = /-->/g;
+  } else if (opens(DECLARATION_OPEN)) {
+    closing = />/g;
+  } else if (opens(RAW_OPEN)) {
+    closing = /\{%[-+]?\s*endraw\s*[-+]?%\}/g;
   } else {
-    const element = RAW_TEXT_ELEMENT.exec(rest);
+    const element = opens(RAW_TEXT_OPEN);
     if (!element) return undefined;
-    closing = new RegExp(`</${element[1]}\\s*>`, "i");
+    closing = new RegExp(`</${element[1]}\\s*>`, "ig");
   }
-  const close = closing.exec(rest.slice(1));
-  if (!close) return null;
-  const end = startIndex + 1 + close.index + close[0].length;
+  const end = endOfFirst(closing, text, startIndex + 1);
+  if (end === -1) return null;
   return { value: text.slice(startIndex, end), endIndex: end - 1 };
 }
 
