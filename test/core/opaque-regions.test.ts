@@ -117,3 +117,14 @@ test("a slot value holding a script, comment or css block is not re-indented", (
     assert.equal(formatPyjinhxTemplate(out), out);
   }
 });
+
+test("raw blocks with + or - whitespace control are opaque", () => {
+  for (const [open, close] of [
+    ["{%+ raw %}", "{% endraw %}"],
+    ["{%- raw -%}", "{%- endraw -%}"],
+    ["{% raw +%}", "{%+ endraw +%}"],
+  ]) {
+    const raw = `${open}\n  <b>  {{ x }}\n${close}`;
+    assert.equal(formatPyjinhxTemplate(`<div>\n${raw}\n</div>`), `<div>\n  ${raw}\n</div>\n`);
+  }
+});

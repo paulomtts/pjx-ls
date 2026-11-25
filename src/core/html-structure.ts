@@ -107,8 +107,8 @@ function readOpaque(text: string, startIndex: number): Parsed | null | undefined
     closing = /-->/;
   } else if (rest.startsWith("<!")) {
     closing = />/;
-  } else if (/^\{%-?\s*raw\s*-?%\}/.test(rest)) {
-    closing = /\{%-?\s*endraw\s*-?%\}/;
+  } else if (/^\{%[-+]?\s*raw\s*[-+]?%\}/.test(rest)) {
+    closing = /\{%[-+]?\s*endraw\s*[-+]?%\}/;
   } else {
     const element = RAW_TEXT_ELEMENT.exec(rest);
     if (!element) return undefined;
