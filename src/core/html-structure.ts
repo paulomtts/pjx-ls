@@ -7,6 +7,8 @@ const JINJA_BLOCKS = new Set(["if", "for", "macro", "block", "filter", "with", "
 const VOID_ELEMENTS = new Set([
   "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr",
 ]);
+// pyjinhx only recognises `{#python` with the opener in column 0.
+const PYTHON_BLOCK = /^\{#-?python\b/;
 const DEF_HEADER = /^\{#-?\s*def\b/;
 
 type TokenType = "opaque" | "jinja" | "jinja_expr" | "open" | "close" | "self_close" | "text";
@@ -15,6 +17,8 @@ export interface Token {
   type: TokenType;
   value: string;
   name?: string;
+  /** Whether a line break precedes this token in the source. */
+  newlineBefore: boolean;
   /** Whether whitespace (or the start of the text) precedes this token in the source. */
   spaceBefore: boolean;
 }
@@ -193,8 +197,15 @@ function tokenize(text: string): { tokens: Token[]; complete: boolean } {
   const tokens: Token[] = [];
   let complete = true;
   let index = 0;
-  const add = (start: number, token: Omit<Token, "spaceBefore">) =>
-    tokens.push({ ...token, spaceBefore: start === 0 || /\s/.test(text[start - 1]) });
+  const add = (start: number, token: Omit<Token, "spaceBefore" | "newlineBefore">): void => {
+    let back = start;
+    while (back > 0 && /\s/.test(text[back - 1]) && text[back - 1] !== "\n") back -= 1;
+    tokens.push({
+      ...token,
+      spaceBefore: start === 0 || /\s/.test(text[start - 1]),
+      newlineBefore: back > 0 && text[back - 1] === "\n",
+    });
+  };
 
   while (index < text.length) {
     const character = text[index];
@@ -457,6 +468,17 @@ function isBalanced(tokens: Token[]): boolean {
 }
 
 /** Format with `\n` line endings, restoring the document's own EOL afterwards. */
+/** A `{#def` closer followed by more text on its line means the header was not what it seems. */
+function hasTextAfterHeader(tokens: Token[]): boolean {
+  return tokens.some(
+    (token, index) =>
+      token.type === "jinja" &&
+      DEF_HEADER.test(token.value) &&
+      index + 1 < tokens.length &&
+      !tokens[index + 1].newlineBefore,
+  );
+}
+
 export function formatHtmlStructure(text: string): string {
   if (!text.includes("\r\n")) return formatLf(text);
   // A file mixing CRLF and bare LF cannot be restored byte-for-byte.
@@ -465,8 +487,11 @@ export function formatHtmlStructure(text: string): string {
 }
 
 function formatLf(text: string): string {
+  // Blank lines before a leading `{#` comment or header are the author's layout.
+  const lead = /^(?:[ \t]*\n)+(?=[ \t]*\{#)/.exec(text)?.[0];
+  if (lead) return lead + formatLf(text.slice(lead.length));
   const { tokens, complete } = tokenize(text);
-  if (tokens.length === 0 || !complete || !isBalanced(tokens)) {
+  if (tokens.length === 0 || !complete || !isBalanced(tokens) || hasTextAfterHeader(tokens)) {
     return text;
   }
 
@@ -502,7 +527,7 @@ function formatLf(text: string): string {
       const trimmed = token.value.trim();
       const kind = jinjaTag(trimmed)?.kind;
       const level = kind === "close" || kind === "mid" ? Math.max(0, depth - 1) : depth;
-      emit(index, INDENT.repeat(level) + trimmed);
+      emit(index, (PYTHON_BLOCK.test(trimmed) ? "" : INDENT.repeat(level)) + trimmed);
       if (kind === "open") depth += 1;
       if (kind === "close") depth = level;
       // A {#def … #} header is always separated from the rest of the file by a
