@@ -75,6 +75,12 @@ expression or a `{#js`/`{#python` body, so it would offer abbreviations (`a.b`,
 
 ## Known limitations
 
+- `{` auto-closes to `{}` everywhere, because the editor uses only this extension's
+  pairs in a `.pjx` file. Typing `{#css` therefore leaves a `}` after the cursor to
+  delete. No language-configuration setting avoids that without also turning off `{}`
+  in CSS, JS and Python bodies. `{{` and `{%` also auto-close inside `{#css`/`{#js`/
+  `{#python` bodies, where Jinja does not render.
+
 - A `template = """…"""` at 4 spaces (or one tab) is highlighted as PyJinHx wherever it
   appears, including inside a module-level function; TextMate cannot tell a class body
   from a function body.

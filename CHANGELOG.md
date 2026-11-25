@@ -43,8 +43,7 @@ adheres to [Semantic Versioning](https://semver.org/).
   glued to Jinja (`big{% endif %}`); never inside `{#css`/`{#js`/`{#python` bodies.
 - `template = r"""…"""` inside a Python class is highlighted as PyJinHx.
 - `{% raw %}…{% endraw %}` suspends every pyjinhx rule.
-- Auto-closing for `{{ }}`, `{% %}` and `<!-- -->` (no bare `{` pair, so typing
-  `{#css` leaves no stray `}`); folding by indentation plus `{#css`/`{#js`/`{#python`/
+- Auto-closing for `{{ }}`, `{% %}` and `<!-- -->`; folding by indentation plus `{#css`/`{#js`/`{#python`/
   `{#def` … `#}` blocks.
 - `scripts/sync-pyjinhx.mjs` vendors pyjinhx's `block_grammar.json` and its
   conformance corpus; a CI job fails when they drift.
