@@ -39,22 +39,7 @@
       { "command": "pyjinhx.formatSlots", "title": "PyJinHx: Format Slotted Component Tags" }
     ],
     "configurationDefaults": {
-      "editor.tokenColorCustomizations": {
-        "textMateRules": [
-          {
-            "scope": "entity.name.tag.pyjinhx",
-            "settings": { "foreground": "#4EC9B0" }
-          },
-          {
-            "scope": "keyword.control.import.pyjinhx",
-            "settings": { "foreground": "#C586C0" }
-          },
-          {
-            "scope": "punctuation.bracket.pyjinhx",
-            "settings": { "foreground": "#FFD700" }
-          }
-        ]
-      }
+      "emmet.includeLanguages": { "pyjinhx": "html" }
     },
     "languages": [
       {
@@ -69,10 +54,20 @@
       }
     ],
     "grammars": [
-      { "language": "pyjinhx", "scopeName": "text.pyjinhx", "path": "./syntaxes/pyjinhx.json" },
+      {
+        "language": "pyjinhx",
+        "scopeName": "text.pyjinhx",
+        "path": "./syntaxes/pyjinhx.json",
+        "embeddedLanguages": {
+          "source.css": "css",
+          "source.js": "javascript",
+          "source.python": "python"
+        },
+        "tokenTypes": { "meta.tag string.quoted": "other" }
+      },
       { "scopeName": "source.pyjinhx.jinja", "path": "./syntaxes/pyjinhx-jinja.json" },
       { "scopeName": "pyjinhx.injection", "path": "./syntaxes/pyjinhx-injection.json", "injectTo": ["text.pyjinhx", "source.python"] },
-      { "scopeName": "pyjinhx.python-template", "path": "./syntaxes/pyjinhx-python-template.json", "injectTo": ["source.python"] },
+      { "scopeName": "pyjinhx.python-template", "path": "./syntaxes/pyjinhx-python-template.json", "injectTo": ["source.python"], "embeddedLanguages": { "meta.embedded.block.pyjinhx": "pyjinhx" } },
       { "scopeName": "pyjinhx.injection.attributes", "path": "./syntaxes/pyjinhx-injection-attributes.json", "injectTo": ["text.pyjinhx", "source.python"] }
     ]
   },
