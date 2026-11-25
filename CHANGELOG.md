@@ -19,6 +19,8 @@ adheres to [Semantic Versioning](https://semver.org/).
   inline elements; `%}`/`}}` inside Jinja strings, `{%+`/`{%-` tags, void elements,
   `set`/`with`/`call` blocks and CRLF files are handled; unbalanced markup is left
   unchanged.
+- Minified Jinja/component runs (e.g. `{% if %}<A/>{% else %}<B/>{% endif %}`) are no
+  longer split onto separate lines, since splitting changed rendered whitespace.
 - Grammar: `{# … #}` comments are scoped as comments (no Python coloring of their
   body, with or without a Jinja grammar installed).
 

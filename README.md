@@ -46,6 +46,14 @@ the same block if you have other formatters installed.
 `.pjx` files are formatted anywhere. The extension does not register for the `html`,
 `jinja` or `jinja-html` languages, so it never competes with their formatters.
 
+## Known limitations
+
+- Whitespace next to block-level tags (the `BLOCK_ELEMENTS` list in
+  `src/core/html-structure.ts`) is treated as non-rendering. That is wrong for
+  elements styled `display: inline-block` (e.g. inline-block `<li>` menus can gain
+  gaps).
+- Whitespace inside slot values is re-laid out.
+
 ## Commands
 
 | Command | Description |
