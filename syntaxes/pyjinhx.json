@@ -6,7 +6,7 @@
       "include": "#pyjinhx-raw"
     },
     {
-      "include": "#pyjinhx-block-def-legacy"
+      "include": "#pyjinhx-legacy-preamble"
     },
     {
       "include": "#pyjinhx-block-python"
@@ -125,15 +125,7 @@
           "while": "(^|\\G)(?!.*#\\})",
           "patterns": [
             {
-              "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*:(?!:))",
-              "captures": {
-                "1": {
-                  "name": "variable.parameter.pyjinhx"
-                }
-              }
-            },
-            {
-              "include": "source.python"
+              "include": "#pyjinhx-def-body"
             }
           ]
         },
@@ -143,15 +135,7 @@
             "1": {
               "patterns": [
                 {
-                  "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*:(?!:))",
-                  "captures": {
-                    "1": {
-                      "name": "variable.parameter.pyjinhx"
-                    }
-                  }
-                },
-                {
-                  "include": "source.python"
+                  "include": "#pyjinhx-def-body"
                 }
               ]
             }
@@ -161,7 +145,7 @@
     },
     "pyjinhx-block-def-legacy": {
       "name": "meta.block.def.pyjinhx",
-      "begin": "\\A(\\{#)(?:[ \\t]+)(def)(?=\\s|$|#\\})",
+      "begin": "(\\{#)[ \\t]+(def)(?=\\s|$|#\\})",
       "beginCaptures": {
         "1": {
           "name": "punctuation.definition.block.begin.pyjinhx"
@@ -183,15 +167,7 @@
           "while": "(^|\\G)(?!.*#\\})",
           "patterns": [
             {
-              "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*:(?!:))",
-              "captures": {
-                "1": {
-                  "name": "variable.parameter.pyjinhx"
-                }
-              }
-            },
-            {
-              "include": "source.python"
+              "include": "#pyjinhx-def-body"
             }
           ]
         },
@@ -201,15 +177,7 @@
             "1": {
               "patterns": [
                 {
-                  "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*:(?!:))",
-                  "captures": {
-                    "1": {
-                      "name": "variable.parameter.pyjinhx"
-                    }
-                  }
-                },
-                {
-                  "include": "source.python"
+                  "include": "#pyjinhx-def-body"
                 }
               ]
             }
@@ -347,6 +315,38 @@
       "name": "meta.scope.jinja.raw",
       "begin": "\\{%[-+]?\\s*raw\\s*-?%\\}",
       "end": "\\{%[-+]?\\s*endraw\\s*[-+]?%\\}"
+    },
+    "pyjinhx-def-prop": {
+      "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*:(?!:))",
+      "captures": {
+        "1": {
+          "name": "variable.parameter.pyjinhx"
+        }
+      }
+    },
+    "pyjinhx-def-body": {
+      "patterns": [
+        {
+          "include": "#pyjinhx-def-prop"
+        },
+        {
+          "include": "source.python"
+        }
+      ]
+    },
+    "pyjinhx-legacy-preamble": {
+      "begin": "\\A(?=\\s*(?:$|\\{#\\s*#\\}|\\{#\\s+def[ \\t\\r\\n]))",
+      "end": "(?=\\S)",
+      "applyEndPatternLast": true,
+      "patterns": [
+        {
+          "include": "#pyjinhx-block-def-legacy"
+        },
+        {
+          "name": "comment.block.pyjinhx",
+          "match": "\\{#\\s*#\\}"
+        }
+      ]
     }
   }
 }
