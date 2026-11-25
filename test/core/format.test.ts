@@ -152,3 +152,8 @@ test("a slotted tag glued to text is not exploded", () => {
     '<p>\n  Hi<Card body="<b>x</b>" />!\n</p>\n',
   );
 });
+
+test("a whitespace-only inline element keeps its space", () => {
+  assert.equal(formatPyjinhxTemplate("<p><span> </span>text</p>"), "<p>\n  <span> </span>text\n</p>\n");
+  assert.equal(formatPyjinhxTemplate("<p><b></b>x</p>"), "<p>\n  <b></b>x\n</p>\n");
+});

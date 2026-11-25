@@ -400,7 +400,7 @@ function tryInlineElement(tokens: Token[], startIndex: number): { endIndex: numb
   for (let index = startIndex + 1; index < tokens.length; index += 1) {
     const token = tokens[index];
     if (token.type === "close" && token.name === openToken.name) {
-      const trailing = keepEdges && token.spaceBefore && inner ? " " : "";
+      const trailing = keepEdges && token.spaceBefore ? " " : "";
       return { endIndex: index, value: `${openToken.value}${inner}${trailing}${token.value}` };
     }
     if (token.type === "text" || token.type === "jinja_expr") {
