@@ -39,7 +39,7 @@ Install from the Marketplace. Formatting on save is off by default; enable it fo
 }
 ```
 
-The extension is the only formatter registered for `.pjx`, so VS Code uses it
+A global `"editor.formatOnSave": true` also formats `.pjx` files. The extension is the only formatter registered for `.pjx`, so VS Code uses it
 automatically; add `"editor.defaultFormatter": "paulomtts.pyjinhx-syntax-support"` to
 the same block if you have other formatters installed.
 
