@@ -61,3 +61,15 @@ test("the spaced {# def form is a header in first position only", async () => {
   assert.deepEqual(await blocksIn("{# def a: int #}\n<p></p>"), [{ keyword: "def", open_line: 1, close_line: 1 }]);
   assert.deepEqual(await blocksIn("<p></p>\n{# def a: int #}"), []);
 });
+
+test("the spaced {# def form follows pyjinhx's LEGACY_HEADER_RE", async () => {
+  const header = (line: number) => [{ keyword: "def", open_line: line, close_line: line }];
+  assert.deepEqual(await blocksIn("\n{# def a: int #}\n<p></p>"), header(2));
+  assert.deepEqual(await blocksIn("  {# def a: int #}\n<p></p>"), header(1));
+  assert.deepEqual(await blocksIn("\n\n  \n{# def a: int #}"), header(4));
+  assert.deepEqual(await blocksIn("{# #}\n{# def a: int #}"), header(2));
+  assert.deepEqual(await blocksIn("  {# #}  {# def a: int #}"), header(1));
+  assert.deepEqual(await blocksIn("{# note #}\n{# def a: int #}"), []);
+  assert.deepEqual(await blocksIn("<p></p>\n{# def a: int #}"), []);
+  assert.deepEqual(await blocksIn("\n<p></p>\n{# def a: int #}"), []);
+});
