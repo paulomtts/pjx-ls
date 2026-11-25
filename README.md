@@ -73,14 +73,16 @@ expression or a `{#js`/`{#python` body, so it would offer abbreviations (`a.b`,
 "emmet.includeLanguages": { "pyjinhx": "html" }
 ```
 
+## Typing
+
+`{` auto-closes to `{}`. When you then type `#` in markup, the extension removes the `}`,
+so `{#css` and `{#def` openers leave no stray brace. It acts on a single-cursor `#`
+keystroke only, and not inside block bodies, `<script>` or `<style>`.
+
 ## Known limitations
 
-- `{` auto-closes to `{}` everywhere, because the editor uses only this extension's
-  pairs in a `.pjx` file. Typing `{#css` therefore leaves a `}` after the cursor to
-  delete. No language-configuration setting avoids that without also turning off `{}`
-  in CSS, JS and Python bodies. `{{` and `{%` also auto-close inside `{#css`/`{#js`/
-  `{#python` bodies, where Jinja does not render.
-
+- `{{` and `{%` auto-close inside `{#css`/`{#js`/`{#python` bodies, where Jinja does not
+  render; the editor offers no per-region switch for that.
 - A `template = """…"""` at 4 spaces (or one tab) is highlighted as PyJinHx wherever it
   appears, including inside a module-level function; TextMate cannot tell a class body
   from a function body.

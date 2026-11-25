@@ -9,7 +9,7 @@ const at = (marked: string) => {
 };
 
 test("a # typed inside an auto-closed {} in markup removes the }", () => {
-  assert.equal(at("<p></p>\n{|}\n<b></b>"), 11);
+  assert.equal(at("<p></p>\n{|}\n<b></b>"), 10);
   assert.equal(at("{|}"), 2);
 });
 
@@ -29,6 +29,6 @@ test("nothing happens inside a block body, script or style", () => {
 });
 
 test("after a block is closed, markup counts again", () => {
-  assert.equal(at("{#css\n.a {}\n#}\n{|}"), 18);
+  assert.equal(at("{#css\n.a {}\n#}\n{|}"), 17);
   assert.equal(at("<style>a{}</style>\n{|}"), 21);
 });
