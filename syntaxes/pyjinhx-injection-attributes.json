@@ -1,0 +1,10 @@
+{
+  "scopeName": "pyjinhx.injection.attributes",
+  "injectionSelector": "L:text.pyjinhx meta.tag -string -comment -meta.scope.jinja -meta.block",
+  "patterns": [
+    {
+      "match": "[^\\s/=>\"'<{}]+(?=\\{[{%#])",
+      "name": "entity.other.attribute-name.html"
+    }
+  ]
+}

@@ -1,1 +1,5 @@
-{ "scopeName": "pyjinhx.injection", "injectionSelector": "L:text.pyjinhx", "patterns": [] }
+{
+  "scopeName": "pyjinhx.injection",
+  "injectionSelector": "L:text.pyjinhx meta.tag -string -comment -meta.scope.jinja -meta.block, L:text.pyjinhx string.quoted -source -comment -meta.scope.jinja -meta.block, L:text.pyjinhx source.js -comment -meta.scope.jinja -meta.block, L:text.pyjinhx source.css -comment -meta.scope.jinja -meta.block",
+  "patterns": [{ "include": "source.pyjinhx.jinja" }]
+}
