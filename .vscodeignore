@@ -16,3 +16,4 @@ icons/icon-1024.png
 .superpowers/**
 .claude/**
 *.vsix
+.github/**

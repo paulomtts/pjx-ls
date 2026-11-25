@@ -28,7 +28,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## test/fixtures/grammars/
+## test/fixtures/grammars/ (tests only; not shipped)
 
-Grammars from [microsoft/vscode](https://github.com/microsoft/vscode), MIT License,
-Copyright (c) 2015 - present Microsoft Corporation. Used by tests only; not shipped.
+Grammars bundled with [microsoft/vscode](https://github.com/microsoft/vscode) 1.105.0,
+MIT License, Copyright (c) 2015 - present Microsoft Corporation, except where the
+upstream grammar says otherwise:
+
+- `MagicPython.tmLanguage.json` and `MagicRegExp.tmLanguage.json` are
+  [MagicStack/MagicPython](https://github.com/MagicStack/MagicPython), MIT License,
+  Copyright (c) 2015-present MagicStack Inc.
+- `JavaScript.tmLanguage.json` is converted from
+  [microsoft/TypeScript-TmLanguage](https://github.com/microsoft/TypeScript-TmLanguage),
+  MIT License, Copyright (c) Microsoft Corporation.
+- `css.tmLanguage.json` and `html.tmLanguage.json` are from microsoft/vscode itself.
