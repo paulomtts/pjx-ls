@@ -167,3 +167,8 @@ test("a nested {#python block keeps its opener in column 0", () => {
   );
 });
 
+
+test("a header whose closer is followed by more text on the same line is left alone", () => {
+  const input = '{#def title: str = "a #} b", x #}\n<p>{{ title }}</p>';
+  assert.equal(formatPyjinhxTemplate(input), input);
+});
