@@ -3,12 +3,8 @@ import { formatPyjinhxTemplate } from "../core/format.ts";
 import { isComponentTemplate } from "./component-template.ts";
 import { CONFIG_SECTION, FORMAT_ON_SAVE_KEY, FORMAT_SLOTS_COMMAND } from "../config.ts";
 
-const TEMPLATE_SELECTOR: vscode.DocumentSelector = [
-  { language: "html", scheme: "file" },
-  { language: "jinja", scheme: "file" },
-  { language: "jinja-html", scheme: "file" },
-  { language: "pyjinhx", scheme: "file" },
-];
+// Only .pjx: claiming plain html would compete with the user's HTML formatter.
+const TEMPLATE_SELECTOR: vscode.DocumentSelector = [{ language: "pyjinhx", scheme: "file" }];
 
 function fullDocumentEdit(document: vscode.TextDocument, formattedText: string): vscode.TextEdit {
   const lastLine = document.lineAt(document.lineCount - 1);
@@ -41,7 +37,7 @@ export function registerFormatting(
   context.subscriptions.push(
     vscode.workspace.onWillSaveTextDocument((event) => {
       const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-      if (!config.get(FORMAT_ON_SAVE_KEY, true)) {
+      if (!config.get(FORMAT_ON_SAVE_KEY, false) || event.document.languageId !== "pyjinhx") {
         return;
       }
       const formatted = nextFormattedText(event.document);

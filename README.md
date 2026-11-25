@@ -45,7 +45,7 @@ their path contains `/components/`, to avoid reformatting unrelated HTML.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `pyjinhx.formatSlotsOnSave` | `true` | Format PyJinHx component templates on save. |
+| `pyjinhx.formatSlotsOnSave` | `false` | Format `.pjx` templates on save (opt-in). |
 
 ## Commands
 

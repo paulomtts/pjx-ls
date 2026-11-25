@@ -46,8 +46,8 @@
       "properties": {
         "pyjinhx.formatSlotsOnSave": {
           "type": "boolean",
-          "default": true,
-          "description": "Expand single-line quoted slot values that contain a PascalCase component tag when saving component templates."
+          "default": false,
+          "description": "Format .pjx templates on save (re-indent and expand slotted component tags). Off by default."
         }
       }
     },
