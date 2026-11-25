@@ -31,8 +31,9 @@ for (const file of readdirSync(corpus).filter((name) => name.endsWith(".pjx")).s
 
     if (expected.error) {
       assertSnapshot(`corpus-${name}`, dumpTokens(tokens));
-      const lastCloser = source.split("\n").findLastIndex((line) => line.includes("#}")) + 1;
-      if (lastCloser === 0) return;
+      const closerAt = source.lastIndexOf("#}");
+      if (closerAt < 0) return;
+      const lastCloser = source.slice(0, closerAt).split("\n").length;
       for (const token of tokens.filter((token) => token.line > lastCloser)) {
         assert.ok(!token.scopes.some((scope) => scope.startsWith("meta.block.")), `${token.text} after the last #}`);
       }
