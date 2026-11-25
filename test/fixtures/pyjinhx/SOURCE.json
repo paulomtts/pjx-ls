@@ -1,6 +1,8 @@
 {
   "commit": "b3d78e1caad142c01abfdf9e5f0089d37d8fc415",
-  "pyjinhx_version": "1.16.0",
+  "ref": "b3d78e1caad142c01abfdf9e5f0089d37d8fc415",
+  "tag": null,
+  "pyproject_version": "1.16.0",
   "block_grammar_version": 1,
   "sha256": {
     "block_grammar.json": "1a4d42dd78e14b8d811d368f2bbc06a0017f0072dcae46db6dec5a91289b2190",
