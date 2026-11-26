@@ -2,7 +2,7 @@
   "name": "pyjinhx-syntax-support",
   "displayName": "PyJinHx",
   "description": "Syntax highlighting and template formatting for the PyJinHx Python framework (PascalCase component tags, slots, {#def#} headers, interpolation).",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publisher": "paulomtts",
   "license": "MIT",
   "type": "module",
@@ -50,6 +50,14 @@
       {
         "command": "pyjinhx.formatSlots",
         "title": "PyJinHx: Format Slotted Component Tags"
+      },
+      {
+        "command": "pyjinhx.refreshManifest",
+        "title": "PyJinHx: Refresh Component Manifest"
+      },
+      {
+        "command": "pyjinhx.showOutput",
+        "title": "PyJinHx: Show Output"
       }
     ],
     "languages": [
@@ -123,7 +131,34 @@
           "source.python"
         ]
       }
-    ]
+    ],
+    "configuration": {
+      "title": "PyJinHx",
+      "properties": {
+        "pyjinhx.pythonPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable",
+          "markdownDescription": "The Python interpreter that has pyjinhx installed. Empty: the Python extension's environment, then `.venv` in the workspace folder, then `python3` on `PATH`. `${workspaceFolder}` is replaced."
+        },
+        "pyjinhx.manifest.paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Folders or files to read components from, relative to the workspace folder. Empty: the whole folder."
+        },
+        "pyjinhx.manifest.sysPath": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Directories modules are imported from (`--sys-path`), relative to the workspace folder; they decide how a component's module is named."
+        }
+      }
+    }
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -138,5 +173,12 @@
     "vscode-languageserver-textdocument": "^1.0.16",
     "vscode-oniguruma": "^2.0.1",
     "vscode-textmate": "^9.3.2"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "In an untrusted workspace no Python interpreter is run: tags and props come from the .pjx files only."
+    },
+    "virtualWorkspaces": false
   }
 }

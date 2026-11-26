@@ -69,7 +69,7 @@ await runTests({
     XDG_STATE_HOME: path.join(home, "state"),
   },
   launchArgs: [
-    path.join(root, "test/editor/fixtures"),
+    path.join(root, "test/fixtures/project"),
     `--user-data-dir=${userData}`,
     `--extensions-dir=${path.join(cache, "extensions")}`,
   ],
