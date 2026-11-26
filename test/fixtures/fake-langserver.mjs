@@ -1,6 +1,8 @@
 // A scripted language server for the client and session tests: speaks LSP framing on stdio
 // and records what it is sent, which a `test/state` request reads back.
-const state = { configuration: null, documents: [], configurationAsked: 0, initialize: null, watched: [], exits: 0 };
+import { writeFileSync } from "node:fs";
+
+const state = { configuration: null, documents: [], configurationAsked: 0, initialize: null, watched: [], nudges: 0 };
 let buffer = Buffer.alloc(0);
 let nextId = 1000;
 const asked = new Map();
@@ -36,9 +38,14 @@ function handle(message) {
       const requestId = nextId++;
       asked.set(requestId, (result) => (state.configuration = result));
       state.configurationAsked++;
+      // Diagnostics for a document nobody opened, which a session must drop.
+      publish("file:///work/stray.pjx", 1);
       send({ id: requestId, method: "workspace/configuration", params: { items: sections.map((section) => ({ section, scopeUri: params?.scopeUri })) } });
       break;
     }
+    case "workspace/didChangeConfiguration":
+      state.nudges++;
+      break;
     case "textDocument/didOpen":
       state.documents.push({ event: "open", uri: params.textDocument.uri, version: params.textDocument.version, languageId: params.textDocument.languageId, text: params.textDocument.text });
       publish(params.textDocument.uri, params.textDocument.version);
@@ -92,5 +99,7 @@ process.stdin.on("data", (chunk) => {
     const body = buffer.subarray(head + 4, head + 4 + length).toString("utf8");
     buffer = buffer.subarray(head + 4 + length);
     handle(JSON.parse(body));
+    // A test that does not own our stdout reads what we recorded from this file.
+    if (process.env.FAKE_STATE) writeFileSync(process.env.FAKE_STATE, JSON.stringify(state));
   }
 });
