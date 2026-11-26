@@ -200,6 +200,53 @@ the token goldens deterministic.
   language `pyjinhx` returns tokens only where the view has text, which is the block's
   body. Everywhere else the TextMate grammar's colours stay.
 
+### 8. Diagnostics for the block (added after the maintainer chose to show them)
+
+Script `m5-spike/diag.mjs`: every `examples/todo` component opened as its Python view in
+one basedpyright 1.40.2 session (`--max-old-space-size=256`), stubs present, six seconds
+allowed for the pushes.
+
+| Project configuration | Extension's answer for `typeCheckingMode` | Per component |
+|---|---|---|
+| `[tool.pyright] typeCheckingMode = "standard"` (pyjinhx's own) | none | **1** |
+| none | none (basedpyright's default, `recommended`) | **5, 5, 10, 9, 5** |
+| none | `standard` | **1** |
+| `standard` | `strict` | 1: the project's file wins over the setting |
+
+`app.pjx` has no block and gets nothing. The one diagnostic under `standard`, in all five
+components:
+
+```
+clear_button.pjx 15:33-15:38  error  reportOptionalMemberAccess  "store" is not a known attribute of "None"
+counter.pjx      15:33-15:38  error  reportOptionalMemberAccess  "store" is not a known attribute of "None"
+item_list.pjx    21:24-21:29  error  reportOptionalMemberAccess  "store" is not a known attribute of "None"
+item_row.pjx     26:19-26:24  error  reportOptionalMemberAccess  "store" is not a known attribute of "None"
+total.pjx        15:29-15:34  error  reportOptionalMemberAccess  "store" is not a known attribute of "None"
+```
+
+- It is a real error in the example, not noise from the view: `load` takes
+  `ctx: TodoAppContext | None = None` and reads `ctx.store` unchecked. cursorpyright's
+  server reports the identical diagnostic for the same text, so a `.py` file with this
+  body shows it too. Fixing the example (a guard, or a non-optional `ctx`) is a pyjinhx
+  change, outside this plan.
+- What `recommended` adds with no project configuration, all warnings:
+  `reportImplicitOverride` on every `load`, `reportAny` on each use of the untyped
+  `store` (3 to 6 per component), `reportUnknownMemberType` and
+  `reportUnknownArgumentType` in `item_list.pjx`. That is the noise to avoid: the
+  extension must name a mode when the project names none.
+- Every diagnostic lay on a body line; none was reported on a blanked line, and none for
+  any other file (`diagnosticMode: openFilesOnly`).
+- Diagnostics are pushed (`textDocument/publishDiagnostics`); the server announces no
+  `diagnosticProvider`, so there is nothing to pull.
+- basedpyright 1.40.2 asks for the configuration sections `python` and `basedpyright`
+  (the whole section, so the answer is `{analysis: {…}}`); cursorpyright's build asks for
+  `python`, `cursorpyright.analysis` and `cursorpyright`.
+- **cursorpyright's own default is `typeCheckingMode: "off"`**
+  (`cursorpyright.analysis.typeCheckingMode` in its `package.json`), not `standard`. In a
+  project with no Pyright configuration, a `.py` file in the maintainer's Cursor shows no
+  type errors. The plan still falls back to `standard`, as the maintainer asked, and makes
+  it a setting; see the plan's open decision 7.
+
 ## The alternative: a shadow `.py` file answered by the editor's own Python server
 
 Idea: write the Python view to a real file in the extension's workspace storage, open it
