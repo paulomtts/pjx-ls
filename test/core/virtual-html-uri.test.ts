@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { sourceUriOf, viewPath } from "../../src/core/view-uri.ts";
+import { sourceUriOf, viewPath } from "../../src/core/virtual-html.ts";
 
 test("a view path ends in .html, so the HTML service takes it", () => {
   assert.ok(viewPath("file:///a/b.pjx").endsWith(".html"));
