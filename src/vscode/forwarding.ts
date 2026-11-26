@@ -19,9 +19,18 @@ async function ask<T>(
 ): Promise<{ result: T; view: View } | null> {
   const view = await views.ready(document, token);
   if (!view || !isForwardable(view.exclusions, document.offsetAt(position), mode)) return null;
-  const result = await run<T>(command, view.uri, position, ...rest);
+  let result = await run<T>(command, view.uri, position, ...rest);
+  // The service may still be loading for the first request of a session.
+  if (!views.warmed && isEmpty(result)) {
+    await new Promise((r) => setTimeout(r, 300));
+    result = await run<T>(command, view.uri, position, ...rest);
+  }
+  views.warmed = true;
   return token.isCancellationRequested || !result ? null : { result, view };
 }
+
+const isEmpty = (result: unknown) =>
+  !result || (Array.isArray(result) && !result.length) || (typeof result === "object" && "items" in result && Array.isArray(result.items) && !result.items.length);
 
 const clean = (view: View, range: vscode.Range | undefined) => !range || !touchesSynthetic(view.spans, range);
 

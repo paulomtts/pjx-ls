@@ -23,6 +23,9 @@ export class Views implements vscode.TextDocumentContentProvider {
   private readonly changed = new vscode.EventEmitter<vscode.Uri>();
   readonly onDidChange = this.changed.event;
   private readonly cache = new Map<string, View>();
+  private htmlFeatures: Promise<unknown> | undefined;
+  /** Whether a forwarded request has been answered yet in this session. */
+  warmed = false;
   // Typing changes the text every keystroke; the view is rebuilt once typing pauses,
   // or at once when a request finds the editor's copy behind.
   private readonly refresh = new Debouncer(REFRESH_DELAY_MS, (key) => this.changed.fire(vscode.Uri.parse(key)));
@@ -38,7 +41,8 @@ export class Views implements vscode.TextDocumentContentProvider {
   }
 
   private refreshSoon(document: vscode.TextDocument): void {
-    if (document.languageId === TEMPLATE_LANGUAGE_ID) this.refresh.schedule(this.uriOf(document).toString());
+    // A document nobody asked a feature of has no view to keep fresh.
+    if (document.languageId === TEMPLATE_LANGUAGE_ID && this.cache.has(document.uri.toString())) this.refresh.schedule(this.uriOf(document).toString());
   }
 
   uriOf(source: vscode.TextDocument): vscode.Uri {
@@ -77,6 +81,8 @@ export class Views implements vscode.TextDocumentContentProvider {
    * continued typing moves the target, so the copy is compared with the view as it is now.
    */
   async ready(source: vscode.TextDocument, token?: vscode.CancellationToken): Promise<View | null> {
+    // The HTML service starts with its extension; the first request must not race that.
+    await (this.htmlFeatures ??= Promise.resolve(vscode.extensions.getExtension("vscode.html-language-features")?.activate()).catch(() => undefined));
     let nudged = false;
     for (let attempt = 0; attempt < 20; attempt++) {
       if (token?.isCancellationRequested) return null;

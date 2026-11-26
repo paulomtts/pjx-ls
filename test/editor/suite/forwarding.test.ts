@@ -93,9 +93,13 @@ suite("forwarding", () => {
     assert.ok(text.startsWith("<p>{#css\n.a { color"), text);
   });
 
-  test("nothing is offered on the opener line itself, so no edit can touch the style tag", async () => {
-    assert.deepStrictEqual(await complete("<p>{#css|\na{}\n#}\n"), []);
-    assert.deepStrictEqual(await complete("<p>{#js |\nf();\n#}\n"), []);
+  test("nothing from the HTML service on the opener line itself, so no edit can touch the style tag", async () => {
+    // The editor's own word suggestions (kind Text) may still appear; the service's never do.
+    for (const marked of ["<p>{#css|\na{}\n#}\n", "<p>{#js |\nf();\n#}\n"]) {
+      const { doc, position } = await open(marked);
+      const list = await vscode.commands.executeCommand<vscode.CompletionList>("vscode.executeCompletionItemProvider", doc.uri, position);
+      assert.deepStrictEqual(list.items.filter((i) => i.kind !== vscode.CompletionItemKind.Text).map((i) => i.label), []);
+    }
   });
 
   test("a completion on a closer line edits the source, not the tag", async () => {
