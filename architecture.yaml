@@ -1,0 +1,25 @@
+# The layout of pjx-ls: pure logic in core/, thin VS Code adapters in vscode/, and src/extension.ts,
+# whose activate() creates the shared services and registers each vscode/ feature (it may import both).
+# xarch 0.4 reads Python only: it cannot follow these TypeScript imports, nor name a .ts file as a
+# part, so test/architecture.test.ts enforces the same table. Check the profile with:
+#   xarch profile check architecture.yaml
+#   xarch check --app src --tests test --profile architecture.yaml
+name: pjx-ls
+parts:
+  core/:
+    role: what the extension knows of a .pjx file, a manifest and an interpreter, as plain functions and classes
+    litmus: >-
+      Can it be unit tested with node --test alone, with no editor running? If yes, it goes here, and it imports
+      only core/ and node: modules, never vscode. If it needs a vscode type, an event or a provider, it belongs in
+      vscode/, which hands core/ plain values.
+    imports:
+      libraries: [node]
+  vscode/:
+    role: thin adapters that turn core/'s answers into VS Code providers, commands, diagnostics and status
+    litmus: >-
+      Does it register with or call the vscode API? If yes, it goes here, kept to converting types and wiring
+      events, one file per editor feature. A rule that could be tested
+      without the editor belongs in core/.
+    imports:
+      may: [parts.core]
+      libraries: [vscode, node]

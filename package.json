@@ -27,7 +27,7 @@
     "build": "node esbuild.config.mjs",
     "watch": "node esbuild.config.mjs --watch",
     "check": "tsc --noEmit",
-    "test": "node --test \"test/core/**/*.test.ts\" \"test/grammar/**/*.test.ts\" \"test/scripts/**/*.test.ts\" \"test/vscode/**/*.test.ts\"",
+    "test": "node --test \"test/*.test.ts\" \"test/core/**/*.test.ts\" \"test/grammar/**/*.test.ts\" \"test/scripts/**/*.test.ts\" \"test/vscode/**/*.test.ts\"",
     "test:editor": "npm run build && node test/editor/run.mjs",
     "package": "npm run check && npm run build && vsce package"
   },

@@ -8,6 +8,7 @@ node_modules/**
 .vscodeignore
 esbuild.config.mjs
 tsconfig.json
+architecture.yaml
 **/*.ts
 **/*.map
 **/*.svg
