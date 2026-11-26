@@ -1,0 +1,2 @@
+{#def title: str, tone: Literal["a", "b"] = "a", size: pkg.mod.CONST, count: int = 0 #}
+<span class="badge">{{ title }}</span>

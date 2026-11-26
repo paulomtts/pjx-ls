@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { isComponentTemplate } from "./component-template.ts";
-import { findDefHeaderRange } from "../core/def-header.ts";
+import { defHeaderRange } from "../core/regions.ts";
 
 function checkDocument(
   document: vscode.TextDocument,
@@ -13,7 +13,7 @@ function checkDocument(
     return;
   }
 
-  const range = findDefHeaderRange(document.getText());
+  const range = defHeaderRange(document.getText());
   if (range === null) {
     collection.delete(document.uri);
     return;

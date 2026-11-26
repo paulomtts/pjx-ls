@@ -1,0 +1,149 @@
+1: "{#" comment.block.pyjinhx punctuation.definition.comment.begin.pyjinhx
+1: " css tweaks " comment.block.pyjinhx
+1: "#}" comment.block.pyjinhx punctuation.definition.comment.end.pyjinhx
+2: "{#" comment.block.pyjinhx punctuation.definition.comment.begin.pyjinhx
+2: "css x " comment.block.pyjinhx
+2: "#}" comment.block.pyjinhx punctuation.definition.comment.end.pyjinhx
+3: "{#" comment.block.pyjinhx punctuation.definition.comment.begin.pyjinhx
+3: "js hack " comment.block.pyjinhx
+3: "#}" comment.block.pyjinhx punctuation.definition.comment.end.pyjinhx
+4: "{#" comment.block.pyjinhx punctuation.definition.comment.begin.pyjinhx
+4: "define not a header " comment.block.pyjinhx
+4: "#}" comment.block.pyjinhx punctuation.definition.comment.end.pyjinhx
+5: "<" meta.tag.inline.a.start.html punctuation.definition.tag.begin.html
+5: "a" meta.tag.inline.a.start.html entity.name.tag.html
+5: "href" meta.tag.inline.a.start.html meta.attribute.href.html entity.other.attribute-name.html
+5: "=" meta.tag.inline.a.start.html meta.attribute.href.html punctuation.separator.key-value.html
+5: "\"" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html punctuation.definition.string.begin.html
+5: "{{" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+5: "url_for" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable variable.other.jinja
+5: "(" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable punctuation.other.jinja
+5: "'" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable string.quoted.single.jinja punctuation.definition.string.begin.jinja
+5: "x" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable string.quoted.single.jinja
+5: "'" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable string.quoted.single.jinja punctuation.definition.string.end.jinja
+5: "," meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable punctuation.other.jinja
+5: "id" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable variable.other.jinja
+5: "=" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable keyword.operator.assignment.jinja
+5: "item" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable variable.other.jinja
+5: "." meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable punctuation.other.jinja
+5: "id" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable variable.other.jinja.attribute
+5: ")" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable punctuation.other.jinja
+5: "}}" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+5: "\"" meta.tag.inline.a.start.html meta.attribute.href.html string.quoted.double.html punctuation.definition.string.end.html
+5: "{%" meta.tag.inline.a.start.html meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+5: "if" meta.tag.inline.a.start.html meta.scope.jinja.tag keyword.control.jinja
+5: "on" meta.tag.inline.a.start.html meta.scope.jinja.tag variable.other.jinja
+5: "%}" meta.tag.inline.a.start.html meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+5: "class" meta.tag.inline.a.start.html meta.attribute.class.html entity.other.attribute-name.html
+5: "=" meta.tag.inline.a.start.html meta.attribute.class.html punctuation.separator.key-value.html
+5: "\"" meta.tag.inline.a.start.html meta.attribute.class.html string.quoted.double.html punctuation.definition.string.begin.html
+5: "on" meta.tag.inline.a.start.html meta.attribute.class.html string.quoted.double.html
+5: "\"" meta.tag.inline.a.start.html meta.attribute.class.html string.quoted.double.html punctuation.definition.string.end.html
+5: "{%" meta.tag.inline.a.start.html meta.attribute.class.html meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+5: "endif" meta.tag.inline.a.start.html meta.attribute.class.html meta.scope.jinja.tag keyword.control.jinja
+5: "%}" meta.tag.inline.a.start.html meta.attribute.class.html meta.scope.jinja.tag entity.other.jinja.delimiter.tag
+5: "title" meta.tag.inline.a.start.html meta.attribute.title.html entity.other.attribute-name.html
+5: "=" meta.tag.inline.a.start.html meta.attribute.title.html punctuation.separator.key-value.html
+5: "\"" meta.tag.inline.a.start.html meta.attribute.title.html string.quoted.double.html punctuation.definition.string.begin.html
+5: "{#" meta.tag.inline.a.start.html meta.attribute.title.html string.quoted.double.html comment.block.jinja entity.other.jinja.delimiter.comment
+5: " c " meta.tag.inline.a.start.html meta.attribute.title.html string.quoted.double.html comment.block.jinja
+5: "#}" meta.tag.inline.a.start.html meta.attribute.title.html string.quoted.double.html comment.block.jinja entity.other.jinja.delimiter.comment
+5: "\"" meta.tag.inline.a.start.html meta.attribute.title.html string.quoted.double.html punctuation.definition.string.end.html
+5: ">" meta.tag.inline.a.start.html punctuation.definition.tag.end.html
+5: "l" 
+5: "</" meta.tag.inline.a.end.html punctuation.definition.tag.begin.html
+5: "a" meta.tag.inline.a.end.html entity.name.tag.html
+5: ">" meta.tag.inline.a.end.html punctuation.definition.tag.end.html
+6: "<" meta.embedded.block.html meta.tag.metadata.style.start.html punctuation.definition.tag.begin.html
+6: "style" meta.embedded.block.html meta.tag.metadata.style.start.html entity.name.tag.html
+6: ">" meta.embedded.block.html meta.tag.metadata.style.start.html punctuation.definition.tag.end.html
+7: "." meta.embedded.block.html source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+7: "a" meta.embedded.block.html source.css meta.selector.css entity.other.attribute-name.class.css
+7: ">" meta.embedded.block.html source.css meta.selector.css keyword.operator.combinator.css
+7: "." meta.embedded.block.html source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+7: "b" meta.embedded.block.html source.css meta.selector.css entity.other.attribute-name.class.css
+7: "{" meta.embedded.block.html source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+7: "color" meta.embedded.block.html source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+7: ":" meta.embedded.block.html source.css meta.property-list.css punctuation.separator.key-value.css
+7: "red" meta.embedded.block.html source.css meta.property-list.css meta.property-value.css support.constant.color.w3c-standard-color-name.css
+7: ";" meta.embedded.block.html source.css meta.property-list.css punctuation.terminator.rule.css
+7: "}" meta.embedded.block.html source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+8: "<" meta.embedded.block.html meta.tag.metadata.style.end.html punctuation.definition.tag.begin.html source.css-ignored-vscode
+8: "/" meta.embedded.block.html meta.tag.metadata.style.end.html punctuation.definition.tag.begin.html
+8: "style" meta.embedded.block.html meta.tag.metadata.style.end.html entity.name.tag.html
+8: ">" meta.embedded.block.html meta.tag.metadata.style.end.html punctuation.definition.tag.end.html
+9: "<" meta.embedded.block.html meta.tag.metadata.script.start.html punctuation.definition.tag.begin.html
+9: "script" meta.embedded.block.html meta.tag.metadata.script.start.html entity.name.tag.html
+9: ">" meta.embedded.block.html meta.tag.metadata.script.start.html punctuation.definition.tag.end.html
+10: "const" meta.embedded.block.html source.js meta.var.expr.js storage.type.js
+10: "s" meta.embedded.block.html source.js meta.var.expr.js meta.var-single-variable.expr.js meta.definition.variable.js variable.other.constant.js
+10: "=" meta.embedded.block.html source.js meta.var.expr.js keyword.operator.assignment.js
+10: "\"" meta.embedded.block.html source.js meta.var.expr.js string.quoted.double.js punctuation.definition.string.begin.js
+10: "#}" meta.embedded.block.html source.js meta.var.expr.js string.quoted.double.js
+10: "\"" meta.embedded.block.html source.js meta.var.expr.js string.quoted.double.js punctuation.definition.string.end.js
+10: ";" meta.embedded.block.html source.js punctuation.terminator.statement.js
+10: "if" meta.embedded.block.html source.js keyword.control.conditional.js
+10: "(" meta.embedded.block.html source.js meta.brace.round.js
+10: "1" meta.embedded.block.html source.js constant.numeric.decimal.js
+10: "<" meta.embedded.block.html source.js keyword.operator.relational.js
+10: "2" meta.embedded.block.html source.js constant.numeric.decimal.js
+10: ")" meta.embedded.block.html source.js meta.brace.round.js
+10: "{" meta.embedded.block.html source.js meta.block.js punctuation.definition.block.js
+10: "f" meta.embedded.block.html source.js meta.block.js meta.function-call.js entity.name.function.js
+10: "(" meta.embedded.block.html source.js meta.block.js meta.brace.round.js
+10: "\"" meta.embedded.block.html source.js meta.block.js string.quoted.double.js punctuation.definition.string.begin.js
+10: "</div>" meta.embedded.block.html source.js meta.block.js string.quoted.double.js
+10: "\"" meta.embedded.block.html source.js meta.block.js string.quoted.double.js punctuation.definition.string.end.js
+10: ")" meta.embedded.block.html source.js meta.block.js meta.brace.round.js
+10: ";" meta.embedded.block.html source.js meta.block.js punctuation.terminator.statement.js
+10: "}" meta.embedded.block.html source.js meta.block.js punctuation.definition.block.js
+11: "<" meta.embedded.block.html meta.tag.metadata.script.end.html punctuation.definition.tag.begin.html source.js-ignored-vscode
+11: "/" meta.embedded.block.html meta.tag.metadata.script.end.html punctuation.definition.tag.begin.html
+11: "script" meta.embedded.block.html meta.tag.metadata.script.end.html entity.name.tag.html
+11: ">" meta.embedded.block.html meta.tag.metadata.script.end.html punctuation.definition.tag.end.html
+12: "{#" meta.block.js.pyjinhx punctuation.definition.block.begin.pyjinhx
+12: "js" meta.block.js.pyjinhx keyword.control.pyjinhx
+13: "const" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js storage.type.js
+13: "s" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js meta.var-single-variable.expr.js meta.definition.variable.js variable.other.constant.js
+13: "=" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js keyword.operator.assignment.js
+13: "\"" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js string.quoted.double.js punctuation.definition.string.begin.js
+13: "#" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js string.quoted.double.js
+13: "\"" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js string.quoted.double.js punctuation.definition.string.end.js
+13: "+" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js keyword.operator.arithmetic.js
+13: "\"" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js string.quoted.double.js punctuation.definition.string.begin.js
+13: "}" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js string.quoted.double.js
+13: "\"" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js string.quoted.double.js punctuation.definition.string.end.js
+13: ";" meta.block.js.pyjinhx meta.embedded.block.js source.js punctuation.terminator.statement.js
+14: "const" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js storage.type.js
+14: "t" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js meta.var-single-variable.expr.js meta.definition.variable.js variable.other.constant.js
+14: "=" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js keyword.operator.assignment.js
+14: "\"" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js string.quoted.double.js punctuation.definition.string.begin.js
+14: "{{ not_jinja }}" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js string.quoted.double.js
+14: "\"" meta.block.js.pyjinhx meta.embedded.block.js source.js meta.var.expr.js string.quoted.double.js punctuation.definition.string.end.js
+14: ";" meta.block.js.pyjinhx meta.embedded.block.js source.js punctuation.terminator.statement.js
+15: "#}" meta.block.js.pyjinhx punctuation.definition.block.end.pyjinhx
+16: "{#" meta.block.css.pyjinhx punctuation.definition.block.begin.pyjinhx
+16: "css" meta.block.css.pyjinhx keyword.control.pyjinhx
+17: "." meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+17: "x" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.class.css
+17: "::" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.pseudo-element.css punctuation.definition.entity.css
+17: "after" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.pseudo-element.css
+17: "{" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+17: "content" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+17: ":" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.separator.key-value.css
+17: "\"" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-value.css string.quoted.double.css punctuation.definition.string.begin.css
+17: "{% raw %}" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-value.css string.quoted.double.css
+17: "\"" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-value.css string.quoted.double.css punctuation.definition.string.end.css
+17: ";" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.terminator.rule.css
+17: "}" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+18: "#}" meta.block.css.pyjinhx punctuation.definition.block.end.pyjinhx
+19: "<" meta.tag.component.pyjinhx punctuation.definition.tag.begin.html
+19: "Card" meta.tag.component.pyjinhx entity.name.tag.component.pyjinhx support.class.component.pyjinhx
+19: "title" meta.tag.component.pyjinhx meta.attribute.title.html entity.other.attribute-name.html
+19: "=" meta.tag.component.pyjinhx meta.attribute.title.html punctuation.separator.key-value.html
+19: "\"" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html punctuation.definition.string.begin.html
+19: "{{" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+19: "t" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html meta.scope.jinja.variable variable.other.jinja
+19: "}}" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+19: "\"" meta.tag.component.pyjinhx meta.attribute.title.html string.quoted.double.html punctuation.definition.string.end.html
+19: "/>" meta.tag.component.pyjinhx punctuation.definition.tag.end.html

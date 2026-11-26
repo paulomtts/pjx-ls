@@ -1,0 +1,5 @@
+{# python
+class Counter(BaseComponent):
+    remaining: int = 0
+#}
+<div>{{ remaining }}</div>

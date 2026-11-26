@@ -16,55 +16,53 @@ for (const grammar of pkg.contributes.grammars) {
   }
 }
 
+const paths = new Map<string, string>([
+  ["text.html.basic", vendored("html.tmLanguage.json")],
+  ["source.css", vendored("css.tmLanguage.json")],
+  ["source.js", vendored("JavaScript.tmLanguage.json")],
+  ["source.python", vendored("MagicPython.tmLanguage.json")],
+  ["source.regexp.python", vendored("MagicRegExp.tmLanguage.json")],
+]);
+for (const grammar of pkg.contributes.grammars) {
+  paths.set(grammar.scopeName, `${root}${grammar.path}`);
+}
+
 const wasm = readFileSync(require.resolve("vscode-oniguruma/release/onig.wasm")).buffer;
 const onigLib = oniguruma.loadWASM(wasm).then(() => ({
   createOnigScanner: (patterns: string[]) => new oniguruma.OnigScanner(patterns),
   createOnigString: (text: string) => new oniguruma.OnigString(text),
 }));
 
-/**
- * The extension's own grammars plus HTML, and optionally the vendored Jinja
- * grammars: users without a Jinja extension get the first set only.
- */
-function makeRegistry(withJinja: boolean): vsctm.Registry {
-  const paths = new Map<string, string>([["text.html.basic", vendored("html.tmLanguage.json")]]);
-  if (withJinja) {
-    paths.set("text.html.jinja", vendored("jinja-html.json"));
-    paths.set("source.jinja", vendored("jinja.json"));
-  }
-  for (const grammar of pkg.contributes.grammars) {
-    paths.set(grammar.scopeName, `${root}${grammar.path}`);
-  }
-  return new vsctm.Registry({
-    onigLib,
-    loadGrammar: async (scope) => {
-      const path = paths.get(scope);
-      return path ? vsctm.parseRawGrammar(readFileSync(path, "utf8"), path) : null;
-    },
-    getInjections: (scope) => injections.get(scope),
-  });
-}
+/** The extension's own grammars plus the vendored HTML, CSS, JavaScript and Python grammars. */
+const registry = new vsctm.Registry({
+  onigLib,
+  loadGrammar: async (scope) => {
+    const path = paths.get(scope);
+    return path ? vsctm.parseRawGrammar(readFileSync(path, "utf8"), path) : null;
+  },
+  getInjections: (scope) => injections.get(scope),
+});
 
-const registries = { jinja: makeRegistry(true), plain: makeRegistry(false) };
-export type GrammarMode = keyof typeof registries;
-export const GRAMMAR_MODES = Object.keys(registries) as GrammarMode[];
+export type RootScope = "text.pyjinhx" | "source.python";
 
 export interface ScopedToken {
+  /** 1-based line of the token. */
+  line: number;
   text: string;
   scopes: string[];
 }
 
-/** Tokenize a whole `.pjx` document with the real pyjinhx grammar stack. */
-export async function tokenizePjx(source: string, mode: GrammarMode = "jinja"): Promise<ScopedToken[]> {
-  const grammar = await registries[mode].loadGrammar("text.pyjinhx");
-  if (!grammar) throw new Error("text.pyjinhx grammar failed to load");
+/** Tokenize a whole document (a `.pjx` file by default) with the real grammar stack. */
+export async function tokenizePjx(source: string, rootScope: RootScope = "text.pyjinhx"): Promise<ScopedToken[]> {
+  const grammar = await registry.loadGrammar(rootScope);
+  if (!grammar) throw new Error(`${rootScope} grammar failed to load`);
   let stack = vsctm.INITIAL;
   const tokens: ScopedToken[] = [];
-  for (const line of source.split("\n")) {
+  for (const [index, line] of source.split("\n").entries()) {
     const result = grammar.tokenizeLine(line, stack);
     stack = result.ruleStack;
     for (const token of result.tokens) {
-      tokens.push({ text: line.slice(token.startIndex, token.endIndex), scopes: token.scopes });
+      tokens.push({ line: index + 1, text: line.slice(token.startIndex, token.endIndex), scopes: token.scopes });
     }
   }
   return tokens;

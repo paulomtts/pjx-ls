@@ -5,9 +5,12 @@ on:
     branches:
       - master
   pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
 
 jobs:
   build:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
 
     steps:
@@ -32,3 +35,62 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Editor tests
+        run: xvfb-run -a npm run test:editor
+
+  # Separate from `build` so a red run names its cause. It checks out exactly the
+  # ref recorded in SOURCE.json, so it stays green until someone re-syncs. To update:
+  # node scripts/sync-pyjinhx.mjs <clean checkout>, read the corpus diff, fix the
+  # grammar, commit.
+  pyjinhx-drift:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Read the recorded pyjinhx ref
+        id: source
+        run: echo "ref=$(node -p "JSON.parse(require('fs').readFileSync('test/fixtures/pyjinhx/SOURCE.json')).ref")" >> "$GITHUB_OUTPUT"
+
+      - name: Check out pyjinhx at that ref
+        uses: actions/checkout@v4
+        with:
+          repository: paulomtts/pyjinhx
+          ref: ${{ steps.source.outputs.ref }}
+          path: pyjinhx
+
+      - name: Compare the vendored block grammar and corpus
+        run: node scripts/sync-pyjinhx.mjs --check pyjinhx
+
+  # Weekly and non-blocking: shows what the next re-sync will bring.
+  pyjinhx-upstream:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Check out pyjinhx master
+        uses: actions/checkout@v4
+        with:
+          repository: paulomtts/pyjinhx
+          ref: master
+          path: pyjinhx
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Compare with pyjinhx master
+        run: node scripts/sync-pyjinhx.mjs --check pyjinhx

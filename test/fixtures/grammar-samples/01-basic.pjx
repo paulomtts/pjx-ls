@@ -1,0 +1,20 @@
+{# A plain prose comment #}
+<div id="{{ id }}" class="card {{ 'on' if active else 'off' }}" hx-get="/x">
+  {% if items %}
+    <ul>
+      {% for item in items | sort(attribute="name") %}
+        <li>{{ item.name|upper }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Nothing &amp; nobody</p>
+  {% endif %}
+  <Card title="Hello" count="{{ items|length }}" disabled>
+    <PJXButton label="Save" variant='primary' @click="save()"/>
+    <Stack><Badge tone="info"/></Stack>
+  </Card>
+  <PJXModal
+    title="Confirm"
+    footer="<PJXButton label='OK'/>"
+  />
+</div>

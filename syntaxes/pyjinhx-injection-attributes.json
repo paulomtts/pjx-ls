@@ -1,0 +1,56 @@
+{
+  "scopeName": "pyjinhx.injection.attributes",
+  "injectionSelector": "L:text.pyjinhx meta.tag -string -comment -meta.scope.jinja -meta.block",
+  "patterns": [
+    {
+      "match": "[^\\s/=>\"'<{}]+(?=\\{[{%#])",
+      "name": "entity.other.attribute-name.html"
+    },
+    {
+      "begin": "(?<=\\}\\}|%\\})\\s*(=)\\s*(\")",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.separator.key-value.html"
+        },
+        "2": {
+          "name": "string.quoted.double.html punctuation.definition.string.begin.html"
+        }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": {
+          "name": "string.quoted.double.html punctuation.definition.string.end.html"
+        }
+      },
+      "patterns": [
+        {
+          "include": "source.pyjinhx.jinja"
+        }
+      ],
+      "contentName": "string.quoted.double.html"
+    },
+    {
+      "begin": "(?<=\\}\\}|%\\})\\s*(=)\\s*(')",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.separator.key-value.html"
+        },
+        "2": {
+          "name": "string.quoted.single.html punctuation.definition.string.begin.html"
+        }
+      },
+      "end": "'",
+      "endCaptures": {
+        "0": {
+          "name": "string.quoted.single.html punctuation.definition.string.end.html"
+        }
+      },
+      "patterns": [
+        {
+          "include": "source.pyjinhx.jinja"
+        }
+      ],
+      "contentName": "string.quoted.single.html"
+    }
+  ]
+}

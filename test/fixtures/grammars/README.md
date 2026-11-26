@@ -1,7 +1,16 @@
 Vendored TextMate grammars used only by `test/grammar/`.
 
-- `html.tmLanguage.json`: VS Code's HTML grammar (MIT, microsoft/vscode).
-- `jinja.json`, `jinja-html.json`: the Jinja extension grammars (MIT).
+From `microsoft/vscode`, tag `1.105.0` (MIT, Copyright (c) 2015 - present Microsoft
+Corporation, https://github.com/microsoft/vscode/blob/1.105.0/LICENSE.txt):
 
-CSS, JavaScript and Python grammars are deliberately not vendored: unresolved
-includes are ignored, so those regions tokenize as plain text in tests.
+- `html.tmLanguage.json`
+- `css.tmLanguage.json`
+- `JavaScript.tmLanguage.json`
+- `MagicPython.tmLanguage.json`, `MagicRegExp.tmLanguage.json`
+
+Re-fetch a grammar with
+`curl -L https://raw.githubusercontent.com/microsoft/vscode/<tag>/extensions/<css|javascript|python>/syntaxes/<file>`
+and bump the tag here for all of them together.
+
+The Jinja grammar is the extension's own `syntaxes/pyjinhx-jinja.json`; see
+`THIRD_PARTY_NOTICES.md`.

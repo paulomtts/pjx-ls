@@ -1,0 +1,16 @@
+1: "{#" meta.block.python.pyjinhx punctuation.definition.block.begin.pyjinhx
+1: "python" meta.block.python.pyjinhx keyword.control.pyjinhx
+2: "x" meta.block.python.pyjinhx meta.embedded.block.python source.python
+2: "=" meta.block.python.pyjinhx meta.embedded.block.python source.python keyword.operator.assignment.python
+2: "'" meta.block.python.pyjinhx meta.embedded.block.python source.python string.quoted.single.python punctuation.definition.string.begin.python
+2: "#}" meta.block.python.pyjinhx punctuation.definition.block.end.pyjinhx
+2: "'" 
+3: "#}" 
+4: "{#" meta.block.css.pyjinhx punctuation.definition.block.begin.pyjinhx
+4: "css" meta.block.css.pyjinhx keyword.control.pyjinhx
+5: "a" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.name.tag.css
+6: "#}" meta.block.css.pyjinhx punctuation.definition.block.end.pyjinhx
+7: "{#" meta.block.css.pyjinhx punctuation.definition.block.begin.pyjinhx
+7: "css" meta.block.css.pyjinhx keyword.control.pyjinhx
+8: "b" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.name.tag.css
+9: "#}" meta.block.css.pyjinhx punctuation.definition.block.end.pyjinhx

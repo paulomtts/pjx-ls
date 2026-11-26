@@ -1,0 +1,80 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { blocksOf } from "./blocks.ts";
+import { tokenizePjx } from "./tokenize.ts";
+
+const read = (path: string) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), "utf8");
+const data = JSON.parse(read("../fixtures/pyjinhx/block_grammar.json"));
+const keywords = Object.keys(data.keywords);
+const blocksIn = async (source: string) => blocksOf(await tokenizePjx(source));
+
+test("block_grammar.json is a version this grammar was written for", () => {
+  assert.equal(data.version, 1);
+});
+
+test("the first #} ends a block, as in Jinja", () => {
+  assert.match(data.terminator_rule, /first #\}/);
+});
+
+test("every keyword has a meta.block rule", () => {
+  const names = new Set<string>();
+  JSON.stringify(JSON.parse(read("../../syntaxes/pyjinhx.json")), (key, value) => {
+    if (key === "name" && typeof value === "string") names.add(value);
+    return value;
+  });
+  for (const keyword of keywords) {
+    assert.ok(names.has(`meta.block.${keyword}.pyjinhx`), keyword);
+  }
+});
+
+test("a keyword must touch the opener", async () => {
+  assert.equal(data.keyword_touches_opener, true);
+  for (const keyword of keywords) {
+    assert.deepEqual(await blocksIn(`<p></p>\n{# ${keyword}\nx\n#}`), [], keyword);
+  }
+});
+
+test("whitespace control does not open a block", async () => {
+  assert.equal(data.whitespace_control_is_a_block, false);
+  for (const keyword of keywords) {
+    assert.deepEqual(await blocksIn(`{#-${keyword}\nx\n#}\n<p></p>`), [], keyword);
+  }
+});
+
+test("a keyword that must end its line is a comment when text follows", async () => {
+  for (const [keyword, rule] of Object.entries<{ after_keyword: string }>(data.keywords)) {
+    if (rule.after_keyword !== "end_of_line") continue;
+    assert.deepEqual(await blocksIn(`{#${keyword} x #}\n<p></p>`), [], keyword);
+  }
+});
+
+test("python opens only in column 0", async () => {
+  assert.equal(data.keywords.python.opener_column, 0);
+  assert.deepEqual(await blocksIn(" {#python\nx = 1\n#}\n<p></p>"), []);
+  assert.equal((await blocksIn("{#python\nx = 1\n#}\n<p></p>")).length, 1);
+});
+
+test("the spaced {# def form is a header in first position only", async () => {
+  assert.equal(data.keywords.def.legacy_spaced_form.first_position_only, true);
+  assert.deepEqual(await blocksIn("{# def a: int #}\n<p></p>"), [{ keyword: "def", open_line: 1, close_line: 1 }]);
+  assert.deepEqual(await blocksIn("<p></p>\n{# def a: int #}"), []);
+});
+
+test("the spaced {# def form follows pyjinhx's LEGACY_HEADER_RE", async () => {
+  const header = (line: number) => [{ keyword: "def", open_line: line, close_line: line }];
+  assert.deepEqual(await blocksIn("\n{# def a: int #}\n<p></p>"), header(2));
+  assert.deepEqual(await blocksIn("  {# def a: int #}\n<p></p>"), header(1));
+  assert.deepEqual(await blocksIn("\n\n  \n{# def a: int #}"), header(4));
+  assert.deepEqual(await blocksIn("{# #}\n{# def a: int #}"), header(2));
+  assert.deepEqual(await blocksIn("  {# #}  {# def a: int #}"), header(1));
+  assert.deepEqual(await blocksIn("{# note #}\n{# def a: int #}"), []);
+  assert.deepEqual(await blocksIn("<p></p>\n{# def a: int #}"), []);
+  assert.deepEqual(await blocksIn("\n<p></p>\n{# def a: int #}"), []);
+});
+
+test("a legacy {# def inside a mid-file HTML comment is plain comment text", async () => {
+  assert.deepEqual(await blocksIn("<p>start</p>\n<!-- TODO: {# def a: int #} was the old header -->"), []);
+  assert.deepEqual(await blocksIn("<!-- {# def a: int #} -->"), []);
+});

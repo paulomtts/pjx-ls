@@ -9,8 +9,16 @@
     ["<", ">"]
   ],
   "colorizedBracketPairs": [],
+  "autoCloseBefore": ";:.,=}])> \n\t<\"'",
+  "indentationRules": {
+    "increaseIndentPattern": "(?!)",
+    "decreaseIndentPattern": "^\\s*#\\}\\s*$"
+  },
   "autoClosingPairs": [
     { "open": "{", "close": "}" },
+    { "open": "{{", "close": " }}" },
+    { "open": "{%", "close": " %}" },
+    { "open": "<!--", "close": " -->", "notIn": ["comment", "string"] },
     { "open": "[", "close": "]" },
     { "open": "(", "close": ")" },
     { "open": "\"", "close": "\"", "notIn": ["string"] },
@@ -24,5 +32,11 @@
     ["\"", "\""],
     ["'", "'"],
     ["<", ">"]
-  ]
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*\\{#(?:css|js|python|def)\\s*$",
+      "end": "^\\s*#\\}\\s*$"
+    }
+  }
 }

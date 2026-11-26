@@ -1,0 +1,56 @@
+1: "from" keyword.control.import.python
+1: "pyjinhx" 
+1: "import" keyword.control.import.python
+1: "BaseComponent" 
+4: "class" meta.class.python storage.type.class.python
+4: "Badge" meta.class.python entity.name.type.class.python
+4: "(" meta.class.python meta.class.inheritance.python punctuation.definition.inheritance.begin.python
+4: "BaseComponent" meta.class.python meta.class.inheritance.python entity.other.inherited-class.python
+4: ")" meta.class.python meta.class.inheritance.python punctuation.definition.inheritance.end.python
+4: ":" meta.class.python punctuation.section.class.begin.python
+5: "label" 
+5: ":" punctuation.separator.colon.python
+5: "str" support.type.python
+6: "count" 
+6: ":" punctuation.separator.colon.python
+6: "int" support.type.python
+6: "=" keyword.operator.assignment.python
+6: "0" constant.numeric.dec.python
+8: "template" variable.other.pyjinhx
+8: "=" keyword.operator.assignment.python
+8: "\"\"\"" string.quoted.multi.python punctuation.definition.string.begin.python
+9: "{#" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx punctuation.definition.block.begin.pyjinhx
+9: "css" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx keyword.control.pyjinhx
+10: "." meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+10: "badge" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.class.css
+10: "{" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+10: "border-radius" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+10: ":" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.separator.key-value.css
+10: "999" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-value.css constant.numeric.css
+10: "px" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-value.css constant.numeric.css keyword.other.unit.px.css
+10: ";" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.terminator.rule.css
+10: "}" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.section.property-list.end.bracket.curly.css
+11: "#}" meta.embedded.block.pyjinhx text.pyjinhx meta.block.css.pyjinhx punctuation.definition.block.end.pyjinhx
+12: "<" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.start.html punctuation.definition.tag.begin.html
+12: "span" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.start.html entity.name.tag.html
+12: "class" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.start.html meta.attribute.class.html entity.other.attribute-name.html
+12: "=" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.start.html meta.attribute.class.html punctuation.separator.key-value.html
+12: "\"" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.start.html meta.attribute.class.html string.quoted.double.html punctuation.definition.string.begin.html
+12: "badge" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.start.html meta.attribute.class.html string.quoted.double.html
+12: "\"" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.start.html meta.attribute.class.html string.quoted.double.html punctuation.definition.string.end.html
+12: ">" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.start.html punctuation.definition.tag.end.html
+12: "{{" meta.embedded.block.pyjinhx text.pyjinhx meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+12: "label" meta.embedded.block.pyjinhx text.pyjinhx meta.scope.jinja.variable variable.other.jinja
+12: "}}" meta.embedded.block.pyjinhx text.pyjinhx meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+12: "<" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.component.pyjinhx punctuation.definition.tag.begin.html
+12: "Icon" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.component.pyjinhx entity.name.tag.component.pyjinhx support.class.component.pyjinhx
+12: "name" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.component.pyjinhx meta.attribute.name.html entity.other.attribute-name.html
+12: "=" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.component.pyjinhx meta.attribute.name.html punctuation.separator.key-value.html
+12: "\"" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.component.pyjinhx meta.attribute.name.html string.quoted.double.html punctuation.definition.string.begin.html
+12: "x" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.component.pyjinhx meta.attribute.name.html string.quoted.double.html
+12: "\"" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.component.pyjinhx meta.attribute.name.html string.quoted.double.html punctuation.definition.string.end.html
+12: "/>" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.component.pyjinhx punctuation.definition.tag.end.html
+12: "</" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.end.html punctuation.definition.tag.begin.html
+12: "span" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.end.html entity.name.tag.html
+12: ">" meta.embedded.block.pyjinhx text.pyjinhx meta.tag.inline.span.end.html punctuation.definition.tag.end.html
+13: "\"\"\"" string.quoted.multi.python punctuation.definition.string.end.python

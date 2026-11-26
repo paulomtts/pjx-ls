@@ -1,0 +1,19 @@
+1: "{#" meta.block.css.pyjinhx punctuation.definition.block.begin.pyjinhx
+1: "css" meta.block.css.pyjinhx keyword.control.pyjinhx
+2: "." meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.class.css punctuation.definition.entity.css
+2: "a" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.class.css
+2: "::" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.pseudo-element.css punctuation.definition.entity.css
+2: "after" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.selector.css entity.other.attribute-name.pseudo-element.css
+2: "{" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.section.property-list.begin.bracket.curly.css
+2: "content" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-name.css support.type.property-name.css
+2: ":" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css punctuation.separator.key-value.css
+2: "\"" meta.block.css.pyjinhx meta.embedded.block.css source.css meta.property-list.css meta.property-value.css string.quoted.double.css punctuation.definition.string.begin.css
+2: "#}" meta.block.css.pyjinhx punctuation.definition.block.end.pyjinhx
+2: "\"; }" 
+3: "#}" 
+4: "<" meta.tag.structure.p.start.html punctuation.definition.tag.begin.html
+4: "p" meta.tag.structure.p.start.html entity.name.tag.html
+4: ">" meta.tag.structure.p.start.html punctuation.definition.tag.end.html
+4: "</" meta.tag.structure.p.end.html punctuation.definition.tag.begin.html
+4: "p" meta.tag.structure.p.end.html entity.name.tag.html
+4: ">" meta.tag.structure.p.end.html punctuation.definition.tag.end.html

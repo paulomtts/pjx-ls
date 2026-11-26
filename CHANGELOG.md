@@ -3,7 +3,76 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 0.4.0
+
+### Added
+- **Language features for HTML, CSS and JS** in `.pjx` files: completion, hover,
+  signature help, definitions, document highlights and colours, forwarded to the
+  editor's HTML service through a `pjx-embedded:` view of the document.
+- One region scanner (`src/core/regions.ts`) for Jinja regions, `{#css`/`{#js`/
+  `{#python`/`{#def` blocks with pyjinhx's error codes, tags, attributes and
+  script/style bodies, tested against the vendored conformance corpus.
+- An editor test suite (`npm run test:editor`) on `@vscode/test-electron`.
+
+### Changed
+- The stale `{#def#}` header diagnostic reads the header with the scanner: a `{#def` block is
+  found anywhere in the document (the legacy `{# def` only as the first content), and a header
+  that is never closed is not one.
+
+## 0.3.0
+
+### Changed
+- **Highlighting is forwarded to the real grammars.** `{#css` bodies are CSS, `{#js`
+  bodies JavaScript, `{#def` and `{#python` bodies Python, `{{ }}` and `{% %}` Jinja
+  (bundled, `source.pyjinhx.jinja`, so no Jinja extension is needed), markup HTML.
+- Scope names: blocks are `meta.block.<keyword>.pyjinhx` with `keyword.control.pyjinhx`
+  and `punctuation.definition.block.{begin,end}.pyjinhx`; `{#def` prop names are
+  `variable.parameter.pyjinhx`; component tags are `meta.tag.component.pyjinhx` with
+  `entity.name.tag.component.pyjinhx support.class.component.pyjinhx`. The old
+  `keyword.control.import.pyjinhx`, `meta.pyjinhx-def-header`, `entity.name.tag.pyjinhx`
+  and the Python-placeholder scope on `{{ }}` are gone.
+- A block ends at the first `#}`, as in Jinja, so an unclosed CSS brace or Python
+  string can no longer swallow the closer. `{#-css`, `{# css`, `{#css x #}` and an
+  indented `{#python` are plain comments; `{# def` is a header on the first line only.
+- **Removed** the extension's hard-coded colours (`editor.tokenColorCustomizations`);
+  themes colour the standard scopes. Emmet is not enabled by default (see the README).
+- **Removed** the grammar injections into `text.html.basic` and `text.html.jinja`: the
+  grammar applies to `.pjx` files and to `template = """…"""` strings in `.py` files
+  only. The old `.html` and Jinja files are no longer touched.
+- Slot values are only recognised on component tags.
+
+### Fixed
+- Python templates end at their closing quotes (a half-typed tag no longer colours the
+  rest of the file) and only a `template` at 4 spaces or one tab is matched. That is a heuristic: a
+  template at that indentation in a module-level function is matched too.
+- Jinja and `{#css`/`{#js`/`{#python`/`{#def` blocks inside HTML, JS and CSS comments
+  are still recognised, since they render; a mid-file `{# def` is plain comment text.
+- All-caps tags (`<BR>`, `<DIV>`) are HTML, as in pyjinhx; a value after a
+  Jinja-built attribute name (`data-{{ k }}="v"`) is a normal value.
+- The spaced `{# def` header may follow blank lines, whitespace and one empty `{# #}`.
+- `{% raw %}`/`{% endraw %}` delimiters are scoped.
+- The drift check compares against the ref recorded in `SOURCE.json`; the sync script
+  refuses a dirty checkout.
+
+### Added
+- Jinja inside tags, attribute values, `<script>` and `<style>`, and attribute names
+  glued to Jinja (`big{% endif %}`); never inside `{#css`/`{#js`/`{#python` bodies.
+- `template = r"""…"""` inside a Python class is highlighted as PyJinHx.
+- `{% raw %}…{% endraw %}` suspends every pyjinhx rule.
+- Typing `#` right after an auto-closed `{}` in markup removes the editor's `}`, so
+  block openers leave no stray brace; `#}` on its own line outdents; `<` is an
+  `autoCloseBefore` character.
+- Auto-closing for `{{ }}`, `{% %}` and `<!-- -->`; folding by indentation plus `{#css`/`{#js`/`{#python`/
+  `{#def` … `#}` blocks.
+- `scripts/sync-pyjinhx.mjs` vendors pyjinhx's `block_grammar.json` and its
+  conformance corpus; a CI job fails when they drift.
+
+### Known issues
+- Toggling comments on a block opener, closer or one-line `{#def` header changes it
+  (twice can give `{# def`), and Toggle Line Comment does nothing on multi-line `{#def`
+  body lines; see the README.
+
+Also in 0.3.0, from the formatter safety work:
 
 ### Changed
 - **Removed** the `pyjinhx.formatSlotsOnSave` setting and the custom on-save hook.

@@ -1,0 +1,13 @@
+{#def title: str #}
+<div class="card">{{ title }}</div>
+{#css
+.card { padding: 1rem; color: var(--pjx-fg); }
+.card:hover > a[href^="#"] { background: #fff; }
+@media (min-width: 40rem) { .card { display: grid; } }
+#}
+{#js
+const el = document.querySelector(".card");
+el.addEventListener("click", (e) => { console.log(`hi ${e.target.id}`); });
+if (a < b && c > d) { return 1; }
+#}
+<p>after</p>

@@ -1,0 +1,18 @@
+1: "{%" meta.scope.jinja.raw entity.other.jinja.delimiter.tag
+1: "raw" meta.scope.jinja.raw keyword.control.jinja
+1: "%}" meta.scope.jinja.raw entity.other.jinja.delimiter.tag
+2: "{{ not_a_var }} {# not a comment #}" meta.scope.jinja.raw
+3: "{#css" meta.scope.jinja.raw
+4: "#}" meta.scope.jinja.raw
+5: "{%" meta.scope.jinja.raw entity.other.jinja.delimiter.tag
+5: "endraw" meta.scope.jinja.raw keyword.control.jinja
+5: "%}" meta.scope.jinja.raw entity.other.jinja.delimiter.tag
+6: "<" meta.tag.structure.p.start.html punctuation.definition.tag.begin.html
+6: "p" meta.tag.structure.p.start.html entity.name.tag.html
+6: ">" meta.tag.structure.p.start.html punctuation.definition.tag.end.html
+6: "{{" meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+6: "x" meta.scope.jinja.variable variable.other.jinja
+6: "}}" meta.scope.jinja.variable entity.other.jinja.delimiter.variable
+6: "</" meta.tag.structure.p.end.html punctuation.definition.tag.begin.html
+6: "p" meta.tag.structure.p.end.html entity.name.tag.html
+6: ">" meta.tag.structure.p.end.html punctuation.definition.tag.end.html

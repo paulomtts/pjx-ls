@@ -1,0 +1,19 @@
+{# css tweaks #}
+{#css x #}
+{#js hack #}
+{#define not a header #}
+<a href="{{ url_for('x', id=item.id) }}" {% if on %}class="on"{% endif %} title="{# c #}">l</a>
+<style>
+  .a > .b { color: red; }
+</style>
+<script>
+  const s = "#}"; if (1 < 2) { f("</div>"); }
+</script>
+{#js
+const s = "#" + "}";
+const t = "{{ not_jinja }}";
+#}
+{#css
+.x::after { content: "{% raw %}"; }
+#}
+<Card title="{{ t }}"/>
