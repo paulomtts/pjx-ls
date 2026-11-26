@@ -83,7 +83,7 @@ test("a tag mentioned in a string or expression does not make the rest of the fi
     '{#python\nTAG = "<script src=x>"\n#}\n{|}',
     '<p title="<style>">x</p>\n{|}',
     "<p title='<script>'>x</p>\n{|}",
-    '{{ "<script>" | safe }}\n{|}',
+    '{{ "<script>" ~ x }}\n{|}',
     '{% set tag = "<style>" %}\n{|}',
     '{#js\nel.innerHTML = "<style>";\n#}\n{|}',
     '{#def a: str = "<script>" #}\n{|}',

@@ -1,17 +1,26 @@
-const OPEN_BLOCK = /\{#(?:css|js|python|def)\b/g;
+const OPEN_BLOCK = /\{#(?:css|js|python|def)\b/;
 const OPEN_ELEMENT = /<(script|style)\b[^>]*>/gi;
 
-const lastMatch = (pattern: RegExp, text: string) => [...text.matchAll(pattern)].at(-1);
+// Closed regions whose text is not markup: tag mentions inside them are not tags.
+// Closed pjx blocks go too, so a block left in the text is an open one.
+const NOT_MARKUP = new RegExp(
+  [
+    String.raw`<!--[\s\S]*?(?:-->|$)`,
+    String.raw`\{#(?:css|js|python|def)\b[\s\S]*?#\}`,
+    String.raw`\{#(?!(?:css|js|python|def)\b)[\s\S]*?(?:#\}|$)`,
+    String.raw`\{%[-+]?\s*raw\s*-?%\}[\s\S]*?(?:\{%[-+]?\s*endraw\s*[-+]?%\}|$)`,
+    String.raw`\{\{[\s\S]*?(?:\}\}|$)`,
+    String.raw`\{%[\s\S]*?(?:%\}|$)`,
+    String.raw`=\s*(?:"[^"]*"|'[^']*')`,
+  ].join("|"),
+  "g",
+);
 
-// Tag mentions in these are prose, not code. A pjx block opener is not a comment.
-const NOT_CODE = /<!--[\s\S]*?(?:-->|$)|\{#(?!(?:css|js|python|def)\b)[\s\S]*?(?:#\}|$)|\{%[-+]?\s*raw\s*-?%\}[\s\S]*?(?:\{%[-+]?\s*endraw\s*[-+]?%\}|$)/g;
-
-/** True when `text` ends inside a pjx block body or a `<script>`/`<style>` element. */
+/** True when `source` ends inside a pjx block body or a `<script>`/`<style>` element. */
 function endsInCode(source: string): boolean {
-  const text = source.replace(NOT_CODE, "");
-  const block = lastMatch(OPEN_BLOCK, text);
-  if (block && !text.includes("#}", block.index)) return true;
-  const element = lastMatch(OPEN_ELEMENT, text);
+  const text = source.replace(NOT_MARKUP, "");
+  if (OPEN_BLOCK.test(text)) return true;
+  const element = [...text.matchAll(OPEN_ELEMENT)].at(-1);
   return !!element && !new RegExp(`</${element[1]}`, "i").test(text.slice(element.index));
 }
 
