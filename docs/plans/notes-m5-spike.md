@@ -236,6 +236,11 @@ total.pjx        15:29-15:34  error  reportOptionalMemberAccess  "store" is not 
   extension must name a mode when the project names none.
 - Every diagnostic lay on a body line; none was reported on a blanked line, and none for
   any other file (`diagnosticMode: openFilesOnly`).
+- Besides errors and warnings the server sends hints with the "unnecessary" tag (seen on
+  a stdlib-only fixture: `reportUnusedParameter`, `"ctx" is not accessed`), in every mode
+  including `off`. They only fade the name and are not listed in the Problems panel; a
+  `.py` file gets them from cursorpyright too. On the same fixture, `off` removed both an
+  optional-member error and an undefined-name error.
 - Diagnostics are pushed (`textDocument/publishDiagnostics`); the server announces no
   `diagnosticProvider`, so there is nothing to pull.
 - basedpyright 1.40.2 asks for the configuration sections `python` and `basedpyright`
