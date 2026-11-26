@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { TEMPLATE_LANGUAGE_ID } from "../config.ts";
+import { TEMPLATE_LANGUAGE_ID } from "./config.ts";
 import { defHeaderRange } from "../core/regions.ts";
 import type { Manifest, Diagnostic } from "../core/manifest.ts";
 import { manifestPath, type Manifests } from "./manifest-service.ts";

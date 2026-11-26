@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { OUTPUT_CHANNEL_NAME } from "./config.ts";
+import { OUTPUT_CHANNEL_NAME } from "./vscode/config.ts";
 import { registerFormatting } from "./vscode/formatting.ts";
 import { Views } from "./vscode/virtual-documents.ts";
 import { registerForwarding } from "./vscode/forwarding.ts";

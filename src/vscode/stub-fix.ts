@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { TEMPLATE_SELECTOR } from "../config.ts";
+import { TEMPLATE_SELECTOR } from "./config.ts";
 import { nodeSpawn } from "../core/manifest-runner.ts";
 import { GENERATE_STUB_COMMAND, needsStub, stubgenArgs } from "../core/stub-fix.ts";
 import { findPython } from "./python-env.ts";

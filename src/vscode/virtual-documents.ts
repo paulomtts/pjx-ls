@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { TEMPLATE_LANGUAGE_ID } from "../config.ts";
+import { TEMPLATE_LANGUAGE_ID } from "./config.ts";
 import { Debouncer } from "../core/debounce.ts";
 import { exclusions, syntheticSpans, type Exclusions, type Span } from "../core/forwarding.ts";
 import { scan, type Scan } from "../core/regions.ts";

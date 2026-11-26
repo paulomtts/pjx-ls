@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as vscode from "vscode";
-import { TEMPLATE_LANGUAGE_ID } from "../config.ts";
+import { TEMPLATE_LANGUAGE_ID } from "./config.ts";
 import { nodeSpawn } from "../core/manifest-runner.ts";
 import { ManifestSession } from "../core/manifest-session.ts";
 import type { Manifest } from "../core/manifest.ts";

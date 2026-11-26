@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { FORWARDING_SELECTOR } from "../config.ts";
+import { FORWARDING_SELECTOR } from "./config.ts";
 import { componentCompletions, componentHover, type Entry } from "../core/component-service.ts";
 import { isForwardable } from "../core/forwarding.ts";
 import { definitionAt, nameCompletions } from "../core/navigate.ts";
