@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { nodeServer, PythonServer, type Legend } from "../../src/core/python-server.ts";
 import { pythonView } from "../../src/core/python-view.ts";
+import { LEGEND, translateTokens } from "../../src/core/semantic-tokens.ts";
 
 const server = fileURLToPath(new URL("../../dist/basedpyright/langserver.index.js", import.meta.url));
 const fixture = fileURLToPath(new URL("../fixtures/python-block/", import.meta.url));
@@ -96,4 +97,15 @@ test("a changed .py file is noticed once the session is told", async () => {
     await new Promise((r) => setTimeout(r, 100));
   }
   assert.ok(!todos || todos.type !== "property");
+});
+
+test("translated tokens use only LEGEND and stay inside the body", async () => {
+  const { session, open } = project();
+  const { uri, view } = open("ui/card.pjx");
+  session.sync(uri, view.text);
+  const answer = await session.semanticTokens(uri);
+  const tokens = decode(translateTokens(answer!.data, answer!.legend, view), { tokenTypes: [...LEGEND.tokenTypes], tokenModifiers: [...LEGEND.tokenModifiers] }, view.text);
+  assert.equal(tokens.length, 20);
+  assert.ok(tokens.every((t) => t.type !== undefined && t.line >= 2 && t.line <= 11));
+  assert.deepEqual(tokens.filter((t) => t.text === "self").map((t) => t.type), ["parameter", "parameter"]);
 });
