@@ -176,8 +176,49 @@ test("CRLF: lines count the same and a trailing CR is blank", () => {
   assert.equal(slice(text, blocks[0].body), "x = 1\r\n");
 });
 
-test("a block is not reported when the document has an error", () => {
+test("blocks are kept next to an error, so a half-typed document keeps its css", () => {
   const { blocks, error } = scan("{#css\na\n#}\n{#css\nb\n#}\n");
-  assert.deepEqual(blocks, []);
   assert.deepEqual(error, { code: "second-block", line: 4 });
+  assert.deepEqual(blocks.map((b) => [b.keyword, b.openLine]), [["css", 1]]);
+});
+
+test("an unclosed {#python reports its range to the end", () => {
+  const text = "<p></p>\n{#python\nx = 1\n";
+  const { error, unclosedPython } = scan(text);
+  assert.equal(error?.code, "unclosed-block");
+  assert.equal(slice(text, unclosedPython!), "{#python\nx = 1\n");
+});
+
+// Python's whitespace, not JS's: \x1c and \x85 are blank, U+FEFF is not.
+test("raw tags may hold \\x1c, as Python's \\s does", () => {
+  const { regions, blocks } = scan("{%\x1craw%}{#css\n.a{}\n#}{%\x1cendraw%}");
+  assert.deepEqual(regions.map((r) => r.kind), ["raw"]);
+  assert.deepEqual(blocks, []);
+});
+
+test("a css body of only U+FEFF is not empty", () => {
+  assert.deepEqual(scan("{#css\n\ufeff#}\n").blocks.map((b) => b.keyword), ["css"]);
+});
+
+test("a js body of only \\x85 is empty", () => {
+  assert.deepEqual(scan("{#js\n\x85#}\n").blocks, []);
+});
+
+test("def may be followed by \\x85", () => {
+  assert.deepEqual(scan("{#def\x85a: int #}\n").blocks.map((b) => b.keyword), ["def"]);
+});
+
+test("componentName is the leading PascalCase name, as pyjinhx reads it", () => {
+  const text = "<Card-header/><Card.Item/><Card_x/><Card/><my-el/><DIV-x/>";
+  assert.deepEqual(
+    scan(text).tags.map((t) => [t.component, t.componentName]),
+    [
+      [false, "Card"],
+      [false, "Card"],
+      [false, "Card"],
+      [true, "Card"],
+      [false, null],
+      [false, null],
+    ],
+  );
 });

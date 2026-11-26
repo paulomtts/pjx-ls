@@ -69,11 +69,6 @@ test("a byte order mark is blanked", () => {
   assert.equal(virtualHtml("﻿<p></p>"), " <p></p>");
 });
 
-test("a document with a block error has no style or script", () => {
-  const view = virtualHtml("{#css\na{}\n#}\n{#css\nb{}\n#}\n");
-  assert.ok(!view.includes("<style>"));
-});
-
 // The properties every view has, whatever the document.
 const root = fileURLToPath(new URL("../fixtures/", import.meta.url));
 const documents = [

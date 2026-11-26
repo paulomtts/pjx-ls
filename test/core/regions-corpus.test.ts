@@ -12,7 +12,8 @@ const cases = globSync("*.pjx", { cwd: corpus }).sort();
 function recorded(source: string) {
   const { blocks, error } = scan(source);
   return {
-    blocks: blocks.map((b) => ({
+    // The corpus records no blocks for a document that has an error.
+    blocks: (error ? [] : blocks).map((b) => ({
       keyword: b.keyword,
       open_line: b.openLine,
       ...(b.keyword === "def" ? {} : { body_lines: b.bodyLines }),
