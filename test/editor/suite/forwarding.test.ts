@@ -88,9 +88,14 @@ suite("forwarding", () => {
     assert.strictEqual(doc.getText(colors[0].range), "#ff0000");
   });
 
-  test("a completion on a css opener line with markup keeps the markup", async () => {
+  test("a completion in a css body below an opener with markup keeps the markup", async () => {
     const text = await apply("<p>{#css\n.a { colo| }\n#}\n", "color");
     assert.ok(text.startsWith("<p>{#css\n.a { color"), text);
+  });
+
+  test("nothing is offered on the opener line itself, so no edit can touch the style tag", async () => {
+    assert.deepStrictEqual(await complete("<p>{#css|\na{}\n#}\n"), []);
+    assert.deepStrictEqual(await complete("<p>{#js |\nf();\n#}\n"), []);
   });
 
   test("a completion on a closer line edits the source, not the tag", async () => {

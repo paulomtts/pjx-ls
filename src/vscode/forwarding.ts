@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { FORWARDING_SELECTOR } from "../config.ts";
-import { forwardable, touchesSynthetic, type Mode } from "../core/forwarding.ts";
+import { isForwardable, touchesSynthetic, type Mode } from "../core/forwarding.ts";
+import { ResolveCache } from "../core/resolve-cache.ts";
 import type { View, Views } from "./virtual-documents.ts";
 
 const run = <T>(command: string, ...args: unknown[]) => vscode.commands.executeCommand<T>(command, ...args);
@@ -17,7 +18,7 @@ async function ask<T>(
   ...rest: unknown[]
 ): Promise<{ result: T; view: View } | null> {
   const view = await views.ready(document, token);
-  if (!view || !forwardable(view.text, view.scan, document.offsetAt(position), mode)) return null;
+  if (!view || !isForwardable(view.exclusions, document.offsetAt(position), mode)) return null;
   const result = await run<T>(command, view.uri, position, ...rest);
   return token.isCancellationRequested || !result ? null : { result, view };
 }
@@ -37,39 +38,41 @@ function toSource(link: vscode.Location | vscode.LocationLink, view: View, sourc
 }
 
 export function registerForwarding(context: vscode.ExtensionContext, views: Views): void {
-  // The items last offered, with their documentation resolved, for the resolve step.
-  let offered: { key: string; items: vscode.CompletionItem[] } | null = null;
-  const origins = new WeakMap<vscode.CompletionItem, { document: vscode.TextDocument; position: vscode.Position }>();
+  // The service resolves only the first N items it is asked for, so resolving an item asks
+  // for as many as its place in the list, and later items ask again for more.
+  const resolved = new ResolveCache<vscode.CompletionItem>();
+  const origins = new WeakMap<vscode.CompletionItem, { document: vscode.TextDocument; position: vscode.Position; index: number }>();
 
   context.subscriptions.push(
+    vscode.workspace.onDidCloseTextDocument(() => resolved.clear()),
     vscode.languages.registerCompletionItemProvider(
       FORWARDING_SELECTOR,
       {
         async provideCompletionItems(document, position, token, completion) {
           const answer = await ask<vscode.CompletionList>(views, document, position, token, "cursor", "vscode.executeCompletionItemProvider", completion.triggerCharacter);
           if (!answer) return undefined;
-          const items = answer.result.items.filter((item) => {
+          const items = answer.result.items.flatMap((item, index) => {
             const range = item.range && "inserting" in item.range ? item.range.replacing : item.range;
-            return clean(answer.view, range) && (item.additionalTextEdits ?? []).every((e) => clean(answer.view, e.range));
+            const sound = clean(answer.view, range) && (item.additionalTextEdits ?? []).every((e) => clean(answer.view, e.range));
+            if (sound) origins.set(item, { document, position, index });
+            return sound ? [item] : [];
           });
-          items.forEach((item) => origins.set(item, { document, position }));
           return new vscode.CompletionList(items, answer.result.isIncomplete);
         },
-        // The service hands out documentation only for items it is asked to resolve up front,
-        // so the first resolve asks once for all of them and later ones reuse the answer.
         async resolveCompletionItem(item, token) {
           const origin = origins.get(item);
           const view = origin && (await views.ready(origin.document, token));
           if (!origin || !view) return item;
           const key = `${view.uri}#${view.version}@${origin.position.line}:${origin.position.character}`;
-          if (offered?.key !== key) {
-            const list = await run<vscode.CompletionList>("vscode.executeCompletionItemProvider", view.uri, origin.position, undefined, 100_000);
-            offered = { key, items: list?.items ?? [] };
+          const count = resolved.needed(key, origin.index);
+          if (count !== null) {
+            const list = await run<vscode.CompletionList>("vscode.executeCompletionItemProvider", view.uri, origin.position, undefined, count);
+            resolved.store(key, count, list?.items ?? []);
           }
-          const resolved = offered.items.find((i) => labelText(i) === labelText(item) && i.sortText === item.sortText);
-          if (resolved) {
-            item.documentation = resolved.documentation;
-            item.detail = resolved.detail;
+          const match = resolved.items(key)[origin.index];
+          if (match && labelText(match) === labelText(item) && match.sortText === item.sortText) {
+            item.documentation = match.documentation;
+            item.detail = match.detail;
           }
           return item;
         },
@@ -118,7 +121,7 @@ export function registerForwarding(context: vscode.ExtensionContext, views: View
         const view = await views.ready(document, token);
         if (!view) return [];
         const colors = (await run<vscode.ColorInformation[]>("vscode.executeDocumentColorProvider", view.uri)) ?? [];
-        return colors.filter((c) => clean(view, c.range) && forwardable(view.text, view.scan, document.offsetAt(c.range.start), "hover"));
+        return colors.filter((c) => clean(view, c.range) && isForwardable(view.exclusions, document.offsetAt(c.range.start), "hover"));
       },
       async provideColorPresentations(color, { document, range }, token) {
         const view = await views.ready(document, token);
