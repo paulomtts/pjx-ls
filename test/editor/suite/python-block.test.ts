@@ -83,7 +83,7 @@ suite("python block diagnostics", () => {
     const doc = await vscode.workspace.openTextDocument(bad());
     await vscode.window.showTextDocument(doc);
     const found = await eventually(() => basedpyright(doc.uri), (d) => d.length === 2);
-    assert.deepStrictEqual(found.map((d) => [d.range.start.line, d.severity, d.code]).sort(), [[6, vscode.DiagnosticSeverity.Error, "reportOptionalMemberAccess"], [6, vscode.DiagnosticSeverity.Error, "reportUndefinedVariable"]]);
+    assert.deepStrictEqual(found.map((d) => [d.range.start.line, d.severity, typeof d.code === "object" ? d.code.value : d.code]).sort(), [[6, vscode.DiagnosticSeverity.Error, "reportOptionalMemberAccess"], [6, vscode.DiagnosticSeverity.Error, "reportUndefinedVariable"]]);
     assert.ok(found.every((d) => d.range.start.line >= 1 && d.range.end.line <= 6));
   });
 
