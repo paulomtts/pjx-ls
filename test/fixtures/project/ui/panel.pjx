@@ -1,0 +1,8 @@
+{#python
+from pyjinhx import BaseComponent
+
+
+class Panel(BaseComponent):
+    heading: str
+#}
+<section>{{ heading }}</section>

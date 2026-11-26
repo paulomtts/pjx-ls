@@ -1,0 +1,3 @@
+{#def tone: Literal["info", "warn"] = "info", dismissible: bool = False, body: Slot = "" #}
+
+<div class="alert alert--{{ tone }}">{{ body }}</div>
