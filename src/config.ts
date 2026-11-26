@@ -1,15 +1,8 @@
 export const INDENT = "  ";
 
-export const TEMPLATE_LANGUAGE_IDS: ReadonlySet<string> = new Set([
-  "html",
-  "jinja",
-  "jinja-html",
-  "pyjinhx",
-]);
-export const TEMPLATE_EXTENSIONS = [".html", ".pjx"] as const;
-export const COMPONENTS_PATH_SEGMENT = "/components/";
+// Only the dedicated language: claiming html/jinja would compete with the user's own formatters.
+export const TEMPLATE_LANGUAGE_ID = "pyjinhx";
+export const TEMPLATE_SELECTOR = [{ language: TEMPLATE_LANGUAGE_ID, scheme: "file" }];
 
 export const OUTPUT_CHANNEL_NAME = "PyJinHx";
-export const CONFIG_SECTION = "pyjinhx";
-export const FORMAT_ON_SAVE_KEY = "formatSlotsOnSave";
 export const FORMAT_SLOTS_COMMAND = "pyjinhx.formatSlots";

@@ -1,8 +1,5 @@
 <PJXCard
   header="
-    <PJXIcon name='star'/>
-    <PJXBadge>New</PJXBadge>
+    <PJXIcon name='star'/><PJXBadge>New</PJXBadge>
   "
->
-  Body
-</PJXCard>
+>Body</PJXCard>

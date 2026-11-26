@@ -31,9 +31,6 @@
     "package": "npm run check && npm run build && vsce package"
   },
   "activationEvents": [
-    "onLanguage:html",
-    "onLanguage:jinja",
-    "onLanguage:jinja-html",
     "onLanguage:pyjinhx"
   ],
   "categories": ["Formatters", "Programming Languages"],
@@ -41,16 +38,6 @@
     "commands": [
       { "command": "pyjinhx.formatSlots", "title": "PyJinHx: Format Slotted Component Tags" }
     ],
-    "configuration": {
-      "title": "PyJinHx",
-      "properties": {
-        "pyjinhx.formatSlotsOnSave": {
-          "type": "boolean",
-          "default": true,
-          "description": "Expand single-line quoted slot values that contain a PascalCase component tag when saving component templates."
-        }
-      }
-    },
     "configurationDefaults": {
       "editor.tokenColorCustomizations": {
         "textMateRules": [
@@ -86,7 +73,6 @@
       { "scopeName": "pyjinhx.injection", "path": "./syntaxes/pyjinhx-injection.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.tags", "path": "./syntaxes/pyjinhx-injection-tags.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.def-header", "path": "./syntaxes/pyjinhx-injection-def-header.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
-      { "scopeName": "pyjinhx.injection.def-header-in-comment", "path": "./syntaxes/pyjinhx-injection-def-header-in-comment.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.interpolation", "path": "./syntaxes/pyjinhx-injection-interpolation.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] },
       { "scopeName": "pyjinhx.injection.interpolation-in-jinja", "path": "./syntaxes/pyjinhx-injection-interpolation-in-jinja.json", "injectTo": ["text.html.basic", "text.html.jinja", "text.pyjinhx"] }
     ]
@@ -96,6 +82,8 @@
     "@types/vscode": "^1.80.0",
     "@vscode/vsce": "^3.0.0",
     "esbuild": "^0.24.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
   }
 }

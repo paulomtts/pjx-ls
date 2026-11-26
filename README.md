@@ -4,7 +4,8 @@ Syntax highlighting and an opinionated formatter for the
 [PyJinHx](https://github.com/paulomtts/pyjinhx) Python component framework — Jinja +
 HTML templates with PascalCase components, slots, and `{#def … #}` signature headers.
 
-Works on `.pjx` files and on PyJinHx component templates written as `.html`/Jinja.
+Works on `.pjx` files. Plain `.html`/Jinja files are never touched by the formatter
+or its command.
 
 ## Features
 
@@ -25,27 +26,33 @@ Works on `.pjx` files and on PyJinHx component templates written as `.html`/Jinj
 - Always keeps a blank line between a `{#def … #}` header and the rest of the file.
 - **Idempotent** — running it again changes nothing.
 - Available as **Format Document**, the **PyJinHx: Format Slotted Component Tags**
-  command, and **format-on-save**.
+  command, and **format-on-save** (opt-in through VS Code's own setting, see below).
 
 ## Setup
 
-Install from the Marketplace, then to format `.pjx` on save add to your settings:
+Install from the Marketplace. Formatting on save is off by default; enable it for
+`.pjx` only, in your settings:
 
 ```jsonc
 "[pyjinhx]": {
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "paulomtts.pyjinhx-syntax-support"
+  "editor.formatOnSave": true
 }
 ```
 
-`.pjx` files are formatted anywhere. `.html`/Jinja templates are formatted only when
-their path contains `/components/`, to avoid reformatting unrelated HTML.
+A global `"editor.formatOnSave": true` also formats `.pjx` files. The extension is the only formatter registered for `.pjx`, so VS Code uses it
+automatically; add `"editor.defaultFormatter": "paulomtts.pyjinhx-syntax-support"` to
+the same block if you have other formatters installed.
 
-## Settings
+`.pjx` files are formatted anywhere. The extension does not register for the `html`,
+`jinja` or `jinja-html` languages, so it never competes with their formatters.
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `pyjinhx.formatSlotsOnSave` | `true` | Format PyJinHx component templates on save. |
+## Known limitations
+
+- Whitespace next to block-level tags (the `BLOCK_ELEMENTS` list in
+  `src/core/html-structure.ts`) is treated as non-rendering. That is wrong for
+  elements styled `display: inline-block` (e.g. inline-block `<li>` menus can gain
+  gaps).
+- Whitespace inside slot values is re-laid out.
 
 ## Commands
 

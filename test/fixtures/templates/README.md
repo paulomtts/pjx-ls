@@ -22,7 +22,9 @@ work to do; the goldens show the result.
 | 10 | `slot-nested-markup` | A slot value with multiple nested fragments |
 | 11 | `quote-safety` | Single quotes + `{{ }}` inside double-quoted attrs survive intact |
 | 12 | `realistic-component` | Capstone: def header + slots + components + nested Jinja |
-| 13 | `known-limitation-inline-whitespace` | **Intentionally** demonstrates a preserved quirk |
+| 13 | `inline-whitespace-preserved` | Spacing between text and interpolations is kept |
+| 14 | `minified-jinja-run` | Glued Jinja/component run stays on one line |
+| 15 | `minified-realistic` | Minified capstone: only block-level boundaries break |
 
 ## Notes on behavior
 
@@ -32,8 +34,9 @@ work to do; the goldens show the result.
   `>` / `/>` on its own line. Tags without a slot stay on one line.
 - **10** note: `<PJXBadge>New</PJXBadge>` stays inline because its only child is
   text — the same inline rule applied everywhere (e.g. `<p>text</p>`).
-- **13** shows the inline whitespace-loss quirk: `Hello {{ name }}, welcome` →
-  `Hello{{ name }}, welcome` (inline children are concatenated without separators).
+- **13** shows that spacing is kept: `Hello {{ name }}, welcome` is unchanged.
+- **14 / 15** pin that glued Jinja/component runs are not split (splitting would
+  change rendered whitespace); only block-level tag boundaries break.
 
 When the formatter's behavior is intentionally changed, delete the affected
 golden(s), re-run `node scripts/gen-goldens.mjs`, review the new output, and commit
