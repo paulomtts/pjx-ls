@@ -39,24 +39,29 @@ function hoverText(hovers: vscode.Hover[]): string {
     .join("\n");
 }
 
-async function open(path: string): Promise<vscode.TextDocument> {
+// Only `pjx-embedded:` documents are opened here, never a plain .html file: opening
+// one starts the HTML language server, and that has pulled the test window into view.
+async function open(path: string, show = true): Promise<vscode.TextDocument> {
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.parse(`pjx-embedded:${path}`));
-  await vscode.window.showTextDocument(doc, { preview: true, preserveFocus: true });
+  if (show) await vscode.window.showTextDocument(doc, { preview: true, preserveFocus: true });
   return doc;
 }
 
-async function complete(uri: vscode.Uri, line: number, character: number): Promise<string[]> {
-  // The language servers start lazily; give the first request a few tries.
+// The language servers start lazily, and the first answers can be partial, so ask
+// until the label the test needs shows up.
+async function complete(uri: vscode.Uri, line: number, character: number, expected: string): Promise<string[]> {
+  let found: string[] = [];
   for (let attempt = 0; attempt < 20; attempt++) {
     const list = await vscode.commands.executeCommand<vscode.CompletionList>(
       "vscode.executeCompletionItemProvider",
       uri,
       new vscode.Position(line, character),
     );
-    if (labels(list).length) return labels(list);
+    found = labels(list);
+    if (found.includes(expected)) break;
     await new Promise((r) => setTimeout(r, 500));
   }
-  return [];
+  return found;
 }
 
 async function hover(uri: vscode.Uri, line: number, character: number): Promise<string> {
@@ -72,7 +77,10 @@ async function hover(uri: vscode.Uri, line: number, character: number): Promise<
   return "";
 }
 
-suite("spike: pjx-embedded virtual documents", () => {
+// PJX_SKIP_SPIKE=1 skips this suite once docs/plans/notes-m2-spike.md has its results.
+const spike = process.env.PJX_SKIP_SPIKE ? suite.skip : suite;
+
+spike("spike: pjx-embedded virtual documents", () => {
   let registration: vscode.Disposable;
 
   suiteSetup(() => {
@@ -86,7 +94,7 @@ suite("spike: pjx-embedded virtual documents", () => {
   test("a: html completion and hover on a .html virtual document", async () => {
     const doc = await open("/view.html");
     log("a.languageId", doc.languageId);
-    const completions = await complete(doc.uri, 1, 7);
+    const completions = await complete(doc.uri, 1, 7, "class");
     log("a.completion", { count: completions.length, sample: completions.slice(0, 8) });
     const tagHover = await hover(doc.uri, 1, 2);
     log("a.hover", tagHover.slice(0, 120));
@@ -94,13 +102,23 @@ suite("spike: pjx-embedded virtual documents", () => {
     assert.ok(tagHover.length > 0, "tag hover");
   });
 
+  test("a2: the same on a document that is opened but never shown", async () => {
+    const doc = await open("/hidden.html", false);
+    const completions = await complete(doc.uri, 1, 7, "class");
+    const tagHover = await hover(doc.uri, 1, 2);
+    log("a2.completion", { count: completions.length, hasClass: completions.includes("class") });
+    log("a2.hover", tagHover.slice(0, 120));
+    assert.ok(completions.includes("class"), "attribute completion");
+    assert.ok(tagHover.length > 0, "tag hover");
+  });
+
   test("b: css and js modes answer inside <style> and <script>", async () => {
     const doc = await open("/view.html");
-    const css = await complete(doc.uri, 3, 8);
+    const css = await complete(doc.uri, 3, 8, "color");
     log("b.css.completion", { count: css.length, hasColor: css.includes("color") });
     const cssHover = await hover(doc.uri, 4, 6);
     log("b.css.hover", cssHover.slice(0, 120));
-    const js = await complete(doc.uri, 7, 11);
+    const js = await complete(doc.uri, 7, 11, "getElementById");
     log("b.js.completion", { count: js.length, hasGetElementById: js.includes("getElementById") });
     const jsHover = await hover(doc.uri, 8, 14);
     log("b.js.hover", jsHover.slice(0, 160));
@@ -124,7 +142,7 @@ suite("spike: pjx-embedded virtual documents", () => {
       doc.uri,
       new vscode.Position(7, 11),
     );
-    log("c.completion", { first: labels(list).length, retry: labels(retry).length });
+    log("c.completion", { first: labels(list), retry: labels(retry) });
   });
 
   test("d: which diagnostics the view gets", async () => {
@@ -138,5 +156,15 @@ suite("spike: pjx-embedded virtual documents", () => {
       "d.diagnostics",
       diagnostics.map((d) => ({ line: d.range.start.line, source: d.source, message: d.message })),
     );
+  });
+
+  test("d2: diagnostics for a document that is opened but never shown", async () => {
+    const doc = await open("/hidden.html", false);
+    let diagnostics = vscode.languages.getDiagnostics(doc.uri);
+    for (let attempt = 0; attempt < 20 && !diagnostics.length; attempt++) {
+      await new Promise((r) => setTimeout(r, 500));
+      diagnostics = vscode.languages.getDiagnostics(doc.uri);
+    }
+    log("d2.diagnostics", diagnostics.map((d) => ({ line: d.range.start.line, source: d.source, message: d.message })));
   });
 });

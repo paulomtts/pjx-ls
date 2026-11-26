@@ -41,9 +41,21 @@ registered under the scheme `pjx-embedded`, opened as `/view.html` and `/view.js
 - Tests a and b assert (`class` completes, `color` completes, `getElementById` completes,
   every hover is non-empty). Tests c and d only log, so one run always yields all four
   answers.
+- Tests a2 and d2 repeat a and d on a document that is opened but never shown, because
+  the real forwarding provider will work on documents nobody looks at.
+- `PJX_SKIP_SPIKE=1` skips the suite, so CI can drop it once these notes hold the results.
 - Each answer is printed as a `SPIKE <label> <json>` line on the test output.
 - Run it once with VS Code and once with `PJX_EDITOR_PATH=/usr/share/cursor/cursor`; the
   two may differ.
+
+## Risks
+
+- The suite never opens a plain `.html` file. Opening one starts the HTML language
+  server, which has pulled the hidden test workspace into the developer's view twice. Only
+  `pjx-embedded:` documents and `.pjx` files are opened.
+- A `pjx-embedded:` document with language id `html` may start that server as well. The
+  run should note whether it does (does a window appear, is the server's output channel
+  created); if it does, forwarding opens a window-visible side effect to avoid or accept.
 
 ## Results
 
