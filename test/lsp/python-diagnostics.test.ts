@@ -7,10 +7,12 @@ import type { PythonServer, ServerDiagnostic } from "../../src/core/python-serve
 import { project } from "./helpers.ts";
 
 // The diagnostics the server pushes for the text version it was last given.
-async function diagnosticsFor(session: PythonServer, uri: string): Promise<ServerDiagnostic[]> {
+// The server may push an empty list before the analysis is done, so a test that expects
+// something waits for it (`ready`); one that expects nothing waits on another file first.
+async function diagnosticsFor(session: PythonServer, uri: string, ready: (items: ServerDiagnostic[]) => boolean = () => true): Promise<ServerDiagnostic[]> {
   for (let i = 0; i < 100; i++) {
     const got = session.diagnostics(uri);
-    if (got && got.version === session.versionOf(uri)) return got.items;
+    if (got && got.version === session.versionOf(uri) && ready(got.items)) return got.items;
     await new Promise((r) => setTimeout(r, 100));
   }
   throw new Error("no diagnostics for the current version");
@@ -23,7 +25,7 @@ test("standard: the optional access and the undefined name are errors on line 5"
   const { session, open } = project("standard");
   const { uri, view } = open("ui/bad.pjx");
   session.sync(uri, view.text);
-  const items = await diagnosticsFor(session, uri);
+  const items = await diagnosticsFor(session, uri, (i) => i.length > 0);
   assert.deepEqual(show(items), ["5:19-5:24 1 reportOptionalMemberAccess", "5:28-5:35 1 reportUndefinedVariable"]);
   assert.equal(blockDiagnostics(items, view, []).length, 2);
   assert.ok(items.every((d) => d.range.start.line >= view.firstLine && d.range.end.line <= view.lastLine));
@@ -33,7 +35,7 @@ test("an unused parameter is a hint with the unnecessary tag, and stays", async 
   const { session, open } = project("standard");
   const { uri, view } = open("ui/card.pjx");
   session.sync(uri, view.text);
-  const items = await diagnosticsFor(session, uri);
+  const items = await diagnosticsFor(session, uri, (i) => i.length > 0);
   assert.deepEqual(show(items), ["9:19-9:22 4 reportUnusedParameter"]);
   assert.deepEqual(items[0].tags, [1]);
 });
@@ -44,8 +46,8 @@ test("off: nothing for bad.pjx, the hint stays on card.pjx", async () => {
   const card = open("ui/card.pjx");
   session.sync(bad.uri, bad.view.text);
   session.sync(card.uri, card.view.text);
+  assert.deepEqual(show(await diagnosticsFor(session, card.uri, (items) => items.length > 0)), ["9:19-9:22 4 reportUnusedParameter"]);
   assert.deepEqual(await diagnosticsFor(session, bad.uri), []);
-  assert.deepEqual(show(await diagnosticsFor(session, card.uri)), ["9:19-9:22 4 reportUnusedParameter"]);
 });
 
 test("a project's own pyright configuration wins over the fallback", async () => {
@@ -53,6 +55,10 @@ test("a project's own pyright configuration wins over the fallback", async () =>
   writeFileSync(join(root, "pyproject.toml"), '[tool.pyright]\ntypeCheckingMode = "off"\n');
   const { uri, view } = open("ui/bad.pjx");
   session.sync(uri, view.text);
+  // Nothing to wait for: settle on the card's hint, which every mode reports, then look.
+  const card = open("ui/card.pjx");
+  session.sync(card.uri, card.view.text);
+  await diagnosticsFor(session, card.uri, (i) => i.length > 0);
   const codes = (await diagnosticsFor(session, uri)).map((d) => d.code);
   assert.ok(!codes.includes("reportOptionalMemberAccess"), codes.join());
 });
@@ -61,10 +67,10 @@ test("an edit that removes the error clears it for the new version", async () =>
   const { session, open } = project("standard");
   const { uri, view, source } = open("ui/bad.pjx");
   session.sync(uri, view.text);
-  await diagnosticsFor(session, uri);
+  await diagnosticsFor(session, uri, (i) => i.length > 0);
   const fixed = open("ui/bad.pjx", () => source.replace(" + missing", "")).view;
   session.sync(uri, fixed.text);
-  const codes = (await diagnosticsFor(session, uri)).map((d) => d.code);
+  const codes = (await diagnosticsFor(session, uri, (i) => i.length > 0)).map((d) => d.code);
   assert.ok(!codes.includes("reportUndefinedVariable"), codes.join());
   assert.ok(codes.includes("reportOptionalMemberAccess"));
 });
