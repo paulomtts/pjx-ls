@@ -36,6 +36,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Server tests
+        run: npm run test:lsp
+
       - name: Editor tests
         run: xvfb-run -a npm run test:editor
 
