@@ -2,7 +2,7 @@
   "name": "pyjinhx-syntax-support",
   "displayName": "PyJinHx",
   "description": "Syntax highlighting and template formatting for the PyJinHx Python framework (PascalCase component tags, slots, {#def#} headers, interpolation).",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "publisher": "paulomtts",
   "license": "MIT",
   "type": "module",
@@ -77,7 +77,7 @@
       "properties": {
         "pyjinhx.pythonPath": { "type": "string", "default": "", "scope": "machine-overridable", "markdownDescription": "The Python interpreter that has pyjinhx installed. Empty: the Python extension's environment, then `.venv` in the workspace folder, then `python3` on `PATH`. `${workspaceFolder}` is replaced." },
         "pyjinhx.generateStubs": { "type": "boolean", "default": true, "markdownDescription": "Write `<name>.pyi` beside each `.pjx` with a `{#python` block, as `python -m pyjinhx.stubgen` does, when the manifest reports it missing or stale." },
-        "pyjinhx.pythonBlock.enabled": { "type": "boolean", "default": true, "markdownDescription": "Colours and, later, completion and hover inside `{#python` blocks, from a private basedpyright process started when a `.pjx` with a block is open. Uses about 300 MB of memory." },
+        "pyjinhx.pythonBlock.enabled": { "type": "boolean", "default": true, "markdownDescription": "Colours, hover, definition, completion and signature help inside `{#python` blocks, from a private basedpyright process started when a `.pjx` with a block is open. Uses about 300 MB of memory." },
         "pyjinhx.pythonBlock.serverPath": { "type": "string", "default": "", "scope": "machine-overridable", "markdownDescription": "Another `langserver.index.js` of basedpyright to run instead of the bundled one." },
         "pyjinhx.pythonBlock.diagnostics": { "type": "boolean", "default": true, "markdownDescription": "Show basedpyright's diagnostics for the lines of a `{#python` block. basedpyright reads the project's `pyrightconfig.json`, `[tool.pyright]` or `[tool.basedpyright]`; see `typeCheckingMode`." },
         "pyjinhx.pythonBlock.typeCheckingMode": { "type": "string", "enum": ["off", "basic", "standard", "strict", "recommended", "all"], "default": "standard", "markdownDescription": "The checking mode for `{#python` blocks, used only when the project has no `pyrightconfig.json`, no `[tool.pyright]` and no `[tool.basedpyright]`. With any of those, basedpyright ignores this setting, and a config that sets no `typeCheckingMode` gets basedpyright's own, louder `recommended`: set `typeCheckingMode` in the project config." },

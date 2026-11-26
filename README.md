@@ -100,7 +100,11 @@ workspace (the server asks your interpreter for its search paths). If the server
 three times it is left off until the window reloads, and the status bar tooltip says so.
 Settings: `pyjinhx.pythonBlock.enabled` (default on; off stops the server) and
 `pyjinhx.pythonBlock.serverPath` (another basedpyright `langserver.index.js`).
-Hover, go to definition and completion in the block are planned.
+Inside the block's lines you also get **hover**, **go to definition**, **completion** and
+**signature help**. Go to definition on a sibling component lands on its `.pjx`, not its
+generated `.pyi` stub. Auto-import completions are not offered (their edit would land
+outside the block). In the markup, the `{#css`/`{#js` blocks and Jinja the other providers
+answer as before.
 
 The same server reports **diagnostics** for the block's lines (source `basedpyright`).
 pjx-ls does not read your Pyright configuration: basedpyright does. If the project has a

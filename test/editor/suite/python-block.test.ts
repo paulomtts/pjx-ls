@@ -137,3 +137,50 @@ suite("python block hover and definition", () => {
     assert.ok(hovers.every((h) => !textOf(h).includes("```python")), hovers.map(textOf).join("\n"));
   });
 });
+
+suite("python block completion and signature help", () => {
+  const file = () => vscode.Uri.joinPath(root(), "ui", "typing_block.pjx");
+  const head = '{#python\nfrom dataclasses import dataclass\n\n\n@dataclass\nclass TodoAppContext:\n    count: int = 0\n\n    def load(self, ctx: "TodoAppContext") -> int:\n';
+  const labelOf = (i: vscode.CompletionItem) => (typeof i.label === "string" ? i.label : i.label.label);
+
+  // Created here, not committed: the fixture project is also the manifest contract's project.
+  suiteSetup(async () => vscode.workspace.fs.writeFile(file(), Buffer.from(head + "        return 0\n#}\n<p></p>\n")));
+  suiteTeardown(async () => {
+    await vscode.workspace.fs.delete(file(), { useTrash: false });
+  });
+
+  // Puts `marked` in the document, unsaved; `|` is where the cursor is.
+  async function edit(marked: string) {
+    const doc = await vscode.workspace.openTextDocument(file());
+    await vscode.window.showTextDocument(doc);
+    const change = new vscode.WorkspaceEdit();
+    change.replace(doc.uri, new vscode.Range(0, 0, doc.lineCount, 0), marked.replace("|", ""));
+    await vscode.workspace.applyEdit(change);
+    return { doc, position: doc.positionAt(marked.indexOf("|")) };
+  }
+  const complete = (doc: vscode.TextDocument, position: vscode.Position, holds: (labels: string[]) => boolean) =>
+    eventually(
+      async () => ((await vscode.commands.executeCommand<vscode.CompletionList>("vscode.executeCompletionItemProvider", doc.uri, position))?.items ?? []).map(labelOf),
+      holds,
+    );
+
+  test("self. inside a method offers the field and the method", async () => {
+    const { doc, position } = await edit(head + "        return self.|\n#}\n<p></p>\n");
+    const labels = await complete(doc, position, (l) => l.includes("count"));
+    assert.ok(labels.includes("count") && labels.includes("load"), labels.slice(0, 15).join());
+  });
+
+  test("a call shows its signature", async () => {
+    const { doc, position } = await edit(head + "        return 0\n\n_c = TodoAppContext(|\n#}\n<p></p>\n");
+    const ask = () => vscode.commands.executeCommand<vscode.SignatureHelp | undefined>("vscode.executeSignatureHelpProvider", doc.uri, position, "(");
+    const help = await eventually(ask, (h) => !!h?.signatures.length);
+    assert.match(help!.signatures[0].label, /count: int = 0/);
+  });
+
+  test("in the markup < still offers HTML tags and no Python names", async () => {
+    const { doc, position } = await edit(head + "        return 0\n#}\n<|\n");
+    const labels = await complete(doc, position, (l) => l.includes("div"));
+    assert.ok(labels.includes("div"));
+    assert.ok(!labels.includes("self") && !labels.includes("dataclass") && !labels.includes("TodoAppContext"), labels.join());
+  });
+});
