@@ -59,4 +59,31 @@ registered under the scheme `pjx-embedded`, opened as `/view.html` and `/view.js
 
 ## Results
 
-pending
+Run in Cursor (electron 42, via the generated `pjxtest` launcher on the hidden workspace;
+`PJX_EDITOR_PATH=/usr/share/cursor/cursor npm run test:editor`, 7 passing). A first attempt
+was killed by the watchdog after tests a, a2 and b because an unrelated workspace switch
+happened (1 to 12); the second run completed with no watchdog kill. Downloaded VS Code
+was not run: it cannot take the `pjxtest` app id.
+
+| Q | Answer | Evidence |
+|---|---|---|
+| a | yes | `SPIKE a.languageId "html"`, `a.completion {"count":151,...}` (has `class`), `a.hover "The div element has no special meaning at all..."` |
+| a2 | yes, hidden document too | `a2.completion {"count":151,"hasClass":true}`, `a2.hover "The div element has no special meaning at all..."` |
+| b | yes | `b.css.completion {"count":889,"hasColor":true}`, `b.css.hover "Sets the color of an element's text..."`, `b.js.completion {"count":273,"hasGetElementById":true}`, `b.js.hover "```typescript\nany\n```"` |
+| c | no language service | the `.js` document answers only word-based completions of its own text: `c.completion {"first":["a","b","cl","colo","color","div","doctype","document","getElementById",...]}` (identical on retry; those are the words of the document) |
+| d | yes, for a shown document | `d.diagnostics [{"line":3,"source":"css","message":"Unknown property: 'colo'"},{"line":9,"source":"javascript","message":"Expression expected."}]` |
+| d2 | none for a hidden document | `d2.diagnostics []` after 10 s |
+
+The JS hover is the type `any`: the HTML service's embedded JS mode has DOM typings but
+no project context, as the plan expected.
+
+## Decision
+
+GO for forwarding (tasks 5 and 6): the HTML service, with embedded CSS and JS, answers
+through `vscode.execute...Provider` for a `pjx-embedded:` `.html` document, shown or not.
+No window or workspace change was seen from the virtual `.html` document (the watchdog
+saw no off-workspace window), so it is not known to start a visible side effect.
+
+Task 7 (diagnostics from the view) is NOT reliable: diagnostics exist only while the
+view is shown in an editor, and forwarding works on documents nobody shows (d2). It is
+not built; the idea needs a different design (own `vscode-css-languageservice`).
