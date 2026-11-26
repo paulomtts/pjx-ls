@@ -82,6 +82,12 @@ suite("pjx layer", () => {
     assert.ok(after.includes("dismissible") && !after.includes("typed"), after.join());
   });
 
+  test("a prop named like an HTML global attribute is offered once, and other HTML attributes stay", async () => {
+    const items = await complete("alert.pjx", "<Modal |", (l) => l.includes("title") && l.includes("class"));
+    assert.strictEqual(items.filter((i) => labelOf(i) === "title").length, 1);
+    assert.ok(items.map(labelOf).includes("class"));
+  });
+
   test("hover on a component tag shows its signature", async () => {
     const { doc } = await edit("alert.pjx", '<Badge label="x"></Badge>');
     const hovers = await eventually(() => vscode.commands.executeCommand<vscode.Hover[]>("vscode.executeHoverProvider", doc.uri, new vscode.Position(0, 3)), (h) => h.length > 0);

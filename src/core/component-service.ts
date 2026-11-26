@@ -78,10 +78,10 @@ export function componentCompletions(manifest: Manifest, text: string, scan: Sca
   }));
 }
 
-// Only a name that starts as a component's does (`<b` is not `Badge`), and each tag is listed once.
+// Each tag once, those the typed name starts, whatever its case (`<but` finds `Button`). Props and
+// hover stay for PascalCase tags, so `<button ` never gets `Button`'s.
 function tags(manifest: Manifest, replace: Span, prefix: string): Entry[] {
-  if (prefix && !/^[A-Z]/.test(prefix)) return [];
-  return manifest.tagList().map((c) => ({ label: c.tag, kind: "component", detail: `${c.kind} component`, documentation: tagDocs(c), replace, sortText: c.tag }));
+  return manifest.tagList().filter((c) => c.tag.toLowerCase().startsWith(prefix.toLowerCase())).map((c) => ({ label: c.tag, kind: "component", detail: `${c.kind} component`, documentation: tagDocs(c), replace, sortText: c.tag }));
 }
 
 /** Hover on a component tag or one of its props. */
@@ -94,4 +94,14 @@ export function componentHover(manifest: Manifest, scan: Scan, offset: number): 
   const attribute = tag.attributes.find((a) => inside(a.nameRange, offset));
   const prop = found.component.props.find((p) => p.name === attribute?.name);
   return attribute && prop ? { markdown: propDocs(prop), range: attribute.nameRange } : null;
+}
+
+/**
+ * The names of the props of the component whose tag the cursor is in, at an attribute name: what
+ * the HTML service's own entry of that name (a global `title`) must not shadow.
+ */
+export function shadowedAttributes(manifest: Manifest, text: string, scan: Scan, offset: number): Set<string> {
+  const tag = inCode(scan, offset) ? undefined : tagAt(text, scan, offset);
+  if (!tag || inside(tag.nameRange, offset) || tag.attributes.some((a) => a.value && inside(a.value, offset))) return new Set();
+  return new Set(componentOf(manifest, tag)?.component.props.map((p) => p.name));
 }

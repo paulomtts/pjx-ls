@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseManifest, Manifest, type Component } from "../../src/core/manifest.ts";
-import { componentCompletions, componentHover } from "../../src/core/component-service.ts";
+import { componentCompletions, componentHover, shadowedAttributes } from "../../src/core/component-service.ts";
 import { scan } from "../../src/core/regions.ts";
 import { manifestText } from "./fixture.ts";
 
@@ -34,7 +34,6 @@ test("<Ba and a bare < offer components, each tag once", () => {
 test("a lowercase start is not a component: <button never offers Button", () => {
   const button = (rank: Partial<Component>) => ({ ...manifest.byTag("Badge")!, tag: "Button", ...rank });
   const m = new Manifest([button({})], []);
-  assert.deepEqual(complete("<butt|", m), []);
   assert.deepEqual(complete("<button |", m), []);
   assert.deepEqual(componentHover(m, scan("<button>"), 3), null);
   assert.equal(complete("<Butt|", m).length, 1);
@@ -131,4 +130,23 @@ test("choosing a prop on an attribute that has its value renames it", () => {
   const item = complete('<Badge to|ne="calm">').find((i) => i.label === "tone")!;
   assert.equal(item.snippet, undefined);
   assert.deepEqual(item.replace, { start: 7, end: 11 });
+});
+
+test("a tag is offered whatever the case of what is typed: <but finds Button", () => {
+  const m = new Manifest([{ ...manifest.byTag("Badge")!, tag: "Button" }], []);
+  assert.deepEqual(complete("<but|", m).map((e) => e.label), ["Button"]);
+  assert.deepEqual(complete("<x|", m), []);
+});
+
+test("the props of the component are what the HTML service's entries must not shadow", () => {
+  const shadow = (marked: string) => {
+    const { text, scan: parsed, offset } = at(marked);
+    return [...shadowedAttributes(manifest, text, parsed, offset)];
+  };
+  assert.deepEqual(shadow("<Badge |"), ["label", "tone", "count"]);
+  assert.deepEqual(shadow("<Badge-x to|"), ["label", "tone", "count"]);
+  assert.deepEqual(shadow("<div |"), []);
+  assert.deepEqual(shadow("<Badge|"), []);
+  assert.deepEqual(shadow('<Badge tone="|'), []);
+  assert.deepEqual(shadow("<script>if (a <Badge |</script>"), []);
 });

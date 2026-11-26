@@ -17,8 +17,8 @@ export function activate(context: vscode.ExtensionContext): void {
   registerTyping(context);
   const views = new Views();
   views.register(context);
-  registerForwarding(context, views);
   const manifests = new Manifests(output);
+  registerForwarding(context, views, manifests);
   context.subscriptions.push(
     manifests,
     vscode.commands.registerCommand("pyjinhx.refreshManifest", () => manifests.refresh()),
