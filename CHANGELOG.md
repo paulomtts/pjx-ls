@@ -3,6 +3,13 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.5.1
+
+### Added
+- A **Generate stub for this document** quick fix on the `stub-missing` warning: it runs
+  `python -m pyjinhx.stubgen` on the document with the same interpreter as the manifest,
+  then refreshes the manifest.
+
 ## 0.5.0
 
 ### Added

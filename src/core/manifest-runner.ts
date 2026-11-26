@@ -13,10 +13,10 @@ export interface Process {
   kill: () => void;
 }
 
-export type Spawn = (command: string, args: string[], input?: string) => Process;
+export type Spawn = (command: string, args: string[], input?: string, cwd?: string) => Process;
 
-export const nodeSpawn: Spawn = (command, args, input) => {
-  const child = spawnProcess(command, args, { stdio: ["pipe", "pipe", "pipe"] });
+export const nodeSpawn: Spawn = (command, args, input, cwd) => {
+  const child = spawnProcess(command, args, { cwd, stdio: ["pipe", "pipe", "pipe"] });
   const exit = new Promise<Exit>((resolve, reject) => {
     let stdout = "";
     let stderr = "";
