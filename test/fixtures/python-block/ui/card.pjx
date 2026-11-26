@@ -1,0 +1,13 @@
+{#python
+from dataclasses import dataclass
+from ui.keys import Keys
+
+
+@dataclass
+class TodoAppContext:
+    count: int = 0
+
+    def load(self, ctx: "TodoAppContext") -> int:
+        return self.count + len(Keys.TODOS)
+#}
+<p>{{ count }}</p>

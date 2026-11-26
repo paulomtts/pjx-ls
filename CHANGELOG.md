@@ -3,6 +3,24 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.7.0
+
+### Added
+- Names inside a `{#python` block are coloured by type (semantic tokens), as in a `.py`
+  file: classes, properties, parameters, functions, enum members. They come from a private
+  basedpyright 1.40.2 language server bundled in the extension (about 6 MB more), started
+  the first time a `.pjx` with a block is open, with a 256 MB heap limit; expect about
+  300 MB of memory while it runs. Sibling components resolve through their stubs, and
+  changed `.py` and `.pyi` files recolour open blocks.
+- `pyjinhx.pythonBlock.enabled` (default on; off stops the server) and
+  `pyjinhx.pythonBlock.serverPath` (another basedpyright `langserver.index.js`).
+- The status bar tooltip says when the block's server is off (untrusted workspace, or
+  stopped after three crashes).
+
+### Tests
+- `npm run test:lsp` drives the bundled server over stdio. The editor tests now refuse to
+  start on Linux unless `WAYLAND_DISPLAY` is unset and run Electron on X11.
+
 ## 0.6.0
 
 ### Added

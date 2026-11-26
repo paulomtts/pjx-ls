@@ -474,6 +474,41 @@
       "replaces": false,
       "strict": null,
       "has_stale_def_header": true
+    },
+    {
+      "tag": "Tokens",
+      "name": "tokens",
+      "id": "@ROOT@/ui/tokens.pjx",
+      "kind": "pjx-python",
+      "builtin": false,
+      "document": {
+        "path": "@ROOT@/ui/tokens.pjx",
+        "markup_lines": [
+          12,
+          12
+        ]
+      },
+      "blocks": [
+        {
+          "keyword": "python",
+          "open_line": 1,
+          "body_lines": [
+            2,
+            10
+          ],
+          "close_line": 11
+        }
+      ],
+      "class": null,
+      "props": [],
+      "members": [],
+      "assets": {
+        "css": null,
+        "js": null
+      },
+      "replaces": false,
+      "strict": null,
+      "has_stale_def_header": false
     }
   ],
   "diagnostics": [
@@ -495,6 +530,38 @@
     },
     {
       "path": "@ROOT@/ui/panel.pjx",
+      "range": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 8
+        }
+      },
+      "severity": "warning",
+      "code": "stub-missing",
+      "message": "no stub beside this document; run python -m pyjinhx.stubgen"
+    },
+    {
+      "path": "@ROOT@/ui/tokens.pjx",
+      "range": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 8
+        }
+      },
+      "severity": "error",
+      "code": "no-component-class",
+      "message": "the block defines no class named for the file: expected one whose snake_case name is 'tokens'"
+    },
+    {
+      "path": "@ROOT@/ui/tokens.pjx",
       "range": {
         "start": {
           "line": 1,

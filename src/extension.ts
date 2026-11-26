@@ -8,6 +8,8 @@ import { registerDiagnostics } from "./vscode/diagnostics.ts";
 import { Manifests } from "./vscode/manifest-service.ts";
 import { registerPjxFeatures } from "./vscode/pjx-features.ts";
 import { registerStubFix } from "./vscode/stub-fix.ts";
+import { PythonBlocks } from "./vscode/python-server.ts";
+import { registerPythonTokens } from "./vscode/python-tokens.ts";
 import { registerStatus } from "./vscode/status.ts";
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -27,8 +29,11 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   registerPjxFeatures(context, manifests, views);
   registerDiagnostics(context, manifests);
-  registerStatus(context, manifests);
   registerStubFix(context, manifests, output);
+  const blocks = new PythonBlocks(context, output);
+  context.subscriptions.push(blocks);
+  registerPythonTokens(context, blocks);
+  registerStatus(context, manifests, blocks);
 }
 
 export function deactivate(): void {}
