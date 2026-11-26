@@ -73,7 +73,7 @@ test("a block error does not remove the other css and js", () => {
 });
 
 test("an unclosed {#python is blanked to the end", () => {
-  assert.equal(virtualHtml("<p></p>\n{#python\nx = '<b>'\n"), `<p></p>\n${" ".repeat(8)}\n${" ".repeat(11)}\n`);
+  assert.equal(virtualHtml("<p></p>\n{#python\nx = '<b>'\n"), `<p></p>\n${" ".repeat(8)}\n${" ".repeat(9)}\n`);
 });
 
 test("a large document is converted in linear time", () => {
@@ -111,12 +111,13 @@ const documents = [
 
 // The offsets a view may rewrite: Jinja regions and the lines of css/js openers and closers.
 function rewritable(text: string): Set<number> {
-  const { regions, blocks } = scan(text);
+  const { regions, blocks, unclosedPython } = scan(text);
   const offsets = new Set<number>(text.startsWith("﻿") ? [0] : []);
   const add = (start: number, end: number) => {
     for (let i = start; i < end; i++) offsets.add(i);
   };
   const lineEnd = (from: number) => (text.indexOf("\n", from) + 1 || text.length + 1) - 1;
+  if (unclosedPython) add(unclosedPython.start, unclosedPython.end);
   for (const r of regions) {
     if (r.body) {
       add(r.start, r.body.start);
