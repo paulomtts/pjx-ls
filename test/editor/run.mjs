@@ -4,6 +4,13 @@ import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 import { runTests } from "@vscode/test-electron";
 
+// A test editor must never reach the developer's desktop: on Linux it runs on X11 inside
+// Xvfb, and Electron would pick Wayland whenever WAYLAND_DISPLAY is set.
+if (process.platform === "linux" && process.env.WAYLAND_DISPLAY) {
+  console.error("run under: xvfb-run -a env -u WAYLAND_DISPLAY npm run test:editor");
+  process.exit(1);
+}
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const executable = process.env.PJX_EDITOR_PATH || undefined;
 const editor = executable && path.basename(executable) === "cursor" ? "cursor" : "code";
@@ -72,5 +79,6 @@ await runTests({
     path.join(root, "test/fixtures/project"),
     `--user-data-dir=${userData}`,
     `--extensions-dir=${path.join(cache, "extensions")}`,
+    ...(process.platform === "linux" ? ["--ozone-platform=x11"] : []),
   ],
 });
