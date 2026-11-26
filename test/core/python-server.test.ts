@@ -137,7 +137,7 @@ test("close and file changes reach the server", async () => {
   const { server, state } = setup();
   server.sync(URI, "x\n");
   await eventually(() => state().documents?.length === 1, "didOpen");
-  server.filesChanged(["file:///work/k.py"]);
+  server.filesChanged([{ uri: "file:///work/k.py", type: 1 }]);
   server.close(URI);
   const seen = await eventually(() => state().documents?.length === 2 && state().watched?.length === 1 && state(), "close");
   assert.equal(seen.documents[1].event, "close");

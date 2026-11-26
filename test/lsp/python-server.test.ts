@@ -87,7 +87,7 @@ test("a changed .py file is noticed once the session is told", async () => {
   session.sync(uri, view.text);
   await session.semanticTokens(uri);
   writeFileSync(join(root, "ui/keys.py"), 'class Keys:\n    DONE = "done"\n');
-  session.filesChanged([pathToFileURL(join(root, "ui/keys.py")).toString()]);
+  session.filesChanged([{ uri: pathToFileURL(join(root, "ui/keys.py")).toString(), type: 2 }]);
   // The server reanalyses after the notification; ask until the token stops being a property.
   let todos: ReturnType<typeof decode>[number] | undefined;
   for (let i = 0; i < 40; i++) {
@@ -131,4 +131,22 @@ test("typing: each sync asks for tokens and cancels the one before", async () =>
   const answers = await Promise.all(asked);
   const last = answers[19]!;
   assert.ok(decode(last.data, last.legend, text).some((t) => t.line === 8 && t.text === `count${"x".repeat(19)}`));
+});
+
+test("a module created after the server started resolves once it is announced as created", async () => {
+  const { root, session, open } = project();
+  writeFileSync(join(root, "ui/fresh_user.pjx"), "{#python\nfrom ui.fresh import Fresh\n\nx = Fresh\n#}\n<p></p>\n");
+  const { uri, view } = open("ui/fresh_user.pjx");
+  session.sync(uri, view.text);
+  const before = await session.semanticTokens(uri);
+  assert.ok(!decode(before!.data, before!.legend, view.text).some((t) => t.text === "Fresh" && t.type === "class"));
+  writeFileSync(join(root, "ui/fresh.py"), "class Fresh:\n    pass\n");
+  session.filesChanged([{ uri: pathToFileURL(join(root, "ui/fresh.py")).toString(), type: 1 }]);
+  let fresh: ReturnType<typeof decode>[number] | undefined;
+  for (let i = 0; i < 40 && fresh?.type !== "class"; i++) {
+    await new Promise((r) => setTimeout(r, 100));
+    const answer = await session.semanticTokens(uri);
+    fresh = decode(answer!.data, answer!.legend, view.text).find((t) => t.line === 4 && t.text === "Fresh");
+  }
+  assert.equal(fresh?.type, "class");
 });

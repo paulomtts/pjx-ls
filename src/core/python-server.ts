@@ -165,10 +165,13 @@ export class PythonServer {
     }
   }
 
-  /** A `.py` or `.pyi` changed on disk: the server does not watch files itself. */
-  filesChanged(uris: string[]): void {
-    if (this.current !== "ready" || uris.length === 0) return;
-    this.client?.notify("workspace/didChangeWatchedFiles", { changes: uris.map((uri) => ({ uri, type: 2 })) });
+  /**
+   * A `.py` or `.pyi` changed on disk: the server does not watch files itself. `type` is
+   * LSP's: 1 created, 2 changed, 3 deleted; the server drops its import cache only on 1.
+   */
+  filesChanged(changes: { uri: string; type: 1 | 2 | 3 }[]): void {
+    if (this.current !== "ready" || changes.length === 0) return;
+    this.client?.notify("workspace/didChangeWatchedFiles", { changes });
   }
 
   /** The interpreter or the settings changed: the server asks for its configuration again. */

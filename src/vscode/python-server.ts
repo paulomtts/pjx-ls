@@ -23,7 +23,7 @@ export class PythonBlocks implements vscode.Disposable {
   readonly onDidChange = this.changed.event;
   private readonly subscriptions: vscode.Disposable[] = [this.changed];
   private readonly views = new Map<string, { version: number; view: PythonView | null }>();
-  private readonly pendingFiles = new Set<string>();
+  private readonly pendingFiles = new Map<string, 1 | 2 | 3>();
   private readonly files = new Debouncer(100, () => this.filesChanged());
 
   constructor(context: vscode.ExtensionContext, output: vscode.OutputChannel) {
@@ -42,16 +42,18 @@ export class PythonBlocks implements vscode.Disposable {
       log: (line) => output.appendLine(`[python block] ${line}`),
     });
     const watcher = vscode.workspace.createFileSystemWatcher("**/*.{py,pyi}");
-    const fileChanged = (uri: vscode.Uri) => {
-      this.pendingFiles.add(uri.toString());
+    const fileChanged = (type: 1 | 2 | 3) => (uri: vscode.Uri) => {
+      // A create followed by a change in one batch must still reach the server as a create.
+      const key = uri.toString();
+      this.pendingFiles.set(key, this.pendingFiles.get(key) === 1 && type === 2 ? 1 : type);
       this.files.schedule("files");
     };
     this.server.onDidChangeState(() => this.changed.fire());
     this.subscriptions.push(
       watcher,
-      watcher.onDidCreate(fileChanged),
-      watcher.onDidChange(fileChanged),
-      watcher.onDidDelete(fileChanged),
+      watcher.onDidCreate(fileChanged(1)),
+      watcher.onDidChange(fileChanged(2)),
+      watcher.onDidDelete(fileChanged(3)),
       vscode.workspace.onDidCloseTextDocument((document) => {
         this.views.delete(document.uri.toString());
         this.server.close(document.uri.toString());
@@ -84,7 +86,7 @@ export class PythonBlocks implements vscode.Disposable {
   }
 
   private filesChanged(): void {
-    this.server.filesChanged([...this.pendingFiles]);
+    this.server.filesChanged([...this.pendingFiles].map(([uri, type]) => ({ uri, type })));
     this.pendingFiles.clear();
     this.changed.fire();
   }
