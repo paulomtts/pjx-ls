@@ -3,6 +3,27 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.5.0
+
+### Added
+- **Components from the pyjinhx manifest** (`python -m pyjinhx.manifest`, pyjinhx 1.17+):
+  completion of component tags, props (required first) and `Literal` values, hover,
+  go to definition for tags, props and a template's own names, completion of the
+  template's own props and members inside `{{ }}`, and the manifest's diagnostics with
+  their codes, from a small provider on the region scanner whose results sit beside the
+  editor's own HTML ones.
+- Interpreter discovery (`pyjinhx.pythonPath`, the Python extension, `.venv`, `PATH`),
+  settings `pyjinhx.manifest.paths` and `pyjinhx.manifest.sysPath`, commands
+  `PyJinHx: Refresh Component Manifest` and `PyJinHx: Show Output`.
+- Limited mode with a `pyjinhx: limited` status bar item when pyjinhx cannot be run: tags
+  and props from the `.pjx` files, no hover detail, no diagnostics.
+- Workspace trust: in an untrusted workspace no interpreter is run.
+
+### Changed
+- The stale `{#def#}` header warning comes from the manifest's `has_stale_def_header`, not
+  from a sibling `.py` file.
+- The editor tests run in `test/fixtures/project`, with a fake interpreter.
+
 ## 0.4.0
 
 ### Added

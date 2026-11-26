@@ -1,0 +1,513 @@
+{
+  "manifest_version": 1,
+  "grammar_version": 1,
+  "roots": [
+    "@ROOT@"
+  ],
+  "components": [
+    {
+      "tag": "Alert",
+      "name": "alert",
+      "id": "@ROOT@/ui/alert.pjx",
+      "kind": "template",
+      "builtin": false,
+      "document": {
+        "path": "@ROOT@/ui/alert.pjx",
+        "markup_lines": [
+          3,
+          3
+        ]
+      },
+      "blocks": [
+        {
+          "keyword": "def",
+          "open_line": 1,
+          "close_line": 1
+        }
+      ],
+      "class": null,
+      "props": [
+        {
+          "name": "tone",
+          "annotation": "Literal[\"info\", \"warn\"]",
+          "required": false,
+          "default": "\"info\"",
+          "literal_values": [
+            "info",
+            "warn"
+          ],
+          "slot": false,
+          "children": false,
+          "range": {
+            "start": {
+              "line": 1,
+              "column": 6
+            },
+            "end": {
+              "line": 1,
+              "column": 10
+            }
+          }
+        },
+        {
+          "name": "dismissible",
+          "annotation": "bool",
+          "required": false,
+          "default": "False",
+          "literal_values": null,
+          "slot": false,
+          "children": false,
+          "range": {
+            "start": {
+              "line": 1,
+              "column": 46
+            },
+            "end": {
+              "line": 1,
+              "column": 57
+            }
+          }
+        },
+        {
+          "name": "body",
+          "annotation": "Slot",
+          "required": false,
+          "default": "\"\"",
+          "literal_values": null,
+          "slot": true,
+          "children": false,
+          "range": {
+            "start": {
+              "line": 1,
+              "column": 73
+            },
+            "end": {
+              "line": 1,
+              "column": 77
+            }
+          }
+        }
+      ],
+      "members": [],
+      "assets": {
+        "css": null,
+        "js": null
+      },
+      "replaces": false,
+      "strict": false,
+      "has_stale_def_header": false
+    },
+    {
+      "tag": "Badge",
+      "name": "badge",
+      "id": "@ROOT@/ui/badge.py#Badge",
+      "kind": "split",
+      "builtin": false,
+      "document": {
+        "path": "@ROOT@/ui/badge.pjx",
+        "markup_lines": [
+          1,
+          1
+        ]
+      },
+      "blocks": [],
+      "class": {
+        "module": "badge",
+        "qualname": "Badge",
+        "path": "@ROOT@/ui/badge.py",
+        "range": {
+          "start": {
+            "line": 6,
+            "column": 6
+          },
+          "end": {
+            "line": 6,
+            "column": 11
+          }
+        },
+        "bases": [
+          "BaseComponent"
+        ],
+        "stub": null
+      },
+      "props": [
+        {
+          "name": "label",
+          "annotation": "str",
+          "required": true,
+          "default": null,
+          "literal_values": null,
+          "slot": false,
+          "children": false,
+          "range": {
+            "start": {
+              "line": 7,
+              "column": 4
+            },
+            "end": {
+              "line": 7,
+              "column": 9
+            }
+          }
+        },
+        {
+          "name": "tone",
+          "annotation": "Literal[\"calm\", \"late\"]",
+          "required": false,
+          "default": "\"calm\"",
+          "literal_values": [
+            "calm",
+            "late"
+          ],
+          "slot": false,
+          "children": false,
+          "range": {
+            "start": {
+              "line": 8,
+              "column": 4
+            },
+            "end": {
+              "line": 8,
+              "column": 8
+            }
+          }
+        },
+        {
+          "name": "count",
+          "annotation": "int",
+          "required": false,
+          "default": "0",
+          "literal_values": null,
+          "slot": false,
+          "children": false,
+          "range": {
+            "start": {
+              "line": 9,
+              "column": 4
+            },
+            "end": {
+              "line": 9,
+              "column": 9
+            }
+          }
+        }
+      ],
+      "members": [
+        {
+          "name": "shout",
+          "kind": "method",
+          "range": {
+            "start": {
+              "line": 11,
+              "column": 8
+            },
+            "end": {
+              "line": 11,
+              "column": 13
+            }
+          }
+        }
+      ],
+      "assets": {
+        "css": null,
+        "js": null
+      },
+      "replaces": false,
+      "strict": null,
+      "has_stale_def_header": false
+    },
+    {
+      "tag": "Broken",
+      "name": "broken",
+      "id": "@ROOT@/ui/broken.pjx",
+      "kind": "template",
+      "builtin": false,
+      "document": {
+        "path": "@ROOT@/ui/broken.pjx",
+        "markup_lines": [
+          1,
+          1
+        ]
+      },
+      "blocks": [],
+      "class": null,
+      "props": [],
+      "members": [],
+      "assets": {
+        "css": null,
+        "js": null
+      },
+      "replaces": false,
+      "strict": false,
+      "has_stale_def_header": false
+    },
+    {
+      "tag": "Modal",
+      "name": "modal",
+      "id": "@ROOT@/ui/modal.py#Modal",
+      "kind": "py-template",
+      "builtin": false,
+      "document": {
+        "path": "@ROOT@/ui/modal.py",
+        "markup_lines": [
+          8,
+          10
+        ],
+        "span": {
+          "start": {
+            "line": 8,
+            "column": 19
+          },
+          "end": {
+            "line": 10,
+            "column": 4
+          }
+        }
+      },
+      "blocks": [],
+      "class": {
+        "module": "modal",
+        "qualname": "Modal",
+        "path": "@ROOT@/ui/modal.py",
+        "range": {
+          "start": {
+            "line": 4,
+            "column": 6
+          },
+          "end": {
+            "line": 4,
+            "column": 11
+          }
+        },
+        "bases": [
+          "BaseComponent"
+        ],
+        "stub": null
+      },
+      "props": [
+        {
+          "name": "title",
+          "annotation": "str",
+          "required": true,
+          "default": null,
+          "literal_values": null,
+          "slot": false,
+          "children": false,
+          "range": {
+            "start": {
+              "line": 5,
+              "column": 4
+            },
+            "end": {
+              "line": 5,
+              "column": 9
+            }
+          }
+        },
+        {
+          "name": "content",
+          "annotation": "Children",
+          "required": false,
+          "default": "\"\"",
+          "literal_values": null,
+          "slot": false,
+          "children": true,
+          "range": {
+            "start": {
+              "line": 6,
+              "column": 4
+            },
+            "end": {
+              "line": 6,
+              "column": 11
+            }
+          }
+        }
+      ],
+      "members": [],
+      "assets": {
+        "css": null,
+        "js": null
+      },
+      "replaces": false,
+      "strict": null,
+      "has_stale_def_header": false
+    },
+    {
+      "tag": "Panel",
+      "name": "panel",
+      "id": "@ROOT@/ui/panel.pjx#Panel",
+      "kind": "pjx-python",
+      "builtin": false,
+      "document": {
+        "path": "@ROOT@/ui/panel.pjx",
+        "markup_lines": [
+          8,
+          8
+        ]
+      },
+      "blocks": [
+        {
+          "keyword": "python",
+          "open_line": 1,
+          "body_lines": [
+            2,
+            6
+          ],
+          "close_line": 7
+        }
+      ],
+      "class": {
+        "module": "panel",
+        "qualname": "Panel",
+        "path": "@ROOT@/ui/panel.pjx",
+        "range": {
+          "start": {
+            "line": 5,
+            "column": 6
+          },
+          "end": {
+            "line": 5,
+            "column": 11
+          }
+        },
+        "bases": [
+          "BaseComponent"
+        ],
+        "stub": null
+      },
+      "props": [
+        {
+          "name": "heading",
+          "annotation": "str",
+          "required": true,
+          "default": null,
+          "literal_values": null,
+          "slot": false,
+          "children": false,
+          "range": {
+            "start": {
+              "line": 6,
+              "column": 4
+            },
+            "end": {
+              "line": 6,
+              "column": 11
+            }
+          }
+        }
+      ],
+      "members": [],
+      "assets": {
+        "css": null,
+        "js": null
+      },
+      "replaces": false,
+      "strict": null,
+      "has_stale_def_header": false
+    },
+    {
+      "tag": "Stale",
+      "name": "stale",
+      "id": "@ROOT@/ui/stale.py#Stale",
+      "kind": "split",
+      "builtin": false,
+      "document": {
+        "path": "@ROOT@/ui/stale.pjx",
+        "markup_lines": [
+          2,
+          2
+        ]
+      },
+      "blocks": [
+        {
+          "keyword": "def",
+          "open_line": 1,
+          "close_line": 1
+        }
+      ],
+      "class": {
+        "module": "stale",
+        "qualname": "Stale",
+        "path": "@ROOT@/ui/stale.py",
+        "range": {
+          "start": {
+            "line": 4,
+            "column": 6
+          },
+          "end": {
+            "line": 4,
+            "column": 11
+          }
+        },
+        "bases": [
+          "BaseComponent"
+        ],
+        "stub": null
+      },
+      "props": [
+        {
+          "name": "name",
+          "annotation": "str",
+          "required": true,
+          "default": null,
+          "literal_values": null,
+          "slot": false,
+          "children": false,
+          "range": {
+            "start": {
+              "line": 5,
+              "column": 4
+            },
+            "end": {
+              "line": 5,
+              "column": 8
+            }
+          }
+        }
+      ],
+      "members": [],
+      "assets": {
+        "css": null,
+        "js": null
+      },
+      "replaces": false,
+      "strict": null,
+      "has_stale_def_header": true
+    }
+  ],
+  "diagnostics": [
+    {
+      "path": "@ROOT@/ui/broken.pjx",
+      "range": {
+        "start": {
+          "line": 5,
+          "column": 0
+        },
+        "end": {
+          "line": 5,
+          "column": 5
+        }
+      },
+      "severity": "error",
+      "code": "second-block",
+      "message": "a second {#css#} block; the first one is on line 2, and a template holds at most one of each kind"
+    },
+    {
+      "path": "@ROOT@/ui/panel.pjx",
+      "range": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 8
+        }
+      },
+      "severity": "warning",
+      "code": "stub-missing",
+      "message": "no stub beside this document; run python -m pyjinhx.stubgen"
+    }
+  ]
+}

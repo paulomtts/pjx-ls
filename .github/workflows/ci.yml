@@ -94,3 +94,37 @@ jobs:
 
       - name: Compare with pyjinhx master
         run: node scripts/sync-pyjinhx.mjs --check pyjinhx
+
+  # The reader and the fixture follow what pyjinhx prints: regenerate the fixture with the
+  # real command, fail if it changed, and run the contract test against it.
+  contract:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install pyjinhx
+        run: pip install 'pyjinhx==1.17.*'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regenerate the manifest fixture
+        run: |
+          node scripts/gen-manifest-fixture.mjs python
+          git diff --exit-code test/fixtures/manifest/project.json
+
+      - name: Contract test
+        run: PJX_PYTHON=python npm test

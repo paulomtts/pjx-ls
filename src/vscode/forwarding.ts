@@ -1,7 +1,9 @@
 import * as vscode from "vscode";
 import { FORWARDING_SELECTOR } from "../config.ts";
 import { isForwardable, touchesSynthetic, type Mode } from "../core/forwarding.ts";
+import { componentHover, shadowedAttributes } from "../core/component-service.ts";
 import { ResolveCache } from "../core/resolve-cache.ts";
+import type { Manifests } from "./manifest-service.ts";
 import type { View, Views } from "./virtual-documents.ts";
 
 const run = <T>(command: string, ...args: unknown[]) => vscode.commands.executeCommand<T>(command, ...args);
@@ -46,7 +48,7 @@ function toSource(link: vscode.Location | vscode.LocationLink, view: View, sourc
   return new vscode.Location(ownUri(link.uri), link.range);
 }
 
-export function registerForwarding(context: vscode.ExtensionContext, views: Views): void {
+export function registerForwarding(context: vscode.ExtensionContext, views: Views, manifests: Manifests): void {
   // The service resolves only the first N items it is asked for, so resolving an item asks
   // for as many as its place in the list, and later items ask again for more.
   const resolved = new ResolveCache<vscode.CompletionItem>();
@@ -60,7 +62,10 @@ export function registerForwarding(context: vscode.ExtensionContext, views: View
         async provideCompletionItems(document, position, token, completion) {
           const answer = await ask<vscode.CompletionList>(views, document, position, token, "cursor", "vscode.executeCompletionItemProvider", completion.triggerCharacter);
           if (!answer) return undefined;
+          const manifest = manifests.manifestFor(document.uri);
+          const shadowed = manifest ? shadowedAttributes(manifest, answer.view.text, answer.view.scan, document.offsetAt(position)) : new Set<string>();
           const items = answer.result.items.flatMap((item, index) => {
+            if (shadowed.has(labelText(item))) return [];
             const range = item.range && "inserting" in item.range ? item.range.replacing : item.range;
             const sound = clean(answer.view, range) && (item.additionalTextEdits ?? []).every((e) => clean(answer.view, e.range));
             if (sound) origins.set(item, { document, position, index });
@@ -93,6 +98,9 @@ export function registerForwarding(context: vscode.ExtensionContext, views: View
       async provideHover(document, position, token) {
         const answer = await ask<vscode.Hover[]>(views, document, position, token, "hover", "vscode.executeHoverProvider");
         if (!answer?.result.length) return undefined;
+        // A component's own hover is the pjx layer's; the HTML service would match `<Button` to `<button>`.
+        const manifest = manifests.manifestFor(document.uri);
+        if (manifest && componentHover(manifest, answer.view.scan, document.offsetAt(position))) return undefined;
         const range = answer.result.map((h) => h.range).find((r) => r && clean(answer.view, r));
         return new vscode.Hover(answer.result.flatMap((h) => h.contents), range);
       },
