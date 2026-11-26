@@ -55,3 +55,8 @@ test("defHeaderRange finds the {#def form wherever it stands", () => {
   const result = defHeaderRange(text);
   assert.equal(text.slice(result!.start, result!.end), "{#def a: int #}");
 });
+
+test("defHeaderRange ignores a header that is never closed", () => {
+  assert.equal(defHeaderRange("{# def a: int\n<p>{{ a }}</p>\n"), null);
+  assert.equal(defHeaderRange("{#def a: int\n<p>{{ a }}</p>\n"), null);
+});

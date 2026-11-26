@@ -4,10 +4,10 @@ import { scan } from "../../src/core/regions.ts";
 import { forwardable, syntheticSpans, touchesSynthetic } from "../../src/core/forwarding.ts";
 
 // `|` marks the position asked about; the text has no other bar.
-function at(marked: string): boolean {
+function at(marked: string, mode: "cursor" | "hover" = "cursor"): boolean {
   const offset = marked.indexOf("|");
   const text = marked.replace("|", "");
-  return forwardable(text, scan(text), offset);
+  return forwardable(text, scan(text), offset, mode);
 }
 
 test("markup is forwarded", () => {
@@ -65,4 +65,28 @@ test("a range touching a synthetic tag is detected", () => {
   assert.equal(touchesSynthetic(spans, range(1, 2, 2, 2)), false);
   assert.equal(touchesSynthetic(spans, range(1, 2, 2, 3)), true);
   assert.equal(touchesSynthetic(spans, range(2, 4, 2, 6)), true);
+});
+
+test("a cursor just before or after a Jinja region is in markup", () => {
+  assert.ok(at("<p>|{{ x }}</p>"));
+  assert.ok(at("<p>{{ x }}|</p>"));
+  assert.ok(at("<p>{% x %}|<b>"));
+  assert.ok(at("{% raw %}a{% endraw %}|<b>"));
+  assert.ok(at("{% raw %}|a{% endraw %}"));
+  assert.ok(at("{% raw %}a|{% endraw %}"));
+});
+
+test("a region that is never closed holds the cursor at the end of the text", () => {
+  assert.equal(at("<p>{{ <di|"), false);
+  assert.equal(at("<p>{% <di|"), false);
+  assert.equal(at("<p>{# <di|"), false);
+  assert.equal(at("{% raw %}<di|"), true);
+  assert.equal(at("<p>{{ x }}<di|"), true);
+});
+
+test("hover asks about the character to the right", () => {
+  assert.equal(at("<p>|{{ x }}</p>", "hover"), false);
+  assert.ok(at("<p>{{ x }}|</p>", "hover"));
+  assert.equal(at("{#css\n.a{}|#}", "hover"), false);
+  assert.ok(at("{#css\n.a{|}\n#}", "hover"));
 });

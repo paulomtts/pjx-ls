@@ -152,3 +152,16 @@ for (const file of documents) {
 test("astral characters keep their length", () => {
   assert.equal(virtualHtml("<p>😀{{ x }}😀</p>"), `<p>😀${" ".repeat(7)}😀</p>`);
 });
+
+test("a scan already made can be passed in", () => {
+  const text = "{#css\na{}\n#}\n<p>{{ x }}</p>";
+  assert.equal(virtualHtml(text, scan(text)), virtualHtml(text));
+});
+
+test("a 5k-line document is converted quickly with its scan", () => {
+  const text = "<div class=\"a\">{{ b }}</div>\n".repeat(5000);
+  const parsed = scan(text);
+  const started = performance.now();
+  virtualHtml(text, parsed);
+  assert.ok(performance.now() - started < 200);
+});
