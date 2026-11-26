@@ -78,7 +78,14 @@ The manifest is read when the folder opens, and again 300 ms after a `.pjx`, `.p
 `.pyi` file is saved, created or deleted. The active unsaved document is sent on stdin,
 so completion follows what you type. The interpreter is `pyjinhx.pythonPath`, else the
 Python extension's environment (if installed), else `.venv` in the folder, else `python3`.
-Settings: `pyjinhx.pythonPath`, `pyjinhx.manifest.paths`, `pyjinhx.manifest.sysPath`.
+Settings: `pyjinhx.pythonPath`, `pyjinhx.generateStubs`, `pyjinhx.manifest.paths`, `pyjinhx.manifest.sysPath`.
+
+**Stubs.** With `pyjinhx.generateStubs` on (the default), a `.pjx` with a `{#python` block
+gets its `<name>.pyi` written beside it, as `python -m pyjinhx.stubgen` does, whenever the
+manifest reports the stub missing or stale: on opening the folder and after a save. The
+documents found at once are done in one run. If a run fails, the error goes to the
+PyJinHx output channel and it is not retried until the document is saved again. With the
+setting off, the warning stays and offers a **Generate stub for this document** quick fix.
 
 **Limited mode.** When pyjinhx cannot be run (not installed, older than 1.17, no
 interpreter, an untrusted workspace) the status bar says `pyjinhx: limited`. Tags and
