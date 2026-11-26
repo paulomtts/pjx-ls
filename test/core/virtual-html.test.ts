@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { globSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 import { scan } from "../../src/core/regions.ts";
 import { virtualHtml } from "../../src/core/virtual-html.ts";
 
@@ -49,8 +50,39 @@ test("an expression in a script or style body becomes an identifier", () => {
   assert.equal(virtualHtml("<style>a { color: {{ c }}; }</style>"), "<style>a { color: _______; }</style>");
 });
 
-test("a multi-line expression in a script keeps its line breaks", () => {
-  assert.equal(virtualHtml("<script>\n{{ a\n b }}\n</script>"), "<script>\n____\n_____\n</script>");
+test("a multi-line expression in a script is one identifier and blank lines", () => {
+  assert.equal(virtualHtml("<script>\n{{ a\n b }}\n</script>"), "<script>\n____\n     \n</script>");
+});
+
+test("the script of a view with a multi-line expression parses", () => {
+  const view = virtualHtml("<script>\nf({{ a\n  | b }}, 2);\n</script>");
+  const js = view.slice(view.indexOf("<script>") + 8, view.indexOf("</script>"));
+  const source = ts.createSourceFile("view.js", js, ts.ScriptTarget.ES2022);
+  assert.deepEqual((source as unknown as { parseDiagnostics: unknown[] }).parseDiagnostics, []);
+});
+
+test("a closer and the next opener may share a line", () => {
+  assert.equal(virtualHtml("{#js\nf();\n#}{#css\n.a{}\n#}\n"), "<script>\nf();\n</script><style>\n.a{}\n</style>\n");
+  assert.equal(virtualHtml("{#js\nf();\n#} {#css\n.a{}\n#}\n"), "<script>\nf();\n</script> <style>\n.a{}\n</style>\n");
+});
+
+test("a block error does not remove the other css and js", () => {
+  const view = virtualHtml("{#css\na{}\n#}\n{#css\nb{}\n#}\n{#js\nf();\n#}\n");
+  assert.ok(view.includes("<style>\na{}\n</style>"));
+  assert.ok(view.includes("<script>\nf();\n</script>"));
+});
+
+test("an unclosed {#python is blanked to the end", () => {
+  assert.equal(virtualHtml("<p></p>\n{#python\nx = '<b>'\n"), `<p></p>\n${" ".repeat(8)}\n${" ".repeat(11)}\n`);
+});
+
+test("a large document is converted in linear time", () => {
+  const line = "<script>f({{ a }});</script>\n<div>{{ b }}</div>\n";
+  const text = line.repeat(40_000);
+  const started = performance.now();
+  const view = virtualHtml(text);
+  assert.equal(view.length, text.length);
+  assert.ok(performance.now() - started < 3000);
 });
 
 test("a statement in a script body is blanked", () => {
