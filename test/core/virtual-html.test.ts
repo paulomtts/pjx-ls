@@ -20,7 +20,7 @@ test("a css opener after markup keeps the markup", () => {
 });
 
 test("text after a css closer is blanked", () => {
-  assert.equal(virtualHtml("{#css\na{}\n#} <p></p>\n"), "<style>\na{}\n</style>        \n");
+  assert.equal(virtualHtml("{#css\na{}\n#} <p></p>\n"), `<style>\na{}\n</style>${" ".repeat(8)}\n`);
 });
 
 test("a closer after body text keeps the text", () => {
@@ -37,7 +37,7 @@ test("def and python blocks are blanked line by line", () => {
 });
 
 test("Jinja comments and statements are blanked", () => {
-  assert.equal(virtualHtml("<p>{# a\nb #}{% if x %}y{% endif %}</p>"), `<p>${" ".repeat(4)}\n${" ".repeat(3)}${" ".repeat(10)}y${" ".repeat(11)}</p>`);
+  assert.equal(virtualHtml("<p>{# a\nb #}{% if x %}y{% endif %}</p>"), `<p>${" ".repeat(4)}\n${" ".repeat(4)}${" ".repeat(10)}y${" ".repeat(11)}</p>`);
 });
 
 test("an expression in markup or an attribute value is blanked", () => {
@@ -50,7 +50,7 @@ test("an expression in a script or style body becomes an identifier", () => {
 });
 
 test("a multi-line expression in a script keeps its line breaks", () => {
-  assert.equal(virtualHtml("<script>\n{{ a\n b }}\n</script>"), "<script>\n___\n____\n</script>");
+  assert.equal(virtualHtml("<script>\n{{ a\n b }}\n</script>"), "<script>\n____\n_____\n</script>");
 });
 
 test("a statement in a script body is blanked", () => {
@@ -120,3 +120,7 @@ for (const file of documents) {
     });
   });
 }
+
+test("astral characters keep their length", () => {
+  assert.equal(virtualHtml("<p>😀{{ x }}😀</p>"), `<p>😀${" ".repeat(7)}😀</p>`);
+});
