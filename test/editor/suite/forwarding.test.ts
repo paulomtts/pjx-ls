@@ -32,9 +32,9 @@ async function completes(marked: string, label: string): Promise<void> {
 
 suite("forwarding", () => {
   test("<di completes div", () => completes("<di|", "div"));
-  test("colo in a {#css body completes color", () => completes("{#css\ncolo|\n#}\n", "color"));
+  test("colo in a {#css body completes color", () => completes("{#css\na { colo| }\n#}\n", "color"));
   test("document. in a {#js body lists getElementById", () => completes("{#js\ndocument.|\n#}\n", "getElementById"));
-  test("colo in <style> completes color", () => completes("<style>\ncolo|\n</style>\n", "color"));
+  test("colo in <style> completes color", () => completes("<style>\na { colo| }\n</style>\n", "color"));
   test("document. in <script> lists getElementById", () => completes("<script>\ndocument.|\n</script>\n", "getElementById"));
 
   test("nothing from the HTML service inside {#python or a Jinja comment", async () => {

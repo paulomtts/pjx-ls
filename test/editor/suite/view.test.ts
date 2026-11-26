@@ -18,6 +18,6 @@ suite("virtual documents", () => {
     await vscode.workspace.applyEdit(edit);
 
     for (let attempt = 0; attempt < 20 && view.getText() !== virtualHtml(source.getText()); attempt++) await wait(100);
-    assert.strictEqual(view.getText(), `<i>     </i>\n<p>       </p>\n`);
+    assert.strictEqual(view.getText(), `<i>       </i>\n<p>       </p>\n`);
   });
 });

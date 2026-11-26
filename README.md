@@ -36,6 +36,21 @@ the way it colours that language everywhere else.
 - The block grammar and test corpus are vendored from PyJinHx
   (`scripts/sync-pyjinhx.mjs`) and CI fails when they drift.
 
+### Language features
+Completion, hover, signature help, go to definition, document highlights and colour
+swatches for HTML, CSS and JavaScript in `.pjx` files, answered by the editor's own
+services: the document is shown to the HTML service as plain HTML, with Jinja,
+`{#def` and `{#python` blanked and `{#css`/`{#js` blocks as `<style>`/`<script>`.
+
+- JavaScript intelligence is the HTML service's embedded mode: one file, DOM typings, no
+  project imports (the TypeScript service does not serve custom schemes).
+- Nothing is offered inside Jinja, `{#def`, `{#python` or the `{#css`/`{#js` tag lines.
+- No HTML features inside slot values.
+- The HTML service does not auto-close tags here; the language configuration's pairs
+  cover the common case.
+- CSS and JS problems are not reported in `.pjx` files: the editor only computes them
+  for a shown document.
+
 ### Formatting
 - Re-indents the HTML/Jinja structure (two-space) and **explodes** slotted component
   tags: each attribute on its own line, the slot value formatted recursively, and the

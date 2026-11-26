@@ -2,7 +2,7 @@
   "name": "pyjinhx-syntax-support",
   "displayName": "PyJinHx",
   "description": "Syntax highlighting and template formatting for the PyJinHx Python framework (PascalCase component tags, slots, {#def#} headers, interpolation).",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "paulomtts",
   "license": "MIT",
   "type": "module",
@@ -28,7 +28,7 @@
     "watch": "node esbuild.config.mjs --watch",
     "check": "tsc --noEmit",
     "test": "node --test \"test/core/**/*.test.ts\" \"test/grammar/**/*.test.ts\" \"test/vscode/**/*.test.ts\"",
-    "test:editor": "node test/editor/run.mjs",
+    "test:editor": "npm run build && node test/editor/run.mjs",
     "package": "npm run check && npm run build && vsce package"
   },
   "activationEvents": [

@@ -3,6 +3,20 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.4.0
+
+### Added
+- **Language features for HTML, CSS and JS** in `.pjx` files: completion, hover,
+  signature help, definitions, document highlights and colours, forwarded to the
+  editor's HTML service through a `pjx-embedded:` view of the document.
+- One region scanner (`src/core/regions.ts`) for Jinja regions, `{#css`/`{#js`/
+  `{#python`/`{#def` blocks with pyjinhx's error codes, tags, attributes and
+  script/style bodies, tested against the vendored conformance corpus.
+- An editor test suite (`npm run test:editor`) on `@vscode/test-electron`.
+
+### Changed
+- The stale `{#def#}` header diagnostic reads the header with the scanner.
+
 ## 0.3.0
 
 ### Changed
