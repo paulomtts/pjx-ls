@@ -36,6 +36,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Editor tests
+        run: xvfb-run -a npm run test:editor
+
   # Separate from `build` so a red run names its cause. It checks out exactly the
   # ref recorded in SOURCE.json, so it stays green until someone re-syncs. To update:
   # node scripts/sync-pyjinhx.mjs <clean checkout>, read the corpus diff, fix the
