@@ -179,3 +179,12 @@ test("blank lines before a leading {# comment are kept", () => {
     "\n\n{# note #}\n{# def a: str #}\n\n<p>x</p>\n",
   );
 });
+
+test("a slotted tag name with dots, dashes or underscores is not split", () => {
+  for (const name of ["Card.Footer", "Card-x", "Card_x"]) {
+    assert.equal(
+      formatPyjinhxTemplate(`<div>\n<${name} label="{{ f }}" slot="<i>x</i>" />\n</div>`),
+      `<div>\n  <${name}\n    label="{{ f }}"\n    slot="\n      <i>x</i>\n    "\n  />\n</div>\n`,
+    );
+  }
+});
