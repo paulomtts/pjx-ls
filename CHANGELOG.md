@@ -3,6 +3,12 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.5.2
+
+### Tests
+- A regression test pins that a `{#python` block is scoped like a plain `.py`, including the
+  import lines right after the opener. No grammar change.
+
 ## 0.5.1
 
 ### Added
