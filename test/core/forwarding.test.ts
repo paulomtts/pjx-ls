@@ -1,7 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { scan } from "../../src/core/regions.ts";
-import { exclusions, forwardable, isForwardable, syntheticSpans, touchesSynthetic } from "../../src/core/forwarding.ts";
+import { scan, type Scan } from "../../src/core/regions.ts";
+import { exclusions, isForwardable, syntheticSpans, touchesSynthetic, type Mode } from "../../src/core/forwarding.ts";
+
+const forwardable = (text: string, parsed: Scan, offset: number, mode: Mode = "cursor") => isForwardable(exclusions(text, parsed), offset, mode);
 
 // `|` marks the position asked about; the text has no other bar.
 function at(marked: string, mode: "cursor" | "hover" = "cursor"): boolean {

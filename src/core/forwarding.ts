@@ -76,9 +76,6 @@ export function isForwardable({ ranges, reach }: Exclusions, offset: number, mod
   return true;
 }
 
-export const forwardable = (text: string, scan: Scan, offset: number, mode: Mode = "cursor") =>
-  isForwardable(exclusions(text, scan), offset, mode);
-
 const lineAndColumn = (text: string, offset: number): Span => {
   const start = offset === 0 ? 0 : text.lastIndexOf("\n", offset - 1) + 1;
   return { line: text.slice(0, offset).split("\n").length - 1, from: offset - start };
