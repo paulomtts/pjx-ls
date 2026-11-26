@@ -99,3 +99,8 @@ test("a #} line is outdented relative to the body it closes", () => {
   for (const line of ["#}", "    #}", "\t#}  "]) assert.ok(decrease.test(line), line);
   for (const line of ["x = 1 #}", "{#python", "    x = 1", "# }"]) assert.ok(!decrease.test(line), line);
 });
+
+test("autoCloseBefore includes quotes, so { auto-closes before a closing attribute quote", () => {
+  assert.ok(config.autoCloseBefore.includes('"'));
+  assert.ok(config.autoCloseBefore.includes("'"));
+});

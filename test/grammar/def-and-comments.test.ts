@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { blocksOf } from "./blocks.ts";
 import { scopesOf, tokenizePjx } from "./tokenize.ts";
 
@@ -82,5 +83,15 @@ test(`{# #} and {#- -#} comments are pyjinhx comments, markup inside included`, 
     for (const token of words) {
       assert.ok(token.scopes.includes("comment.block.pyjinhx"), `${source}: ${token.text} ${token.scopes.join(" ")}`);
     }
+  }
+});
+
+test("a multi-line {#def body maps to Python through embeddedLanguages, like a {#python body", async () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+  const embedded: Record<string, string> = pkg.contributes.grammars.find((g: { scopeName: string }) => g.scopeName === "text.pyjinhx").embeddedLanguages;
+  const languageAt = (scopes: string[]) => scopes.map((scope) => embedded[scope]).filter(Boolean).at(-1);
+  for (const [source, word] of [["{#def\n  title: str,\n#}", "title"], ["{#def\n  title: str,\n#}", "  "], ["{#python\n  x = 1\n#}", "x"]] as const) {
+    const tokens = await tokenizePjx(source);
+    assert.equal(languageAt(scopesOf(tokens, word)), "python", `${word}: ${scopesOf(tokens, word).join(" ")}`);
   }
 });

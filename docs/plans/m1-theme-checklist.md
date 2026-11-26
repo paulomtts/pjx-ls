@@ -24,8 +24,10 @@ For each theme:
 
 Editor behaviour (Cursor):
 
-- [ ] Inside a `{#css` body, "Toggle Line Comment" writes `/* */`; in `{#js`, `//`;
-      in `{#python` and `{#def`, `#`.
+- [ ] Inside a `{#css` body, "Toggle Line Comment" writes `/* */`; in `{#js`, `//`; in
+      `{#python`, `#`. On `{#def` body lines it is known to do nothing (see the README).
+- [ ] Known: toggling on a block opener/closer or a one-line `{#def … #}` header strips
+      its delimiters (twice can give `{# def`); do not expect it to work there.
 - [ ] With `"emmet.includeLanguages": {"pyjinhx": "html"}` set, `div.a` + Tab expands in markup (Emmet is off by default).
 - [ ] Typing `{{`, `{%` auto-closes with ` }}`, ` %}`; `{` auto-closes in markup and in CSS/JS/Python bodies; typing `{#css`, Enter, a rule and `#}` leaves no stray `}`, and a lone `{#` leaves no `{#}`.
 - [ ] Folding: indented tags and `{% if %}` bodies fold by indentation; `{#css` ... `#}` folds as a block.

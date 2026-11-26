@@ -9,7 +9,7 @@
     ["<", ">"]
   ],
   "colorizedBracketPairs": [],
-  "autoCloseBefore": ";:.,=}])> \n\t<",
+  "autoCloseBefore": ";:.,=}])> \n\t<\"'",
   "indentationRules": {
     "increaseIndentPattern": "(?!)",
     "decreaseIndentPattern": "^\\s*#\\}\\s*$"
