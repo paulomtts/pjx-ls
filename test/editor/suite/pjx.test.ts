@@ -61,6 +61,27 @@ suite("pjx layer", () => {
     assert.ok(labels.includes("label") && labels.includes("shout"), labels.join());
   });
 
+  test("a {#css block above the cursor does not break props or hover", async () => {
+    const above = "{#css\n.a { color: red; }\n#}\n";
+    const items = await complete("alert.pjx", `${above}<Badge |`, (l) => l.includes("tone"));
+    assert.ok(items.map(labelOf).includes("tone"));
+    const { doc } = await edit("alert.pjx", `${above}<Alert></Alert>\n<Badge label="x"></Badge>`);
+    const hovers = await eventually(() => vscode.commands.executeCommand<vscode.Hover[]>("vscode.executeHoverProvider", doc.uri, new vscode.Position(4, 3)), (h) => h.length > 0);
+    assert.match(hovers.flatMap((h) => h.contents).map((c) => (typeof c === "string" ? c : c.value)).join("\n"), /Badge\(label: str/);
+  });
+
+  test("what is typed reaches the manifest, and a revert takes it back", async () => {
+    const items = await complete("alert.pjx", "{#def typed: int #}\n{{ |", (l) => l.includes("typed"));
+    assert.ok(!items.map(labelOf).includes("tone"));
+    const { doc } = await edit("alert.pjx", "{#def typed: int #}\n{{ ");
+    await vscode.commands.executeCommand("workbench.action.files.revert");
+    assert.ok(!doc.isDirty);
+    // Line 3 of the saved file is `<div class="alert alert--{{ tone }}">`: column 28 is the start of `tone`.
+    const names = () => vscode.commands.executeCommand<vscode.CompletionList>("vscode.executeCompletionItemProvider", doc.uri, new vscode.Position(2, 28)).then((l) => (l?.items ?? []).map(labelOf));
+    const after = await eventually(names, (l) => l.includes("dismissible"));
+    assert.ok(after.includes("dismissible") && !after.includes("typed"), after.join());
+  });
+
   test("hover on a component tag shows its signature", async () => {
     const { doc } = await edit("alert.pjx", '<Badge label="x"></Badge>');
     const hovers = await eventually(() => vscode.commands.executeCommand<vscode.Hover[]>("vscode.executeHoverProvider", doc.uri, new vscode.Position(0, 3)), (h) => h.length > 0);

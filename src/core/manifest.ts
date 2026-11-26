@@ -46,6 +46,8 @@ export interface Component {
   props: Prop[];
   members: Member[];
   hasStaleDefHeader: boolean;
+  /** `pjx_replace=True`: this component stands in for others of the same tag. */
+  replaces: boolean;
   /** The file the component's blocks and header props are in: the class's, else the document's. */
   sourcePath: string;
 }
@@ -78,8 +80,14 @@ export class Manifest {
     this.components = components;
     this.diagnostics = diagnostics;
     this.pyjinhxVersion = pyjinhxVersion;
-    // A project's own component wins over a builtin of the same tag.
-    for (const c of [...components].sort((a, b) => Number(b.builtin) - Number(a.builtin))) this.tags.set(c.tag, c);
+    // One component per tag: one that says it replaces wins, then a project's own over a builtin.
+    const rank = (c: Component) => Number(c.replaces) * 2 + Number(!c.builtin);
+    for (const c of [...components].sort((a, b) => rank(a) - rank(b))) this.tags.set(c.tag, c);
+  }
+
+  /** Each tag once, with the component that answers for it. */
+  tagList(): Component[] {
+    return [...this.tags.values()];
   }
 
   byTag(tag: string): Component | undefined {
@@ -135,6 +143,7 @@ function component(c: Json): Component {
     props: (c.props ?? []).map(prop),
     members: (c.members ?? []).map((m: Json) => ({ name: m.name, kind: m.kind, range: range(m.range) })),
     hasStaleDefHeader: !!c.has_stale_def_header,
+    replaces: !!c.replaces,
     sourcePath: classInfo?.path ?? c.document.path,
   };
 }

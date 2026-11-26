@@ -55,7 +55,7 @@ function component(path: string, text: string): Component | null {
     return { line, character: offset - lineStarts[line] };
   };
   const props = header ? splitParameters(text.slice(header.body.start, header.body.end), header.body.start).flatMap((p) => propOf(p.text, p.start, position) ?? []) : [];
-  return { tag: pascal(stem), kind: "template", builtin: false, documentPath: path, classInfo: null, props, members: [], hasStaleDefHeader: false, sourcePath: path };
+  return { tag: pascal(stem), kind: "template", builtin: false, documentPath: path, classInfo: null, props, members: [], hasStaleDefHeader: false, replaces: false, sourcePath: path };
 }
 
 /** What can be known of a project's components without pyjinhx: a tag per `.pjx` file and the props of its header. */

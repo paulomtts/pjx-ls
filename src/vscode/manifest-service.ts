@@ -1,3 +1,4 @@
+import * as fs from "node:fs";
 import * as path from "node:path";
 import * as vscode from "vscode";
 import { TEMPLATE_LANGUAGE_ID } from "../config.ts";
@@ -52,13 +53,14 @@ export class Manifests implements vscode.Disposable {
   }
 
   private create(folder: vscode.WorkspaceFolder): ManifestSession {
-    const settings = vscode.workspace.getConfiguration("pyjinhx", folder.uri);
-    const absolute = (list: string[]) => list.map((p) => path.resolve(folder.uri.fsPath, p));
+    // Read at each run, so a changed setting takes effect at the next one.
+    const setting = (name: string) => vscode.workspace.getConfiguration("pyjinhx", folder.uri).get<string[]>(name, []).map((p) => path.resolve(folder.uri.fsPath, p));
     const session = new ManifestSession({
       folder: manifestPath(folder.uri),
       spawn: nodeSpawn,
       python: () => findPython(folder),
-      settings: () => ({ paths: absolute(settings.get<string[]>("manifest.paths", [])), sysPath: absolute(settings.get<string[]>("manifest.sysPath", [])) }),
+      settings: () => ({ paths: setting("manifest.paths"), sysPath: setting("manifest.sysPath") }),
+      hasDocuments: async () => (await vscode.workspace.findFiles(new vscode.RelativePattern(folder, "**/*.pjx"), SKIPPED, 1)).length > 0,
       trusted: () => vscode.workspace.isTrusted,
       files: () => this.pjxFiles(folder),
       log: (line) => this.output.appendLine(`[${folder.name}] ${line}`),
@@ -75,8 +77,14 @@ export class Manifests implements vscode.Disposable {
   }
 
   private edited(document: vscode.TextDocument): void {
-    if (!isSource(document) || !document.isDirty || document !== vscode.window.activeTextEditor?.document) return;
-    this.sessionFor(document.uri)?.requestBuffer(manifestPath(document.uri), () => document.getText());
+    // A revert makes the document the file again, so what was said about the text is dropped.
+    if (isSource(document) && !document.isDirty) return this.sessionFor(document.uri)?.settle(manifestPath(document.uri));
+    if (!isSource(document) || document !== vscode.window.activeTextEditor?.document) return;
+    const session = this.sessionFor(document.uri);
+    const file = manifestPath(document.uri);
+    // A Python file matters to the manifest only if it holds components or has a template beside it.
+    const relevant = document.languageId === TEMPLATE_LANGUAGE_ID || session?.manifest.forPath(file).length || fs.existsSync(file.replace(/\.py$/, ".pjx"));
+    if (relevant) session?.requestBuffer(file, () => document.getText());
   }
 
   private sessionFor(uri: vscode.Uri): ManifestSession | undefined {
@@ -96,6 +104,9 @@ export class Manifests implements vscode.Disposable {
 
   /** Runs the full manifest of every folder now. */
   async refresh(): Promise<void> {
+    for (const document of vscode.workspace.textDocuments) {
+      if (isSource(document) && !document.isDirty) this.sessionFor(document.uri)?.settle(manifestPath(document.uri));
+    }
     await Promise.all([...this.sessions.values()].map((s) => s.refresh()));
   }
 

@@ -1,50 +1,62 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseManifest } from "../../src/core/manifest.ts";
-import { componentCompletions, componentHover, customData } from "../../src/core/component-service.ts";
+import { parseManifest, Manifest, type Component } from "../../src/core/manifest.ts";
+import { componentCompletions, componentHover } from "../../src/core/component-service.ts";
 import { scan } from "../../src/core/regions.ts";
-import { virtualHtml } from "../../src/core/virtual-html.ts";
 import { manifestText } from "./fixture.ts";
 
 const manifest = parseManifest(manifestText());
 
-// `|` marks the cursor; the HTML view is what the editor's HTML service would be given.
+// `|` marks the cursor.
 function at(marked: string) {
   const offset = marked.indexOf("|");
   const text = marked.replace("|", "");
-  const parsed = scan(text);
-  return { html: virtualHtml(text, parsed), scan: parsed, offset };
+  return { text, scan: scan(text), offset };
 }
-const complete = (marked: string) => {
-  const { html, scan, offset } = at(marked);
-  return componentCompletions(manifest, html, scan, offset);
+const complete = (marked: string, m = manifest) => {
+  const { text, scan, offset } = at(marked);
+  return componentCompletions(m, text, scan, offset);
 };
 const labels = (marked: string) => complete(marked).map((i) => i.label);
 const hover = (marked: string) => {
-  const { html, scan, offset } = at(marked);
-  const result = componentHover(manifest, html, scan, offset);
-  return result ? (result.contents as { value: string }).value : null;
+  const { scan, offset } = at(marked);
+  return componentHover(manifest, scan, offset)?.markdown ?? null;
 };
 
-test("custom data lists a tag per component with its props as attributes", () => {
-  const badge = customData(manifest).tags!.find((t) => t.name === "Badge")!;
-  assert.deepEqual(badge.attributes.map((a) => a.name), ["label", "tone", "count"]);
-  assert.deepEqual(badge.attributes[1].values, [{ name: "calm" }, { name: "late" }]);
-  const alert = customData(manifest).tags!.find((t) => t.name === "Alert")!;
-  assert.equal(alert.attributes.find((a) => a.name === "dismissible")!.valueSet, "v");
+test("<Ba and a bare < offer components, each tag once", () => {
+  assert.ok(labels("<Ba|").includes("Badge"));
+  assert.ok(labels("<|").includes("Modal"));
+  const all = labels("<|");
+  assert.equal(new Set(all).size, all.length);
+  assert.ok(!all.includes("div"));
 });
 
-test("<Ba offers Badge and only components, not HTML tags", () => {
-  assert.ok(labels("<Ba|").includes("Badge"));
-  assert.ok(!labels("<Ba|").includes("div"));
-  assert.ok(labels("<|").includes("Modal"));
+test("a lowercase start is not a component: <button never offers Button", () => {
+  const button = (rank: Partial<Component>) => ({ ...manifest.byTag("Badge")!, tag: "Button", ...rank });
+  const m = new Manifest([button({})], []);
+  assert.deepEqual(complete("<butt|", m), []);
+  assert.deepEqual(complete("<button |", m), []);
+  assert.deepEqual(componentHover(m, scan("<button>"), 3), null);
+  assert.equal(complete("<Butt|", m).length, 1);
+});
+
+test("duplicate tags are listed once, the replacing or project component answering", () => {
+  const base = manifest.byTag("Badge")!;
+  const m = new Manifest([{ ...base, builtin: true, kind: "py-template" }, base, { ...base, kind: "template", replaces: true }, { ...base, tag: "Other" }], []);
+  assert.deepEqual(complete("<|", m).map((e) => e.label), ["Badge", "Other"]);
+  assert.equal(m.byTag("Badge")!.kind, "template");
 });
 
 test("inside <Badge the props are offered, required ones first", () => {
   const items = complete("<Badge |");
   assert.deepEqual(items.map((i) => i.label), ["label", "tone", "count"]);
-  const order = [...items].sort((a, b) => a.sortText!.localeCompare(b.sortText!)).map((i) => i.label);
-  assert.deepEqual(order.slice(0, 1), ["label"]);
+  assert.deepEqual([...items].sort((a, b) => a.sortText.localeCompare(b.sortText))[0].label, "label");
+});
+
+test("props already written are not offered again, and the one being typed is replaced", () => {
+  assert.deepEqual(labels('<Badge label="x" |'), ["tone", "count"]);
+  const item = complete("<Badge to|").find((i) => i.label === "tone")!;
+  assert.deepEqual(item.replace, { start: 7, end: 9 });
 });
 
 test("Jinja in an earlier attribute does not stop the props", () => {
@@ -53,29 +65,55 @@ test("Jinja in an earlier attribute does not stop the props", () => {
 
 test("inside tone=\" the Literal values are offered", () => {
   assert.deepEqual(labels('<Badge tone="|'), ["calm", "late"]);
+  assert.deepEqual(labels('<Badge tone="ca|" label="x">'), ["calm", "late"]);
+  assert.deepEqual(labels('<Badge label="|'), []);
 });
 
-test("a boolean prop is a valueless attribute", () => {
-  const item = complete("<Alert |").find((i) => i.label === "dismissible")!;
-  assert.ok(!(item.textEdit as { newText: string }).newText.includes("="));
+test("a boolean prop is a bare attribute, the others take a value", () => {
+  const items = complete("<Alert |");
+  assert.equal(items.find((i) => i.label === "dismissible")!.snippet, undefined);
+  assert.equal(items.find((i) => i.label === "tone")!.snippet, 'tone="$1"');
+  assert.equal(items.find((i) => i.label === "tone")!.retrigger, true);
 });
 
-test("Card-header is the Card component: its props are offered", () => {
+test("Badge-header and Badge.Item are the Badge component", () => {
   assert.ok(labels("<Badge-header |").includes("tone"));
   assert.ok(labels("<Badge.Item |").includes("tone"));
+  assert.deepEqual(labels("<Badge-he|ader"), []);
 });
 
-test("nothing is offered for an unknown tag", () => {
+test("nothing is offered for an unknown tag, plain HTML, a closing tag or after the >", () => {
   assert.deepEqual(labels("<Nope |"), []);
+  assert.deepEqual(labels("<div |"), []);
+  assert.deepEqual(labels("</Ba|"), []);
+  assert.deepEqual(labels("<Badge>|"), []);
+  assert.deepEqual(labels("<p>text|"), []);
+});
+
+test("no HTML items: close tags and HTML attributes are the HTML service's", () => {
+  assert.ok(complete("<Badge |").every((e) => e.kind === "prop"));
+  assert.ok(complete("<Badge><|").every((e) => e.kind === "component"));
 });
 
 test("hover on a tag shows the signature and kind", () => {
   const text = hover("<Ba|dge label='x'></Badge>")!;
   assert.match(text, /Badge\(label: str, tone: Literal\["calm", "late"\] = "calm", count: int = 0\)/);
   assert.match(text, /split/);
+  assert.ok(hover("<Badge-he|ader>"));
 });
 
 test("hover on a prop shows its annotation and default", () => {
   assert.match(hover("<Badge to|ne='calm'>")!, /tone: Literal\["calm", "late"\] = "calm"/);
   assert.equal(hover("<di|v>"), null);
+  assert.equal(hover("<Badge zz|z='1'>"), null);
+});
+
+test("a {#css or {#js block above the cursor changes nothing", () => {
+  const above = "{#css\n.a { color: red; }\n#}\n{#js\nlet x = 1;\n#}\n";
+  assert.ok(labels(above + "<Ba|").includes("Badge"));
+  assert.deepEqual(labels(above + "<Badge |"), ["label", "tone", "count"]);
+  assert.deepEqual(labels(above + '<Badge tone="|'), ["calm", "late"]);
+  assert.match(hover(above + "<Alert></Alert>\n<Ba|dge>")!, /^```python\nBadge\(/);
+  const { text, scan: parsed, offset } = at(above + "<Badge to|ne='calm'>");
+  assert.equal(text.slice(...Object.values(componentHover(manifest, parsed, offset)!.range) as [number, number]), "tone");
 });

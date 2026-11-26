@@ -116,7 +116,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install pyjinhx
-        run: pip install "pyjinhx>=1.17"
+        run: pip install 'pyjinhx==1.17.*'
 
       - name: Install dependencies
         run: npm ci

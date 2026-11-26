@@ -77,3 +77,20 @@ test("nothing else in Jinja is completed", () => {
   assert.deepEqual(names("<p>|", "badge.pjx"), []);
   assert.deepEqual(names("{{ |", "page.pjx"), []);
 });
+
+test("a name in {{ }} inside an attribute value goes to its prop", () => {
+  const found = define('<span class="b b--{{ to|ne }}">x</span>', "badge.pjx")!;
+  assert.deepEqual(found.target.range.start, { line: 7, character: 4 });
+});
+
+test("a closing tag goes where the opening one does", () => {
+  const found = define("<Badge></Ba|dge>")!;
+  assert.equal(found.target.path, ui("badge.py"));
+});
+
+test("a {#css or {#js block above the cursor moves nothing", () => {
+  const above = "{#css\n.a { color: red; }\n#}\n{#js\nlet x = 1;\n#}\n";
+  assert.equal(define(above + "<Ba|dge tone='late'/>")!.target.path, ui("badge.py"));
+  assert.equal(define(above + "<Badge to|ne='late'/>")!.target.range.start.line, 7);
+  assert.deepEqual(names(above + "{{ |", "badge.pjx"), ["label", "tone", "count", "shout"]);
+});

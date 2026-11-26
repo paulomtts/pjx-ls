@@ -62,17 +62,18 @@ function inJinja(text: string, scan: Scan, offset: number) {
 
 /** Where the tag, attribute or own prop or member at `offset` is defined. */
 export function definitionAt(manifest: Manifest, path: string, text: string, scan: Scan, offset: number): Definition | null {
-  const tag = scan.tags.find((t) => !t.closing && inside(t.range, offset));
-  if (tag) return inTag(manifest, tag, offset);
-  if (!inJinja(text, scan, offset)) return null;
-  const word = wordAt(text, offset);
-  if (!word) return null;
-  const name = text.slice(word.start, word.end);
-  for (const c of ownComponents(manifest, path)) {
-    const found = [...c.props, ...c.members].find((m) => m.name === name);
-    if (found) return { origin: word, target: { path: c.sourcePath, range: found.range } };
+  // A name in `{{ }}` counts even inside a tag's attribute value.
+  if (inJinja(text, scan, offset)) {
+    const word = wordAt(text, offset);
+    const name = word && text.slice(word.start, word.end);
+    for (const c of ownComponents(manifest, path)) {
+      const found = [...c.props, ...c.members].find((m) => m.name === name);
+      if (found) return { origin: word!, target: { path: c.sourcePath, range: found.range } };
+    }
+    return null;
   }
-  return null;
+  const tag = scan.tags.find((t) => inside(t.range, offset));
+  return tag ? inTag(manifest, tag, offset) : null;
 }
 
 // Where a Jinja expression may begin: not after `.` (an attribute) or `|` (a filter), not in

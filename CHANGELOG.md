@@ -10,8 +10,8 @@ adheres to [Semantic Versioning](https://semver.org/).
   completion of component tags, props (required first) and `Literal` values, hover,
   go to definition for tags, props and a template's own names, completion of the
   template's own props and members inside `{{ }}`, and the manifest's diagnostics with
-  their codes. The manifest becomes HTML custom data for an in-process
-  `vscode-html-languageservice`, whose results sit beside the editor's own.
+  their codes, from a small provider on the region scanner whose results sit beside the
+  editor's own HTML ones.
 - Interpreter discovery (`pyjinhx.pythonPath`, the Python extension, `.venv`, `PATH`),
   settings `pyjinhx.manifest.paths` and `pyjinhx.manifest.sysPath`, commands
   `PyJinHx: Refresh Component Manifest` and `PyJinHx: Show Output`.

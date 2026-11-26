@@ -22,6 +22,7 @@ function harness(over: Partial<SessionOptions> = {}, answer: (args: string[], in
     python: async () => ({ python: "py", source: "setting" }),
     settings: () => ({ paths: [], sysPath: [] }),
     trusted: () => true,
+    hasDocuments: async () => true,
     files: async () => [{ path: `${PROJECT}/ui/zed.pjx`, text: "{#def a: int #}" }],
     log: (l) => log.push(l),
     onChange: () => changes++,
@@ -125,4 +126,68 @@ test("a buffer is not sent while limited", async () => {
   await wait(40);
   assert.equal(runs.length, 0);
   session.dispose();
+});
+
+test("a buffer settled while its run was going leaves no overlay", async () => {
+  const buffer = JSON.parse(manifestText());
+  buffer.components = buffer.components.filter((c: { tag: string }) => c.tag === "Badge");
+  buffer.components[0].props = [];
+  const { session } = harness({}, (args) => (args.includes("--stdin") ? { stdout: JSON.stringify(buffer) } : {}));
+  await session.refresh();
+  const path = `${PROJECT}/ui/badge.pjx`;
+  session.requestBuffer(path, () => "x");
+  await wait(11);
+  session.settle(path);
+  await wait(40);
+  assert.equal(session.manifest.byTag("Badge")!.props.length, 3);
+  session.dispose();
+});
+
+test("two paths edited in turn each keep their overlay", async () => {
+  const answer = (args: string[]) => {
+    if (!args.includes("--stdin")) return {};
+    const file = args[args.indexOf("--filename") + 1];
+    const buffer = JSON.parse(manifestText());
+    buffer.components = buffer.components.filter((c: { tag: string; document: { path: string } }) => c.document.path === file);
+    buffer.components[0].props = [];
+    return { stdout: JSON.stringify(buffer) };
+  };
+  const { session } = harness({}, answer);
+  await session.refresh();
+  session.requestBuffer(`${PROJECT}/ui/badge.pjx`, () => "a");
+  session.requestBuffer(`${PROJECT}/ui/alert.pjx`, () => "b");
+  await wait(60);
+  assert.equal(session.manifest.byTag("Badge")!.props.length, 0);
+  assert.equal(session.manifest.byTag("Alert")!.props.length, 0);
+  session.dispose();
+});
+
+test("a slow limited-mode fallback does not overwrite a newer full refresh", async () => {
+  let calls = 0;
+  const { session } = harness(
+    { trusted: () => ++calls > 1, files: async () => { await wait(50); return []; } },
+    () => ({}),
+  );
+  const first = session.refresh(); // untrusted: waits on the file list
+  await wait(5);
+  await session.refresh();
+  await first;
+  assert.equal(session.mode.kind, "full");
+  assert.equal(session.manifest.byTag("Badge")?.kind, "split");
+});
+
+test("a folder with no .pjx file runs nothing", async () => {
+  const { session, runs } = harness({ hasDocuments: async () => false });
+  await session.refresh();
+  assert.equal(runs.length, 0);
+  assert.equal(session.mode.kind, "pending");
+});
+
+test("settings are read at each run, so a change shows at the next", async () => {
+  let paths = ["/a"];
+  const { session, runs } = harness({ settings: () => ({ paths, sysPath: [] }) });
+  await session.refresh();
+  paths = ["/b"];
+  await session.refresh();
+  assert.deepEqual(runs.map((r) => r.args), [["/a"], ["/b"]]);
 });

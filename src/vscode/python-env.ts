@@ -16,6 +16,12 @@ async function pythonApi(): Promise<PythonApi | undefined> {
   return extension ? (extension.isActive ? extension.exports : await extension.activate()) : undefined;
 }
 
+// Waking the Python extension is only worth it when its environment is what would be used.
+const wanted = () => {
+  const extension = vscode.extensions.getExtension("ms-python.python");
+  return !!extension && (extension.isActive || !vscode.workspace.getConfiguration("pyjinhx").get<string>("pythonPath", "").trim());
+};
+
 function onPath(name: string): string | undefined {
   const names = process.platform === "win32" ? [`${name}.exe`, `${name}.cmd`] : [name];
   return (process.env.PATH ?? "")
@@ -37,5 +43,6 @@ export function findPython(folder: vscode.WorkspaceFolder): Promise<Found | null
 
 /** Calls `listener` when the Python extension's active environment changes. */
 export async function onPythonEnvironmentChange(listener: () => void): Promise<vscode.Disposable | undefined> {
+  if (!wanted()) return undefined;
   return (await pythonApi().catch(() => undefined))?.environments.onDidChangeActiveEnvironmentPath(listener);
 }

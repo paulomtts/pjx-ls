@@ -69,7 +69,10 @@ project statically and imports nothing.
 - Diagnostics from the manifest (grammar errors, invalid headers, tag collisions, stub
   warnings) with their pyjinhx code, and a warning on a `{#def` header that a Python class
   makes stale.
-- `Card-header` and `Card.Item` are the `Card` component, as pyjinhx renders them.
+- `Card-header` and `Card.Item` are the `Card` component, as pyjinhx renders them (the
+  grammar still colours them as plain custom elements).
+- Only PascalCase tags are components: `<button>` is never `Button`, and the HTML service's
+  own completions (HTML tags and attributes, close tags) are left to it.
 
 The manifest is read when the folder opens, and again 300 ms after a `.pjx`, `.py` or
 `.pyi` file is saved, created or deleted. The active unsaved document is sent on stdin,
@@ -79,8 +82,10 @@ Settings: `pyjinhx.pythonPath`, `pyjinhx.manifest.paths`, `pyjinhx.manifest.sysP
 
 **Limited mode.** When pyjinhx cannot be run (not installed, older than 1.17, no
 interpreter, an untrusted workspace) the status bar says `pyjinhx: limited`. Tags and
-props then come from the `.pjx` file names and `{#def` headers only: tag completion and
-go to definition work; there is no hover detail and no diagnostics. Call-site checks
+props then come from the `.pjx` file names and `{#def` headers only: tag and prop
+completion, hover (the header's signature) and go to definition work; a component whose
+props are in a `.py` file (split, `template = ...`, `{#python`) has none there, and there
+are no diagnostics. Call-site checks
 (unknown tag, unknown or missing prop) wait for pyjinhx to report them.
 
 ### Formatting
