@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { scan } from "../../src/core/regions.ts";
-import { forwardable, syntheticSpans, touchesSynthetic } from "../../src/core/forwarding.ts";
+import { exclusions, forwardable, isForwardable, syntheticSpans, touchesSynthetic } from "../../src/core/forwarding.ts";
 
 // `|` marks the position asked about; the text has no other bar.
 function at(marked: string, mode: "cursor" | "hover" = "cursor"): boolean {
@@ -89,4 +89,23 @@ test("hover asks about the character to the right", () => {
   assert.ok(at("<p>{{ x }}|</p>", "hover"));
   assert.equal(at("{#css\n.a{}|#}", "hover"), false);
   assert.ok(at("{#css\n.a{|}\n#}", "hover"));
+});
+
+test("exclusions computed once answer like forwardable", () => {
+  const text = "<p>{{ a }}</p>\n{#css\n.a{}\n#}<b>{% x %}</b>\n{#python\nx\n#}\n<i>{# open";
+  const parsed = scan(text);
+  const excluded = exclusions(text, parsed);
+  for (let offset = 0; offset <= text.length; offset++) {
+    for (const mode of ["cursor", "hover"] as const) {
+      assert.equal(isForwardable(excluded, offset, mode), forwardable(text, parsed, offset, mode), `${mode} at ${offset}`);
+    }
+  }
+});
+
+test("500 asks in a document of 18k regions are quick", () => {
+  const text = "<p>{{ a }}</p>{% b %}{# c #}\n".repeat(6000);
+  const excluded = exclusions(text, scan(text));
+  const started = performance.now();
+  for (let i = 0; i < 500; i++) isForwardable(excluded, (i * 7919) % text.length, "cursor");
+  assert.ok(performance.now() - started < 50);
 });
