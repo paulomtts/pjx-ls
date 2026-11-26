@@ -266,3 +266,12 @@ test("a server that cannot be spawned rejects what waits on it", async () => {
   assert.equal(await server.semanticTokens(URI), null);
   assert.equal(server.state, "idle");
 });
+
+test("completion drops an item that carries an additional edit and keeps the replace range", async () => {
+  const { server } = setup();
+  server.sync(URI, "x\n");
+  const { items, incomplete } = await server.completion(URI, { line: 0, character: 1 }, undefined);
+  assert.equal(incomplete, false);
+  assert.deepEqual(items.map((i) => i.label), ["plain"]);
+  assert.deepEqual(items[0].replace, { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } });
+});

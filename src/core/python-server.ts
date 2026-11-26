@@ -51,6 +51,57 @@ const MAX_CRASHES = 3;
 const STABLE_MS = 60_000;
 const SHUTDOWN_GRACE_MS = 2000;
 
+export interface CompletionEntry {
+  label: string;
+  kind?: number;
+  detail?: string;
+  documentation?: string;
+  sortText?: string;
+  filterText?: string;
+  insertText?: string;
+  /** The range the item replaces, when the server names one. */
+  replace?: Range;
+  /** Opaque: sent back to the server to resolve the item. */
+  data?: unknown;
+}
+
+export interface SignatureAnswer {
+  signatures: { label: string; documentation?: string; parameters: { label: string | [number, number]; documentation?: string }[] }[];
+  activeSignature: number;
+  activeParameter: number;
+}
+
+interface RawItem {
+  label: string;
+  kind?: number;
+  detail?: string;
+  documentation?: unknown;
+  sortText?: string;
+  filterText?: string;
+  insertText?: string;
+  textEdit?: { newText: string; range?: Range; replace?: Range };
+  additionalTextEdits?: unknown[];
+  data?: unknown;
+}
+
+interface RawSignature {
+  label: string;
+  documentation?: unknown;
+  parameters?: { label: string | [number, number]; documentation?: unknown }[];
+}
+
+const entryOf = (i: RawItem): CompletionEntry => ({
+  label: i.label,
+  kind: i.kind,
+  detail: i.detail,
+  documentation: markdownOf(i.documentation) || undefined,
+  sortText: i.sortText,
+  filterText: i.filterText,
+  insertText: i.textEdit?.newText ?? i.insertText,
+  replace: i.textEdit?.range ?? i.textEdit?.replace,
+  data: i.data,
+});
+
 // Hover contents come as a string, a MarkupContent or a list of either.
 function markdownOf(contents: unknown): string {
   if (typeof contents === "string") return contents;
@@ -192,6 +243,43 @@ export class PythonServer {
     });
   }
 
+  /** The completions at `position`; items that would edit outside the block's own line are dropped. */
+  async completion(uri: string, position: Position, trigger: string | undefined, cancel?: Cancel): Promise<{ items: CompletionEntry[]; incomplete: boolean }> {
+    const context = trigger ? { triggerKind: 2, triggerCharacter: trigger } : { triggerKind: 1 };
+    const answer = await this.ask<RawItem[] | { items: RawItem[]; isIncomplete?: boolean }>("textDocument/completion", uri, { textDocument: { uri }, position, context }, cancel);
+    const raw = !answer ? [] : Array.isArray(answer) ? answer : answer.items;
+    const incomplete = !!answer && !Array.isArray(answer) && !!answer.isIncomplete;
+    // Auto-import is off already; an item that still carries an extra edit would write outside the block.
+    return { items: raw.filter((i) => !i.additionalTextEdits?.length).map(entryOf), incomplete };
+  }
+
+  /** Fills in the detail and documentation the server leaves out of the list. */
+  async resolveCompletion(entry: CompletionEntry, cancel?: Cancel): Promise<CompletionEntry> {
+    if (!this.client || !(await this.ready)) return entry;
+    try {
+      const answer = await this.client.request<RawItem | null>("completionItem/resolve", { label: entry.label, kind: entry.kind, data: entry.data }, cancel);
+      return answer ? { ...entry, detail: answer.detail ?? entry.detail, documentation: markdownOf(answer.documentation) || entry.documentation } : entry;
+    } catch {
+      return entry;
+    }
+  }
+
+  /** The signatures for the call at `position`, with the active one and its active parameter. */
+  async signatureHelp(uri: string, position: Position, trigger: string | undefined, retrigger: boolean, cancel?: Cancel): Promise<SignatureAnswer | null> {
+    const context = { triggerKind: trigger ? 2 : 1, triggerCharacter: trigger, isRetrigger: retrigger };
+    const answer = await this.ask<{ signatures: RawSignature[]; activeSignature?: number; activeParameter?: number }>("textDocument/signatureHelp", uri, { textDocument: { uri }, position, context }, cancel);
+    if (!answer?.signatures?.length) return null;
+    return {
+      signatures: answer.signatures.map((s) => ({
+        label: s.label,
+        documentation: markdownOf(s.documentation) || undefined,
+        parameters: (s.parameters ?? []).map((p) => ({ label: p.label, documentation: markdownOf(p.documentation) || undefined })),
+      })),
+      activeSignature: answer.activeSignature ?? 0,
+      activeParameter: answer.activeParameter ?? 0,
+    };
+  }
+
   // A request for an open view, answered null when the server is not up or fails.
   private async ask<T>(method: string, uri: string, params: unknown, cancel?: Cancel): Promise<T | null> {
     const client = this.client;
@@ -271,7 +359,7 @@ export class PythonServer {
 
   private async initialize(proc: ServerProcess, client: LspClient): Promise<boolean> {
     const folders = this.options.folders();
-    const result = await client.request<{ capabilities?: { semanticTokensProvider?: { legend: Legend } } }>("initialize", {
+    const result = await client.request<{ capabilities?: { semanticTokensProvider?: { legend: Legend }; completionProvider?: { triggerCharacters?: string[] } } }>("initialize", {
       processId: process.pid,
       rootUri: folders[0]?.uri ?? null,
       workspaceFolders: folders,
@@ -279,6 +367,7 @@ export class PythonServer {
     });
     if (proc !== this.proc) return false;
     this.legend = result?.capabilities?.semanticTokensProvider?.legend;
+    this.options.log(`completion triggers: ${JSON.stringify(result?.capabilities?.completionProvider?.triggerCharacters ?? [])}`);
     client.notify("initialized", {});
     // cursorpyright's build needed this nudge before it asked for configuration.
     client.notify("workspace/didChangeConfiguration", { settings: {} });

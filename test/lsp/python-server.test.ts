@@ -169,3 +169,41 @@ test("definition of a sibling component answers its stub, which toSource sends t
   assert.ok(source.uri.endsWith("/ui/row.pjx"), source.uri);
   assert.equal(source.range.start.line, 1);
 });
+
+// The card view with one more line typed at the end of the body, as an editor would have it.
+function typed(open: ReturnType<typeof project>["open"], line: string) {
+  return open("ui/card.pjx", (text) => text.replace("#}\n", `${line}\n#}\n`));
+}
+
+test("completion after `Keys.` has TODOS, and resolving it works", async () => {
+  const { session, open } = project();
+  const { uri, view } = typed(open, "_k = Keys.");
+  session.sync(uri, view.text);
+  const row = view.text.split("\n").findIndex((l) => l.startsWith("_k = Keys."));
+  const { items } = await session.completion(uri, { line: row, character: "_k = Keys.".length }, ".");
+  const todos = items.find((i) => i.label === "TODOS");
+  assert.ok(todos, items.map((i) => i.label).join());
+  const resolved = await session.resolveCompletion(todos);
+  assert.equal(resolved.label, "TODOS");
+  assert.ok(items.every((i) => !i.replace || i.replace.start.line === row), "an edit outside the line");
+});
+
+test("completion after `self.` offers the field and the method", async () => {
+  const { session, open } = project();
+  const { uri, view } = typed(open, "        self.");
+  session.sync(uri, view.text);
+  const row = view.text.split("\n").findIndex((l) => l === "        self.");
+  const labels = (await session.completion(uri, { line: row, character: 13 }, ".")).items.map((i) => i.label);
+  assert.ok(labels.includes("count") && labels.includes("load"), labels.slice(0, 20).join());
+});
+
+test("signature help inside a call shows the parameters", async () => {
+  const { session, open } = project();
+  const { uri, view } = typed(open, "_c = TodoAppContext(");
+  session.sync(uri, view.text);
+  const row = view.text.split("\n").findIndex((l) => l.startsWith("_c = "));
+  const help = await session.signatureHelp(uri, { line: row, character: "_c = TodoAppContext(".length }, "(", false);
+  assert.ok(help, "no signature help");
+  assert.match(help.signatures[0].label, /count: int = 0/);
+  assert.equal(help.activeParameter, 0);
+});
