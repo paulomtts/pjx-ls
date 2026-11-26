@@ -10,6 +10,7 @@ import { registerPjxFeatures } from "./vscode/pjx-features.ts";
 import { registerStubFix } from "./vscode/stub-fix.ts";
 import { PythonBlocks } from "./vscode/python-server.ts";
 import { registerPythonDiagnostics } from "./vscode/python-diagnostics.ts";
+import { registerPythonFeatures } from "./vscode/python-features.ts";
 import { registerPythonTokens } from "./vscode/python-tokens.ts";
 import { registerStatus } from "./vscode/status.ts";
 
@@ -35,6 +36,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(blocks);
   registerPythonTokens(context, blocks);
   registerPythonDiagnostics(context, blocks, manifests);
+  registerPythonFeatures(context, blocks);
   registerStatus(context, manifests, blocks);
 }
 

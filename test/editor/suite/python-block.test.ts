@@ -104,3 +104,36 @@ suite("python block diagnostics", () => {
     assert.deepStrictEqual(await eventually(() => basedpyright(doc.uri), (d) => d.length === 0), []);
   });
 });
+
+suite("python block hover and definition", () => {
+  // The position of `text` on a 0-based line, plus `offset` characters.
+  const at = (doc: vscode.TextDocument, line: number, text: string, offset = 0) => new vscode.Position(line, doc.lineAt(line).text.indexOf(text) + offset);
+  const textOf = (hover: vscode.Hover) => hover.contents.map((c) => (typeof c === "string" ? c : c.value)).join("\n");
+  const hoversAt = (doc: vscode.TextDocument, position: vscode.Position) => vscode.commands.executeCommand<vscode.Hover[]>("vscode.executeHoverProvider", doc.uri, position);
+
+  test("hover on a field gives its type, once", async () => {
+    const doc = await open("tokens.pjx");
+    await vscode.window.showTextDocument(doc);
+    const hovers = await eventually(() => hoversAt(doc, at(doc, 9, "count")), (h) => h.length > 0);
+    assert.strictEqual(hovers.length, 1, hovers.map(textOf).join("\n--\n"));
+    assert.match(textOf(hovers[0]), /int/);
+  });
+
+  test("go to definition on a class in the block lands on its class line", async () => {
+    const doc = await open("tokens.pjx");
+    await vscode.window.showTextDocument(doc);
+    const ask = () => vscode.commands.executeCommand<(vscode.Location | vscode.LocationLink)[]>("vscode.executeDefinitionProvider", doc.uri, at(doc, 8, "TodoAppContext"));
+    const found = await eventually(ask, (d) => d.length > 0);
+    const target = (d: vscode.Location | vscode.LocationLink) => ("targetUri" in d ? { uri: d.targetUri, range: d.targetSelectionRange ?? d.targetRange } : d);
+    assert.strictEqual(found.length, 1);
+    assert.strictEqual(target(found[0]).uri.toString(), doc.uri.toString());
+    assert.strictEqual(target(found[0]).range.start.line, 5);
+  });
+
+  test("on the markup line the server says nothing", async () => {
+    const doc = await open("tokens.pjx");
+    await vscode.window.showTextDocument(doc);
+    const hovers = (await hoversAt(doc, at(doc, 11, "<p>", 1))) ?? [];
+    assert.ok(hovers.every((h) => !textOf(h).includes("```python")), hovers.map(textOf).join("\n"));
+  });
+});
