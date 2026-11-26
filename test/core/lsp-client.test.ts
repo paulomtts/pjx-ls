@@ -89,6 +89,19 @@ test("a notification reaches its handler", async () => {
   assert.deepEqual(seen, [{ message: "hi" }]);
 });
 
+test("what a handler throws goes to onError and reading goes on", async () => {
+  const { client, toClient, tick } = pair();
+  const errors: unknown[] = [];
+  const seen: unknown[] = [];
+  client.onError((e) => errors.push(e));
+  client.onNotification("a", () => { throw new Error("boom"); });
+  client.onNotification("b", (p) => seen.push(p));
+  toClient.write(Buffer.concat([frame({ method: "a", params: 1 }), frame({ method: "b", params: 2 })]));
+  await tick();
+  assert.equal((errors[0] as Error).message, "boom");
+  assert.deepEqual(seen, [2]);
+});
+
 test("notify writes a message without an id", async () => {
   const { client, sent, tick } = pair();
   client.notify("initialized", {});

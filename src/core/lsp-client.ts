@@ -29,6 +29,7 @@ export class LspClient {
   private buffer = Buffer.alloc(0);
   private closed = false;
   private output: Writable;
+  private errorHandler: (error: unknown) => void = () => {};
 
   constructor(input: Readable, output: Writable) {
     this.output = output;
@@ -61,6 +62,11 @@ export class LspClient {
     this.notificationHandlers.set(method, handler);
   }
 
+  /** Called with what a notification or request handler threw; those errors are not otherwise visible. */
+  onError(handler: (error: unknown) => void): void {
+    this.errorHandler = handler;
+  }
+
   /** Rejects everything pending; later calls reject at once. */
   close(): void {
     this.closed = true;
@@ -88,10 +94,17 @@ export class LspClient {
       if (this.buffer.length < end) return;
       const body = this.buffer.subarray(head + 4, end).toString("utf8");
       this.buffer = this.buffer.subarray(end);
+      let message: Message;
       try {
-        this.dispatch(JSON.parse(body));
+        message = JSON.parse(body);
       } catch {
         // A message that is not JSON is the server's mistake; keep reading.
+        continue;
+      }
+      try {
+        this.dispatch(message);
+      } catch (error) {
+        this.errorHandler(error);
       }
     }
   }
@@ -105,7 +118,7 @@ export class LspClient {
     if (!handler) return reply(null);
     Promise.resolve()
       .then(() => handler(message.params))
-      .then((result) => reply(result ?? null), () => reply(null));
+      .then((result) => reply(result ?? null), (error) => (this.errorHandler(error), reply(null)));
   }
 
   private answer(message: Message): void {

@@ -13,7 +13,7 @@ const servers: PythonServer[] = [];
 afterEach(() => servers.splice(0).forEach((s) => s.dispose()));
 
 // A server over the fake language server. `state()` reads what the fake recorded.
-function setup(env: Record<string, string> = {}, python: (scope?: string) => Promise<string | undefined> = async () => "/py/bin/python") {
+function setup(env: Record<string, string> = {}, python: (scope?: string) => Promise<string | undefined> = async () => "/py/bin/python", stableMs?: number) {
   const dir = mkdtempSync(join(tmpdir(), "pjx-fake-"));
   let starts = 0;
   const children: ServerProcess[] = [];
@@ -37,6 +37,7 @@ function setup(env: Record<string, string> = {}, python: (scope?: string) => Pro
     pythonPath: python,
     typeCheckingMode: () => mode,
     log: (line) => log.push(line),
+    stableMs,
   });
   servers.push(server);
   const state = () => {
@@ -216,5 +217,52 @@ test("dispose shuts the process down", async () => {
   await eventually(() => exited, "exit");
   assert.equal(server.state, "idle");
   server.sync(URI, "a\n");
+  assert.equal(server.state, "idle");
+});
+
+test("a failing interpreter lookup still answers with one entry per item", async () => {
+  const { server, state } = setup({}, async () => { throw new Error("no python"); });
+  server.sync(URI, "x = 1\n");
+  const { configuration } = await eventually(() => state().configuration && state(), "configuration");
+  assert.equal(configuration.length, 3);
+  assert.equal(configuration[0], null);
+});
+
+test("crashes are forgotten once a server has stayed up long enough", async () => {
+  const { server, children } = setup({}, undefined, 150);
+  for (let i = 0; i < 2; i++) {
+    server.sync(URI, "a\n");
+    await eventually(() => server.state === "ready", "ready");
+    children[i].kill();
+    await eventually(() => server.state === "idle", "the exit");
+  }
+  server.sync(URI, "a\n");
+  await eventually(() => server.state === "ready", "ready");
+  await new Promise((r) => setTimeout(r, 300));
+  children[2].kill();
+  await eventually(() => server.state === "idle", "the exit");
+  assert.notEqual(server.state, "off");
+});
+
+test("a server that cannot be spawned rejects what waits on it", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "pjx-fake-"));
+  const server = new PythonServer({
+    start: () => {
+      const child = spawn(join(dir, "missing-binary"), [], { stdio: ["pipe", "pipe", "ignore"] });
+      return {
+        stdin: child.stdin!,
+        stdout: child.stdout!,
+        kill: () => void child.kill(),
+        onExit: (listener) => void child.on("error", () => listener(null)),
+      };
+    },
+    folders: () => [],
+    pythonPath: async () => undefined,
+    typeCheckingMode: () => "standard",
+    log: () => {},
+  });
+  servers.push(server);
+  server.sync(URI, "x\n");
+  assert.equal(await server.semanticTokens(URI), null);
   assert.equal(server.state, "idle");
 });

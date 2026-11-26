@@ -20,6 +20,8 @@ export interface ServerOptions {
   /** The checking mode for a project that configures none. */
   typeCheckingMode: () => string;
   log: (line: string) => void;
+  /** How long a server must stay up for its earlier crashes to be forgotten; default one minute. */
+  stableMs?: number;
 }
 
 export interface Legend {
@@ -44,6 +46,7 @@ interface Doc {
 }
 
 const MAX_CRASHES = 3;
+const STABLE_MS = 60_000;
 const SHUTDOWN_GRACE_MS = 2000;
 
 /** The node arguments and script arguments that start the bundled server. */
@@ -103,6 +106,7 @@ export class PythonServer {
   private legend: Legend | undefined;
   private crashes = 0;
   private killTimer: ReturnType<typeof setTimeout> | undefined;
+  private stableTimer: ReturnType<typeof setTimeout> | undefined;
   private disposed = false;
   private stateListeners: (() => void)[] = [];
   private diagnosticListeners: ((uri: string) => void)[] = [];
@@ -181,6 +185,7 @@ export class PythonServer {
 
   /** Ends the process and forgets every view; the next `sync` starts it again. */
   stop(): void {
+    clearTimeout(this.stableTimer);
     const { proc, client } = this;
     this.proc = this.client = undefined;
     this.docs.clear();
@@ -222,6 +227,7 @@ export class PythonServer {
     this.legend = undefined;
     this.setState("starting");
     proc.onExit((code) => this.exited(proc, code));
+    client.onError((error) => this.options.log(`handler failed: ${error}`));
     client.onRequest("workspace/configuration", (params) => this.configuration(params.items));
     client.onNotification("window/logMessage", (params) => this.options.log(String(params.message)));
     client.onNotification("textDocument/publishDiagnostics", (params) => this.publish(params));
@@ -245,6 +251,8 @@ export class PythonServer {
     this.published.clear();
     for (const doc of this.docs.values()) doc.version = 1;
     this.setState("ready");
+    this.stableTimer = setTimeout(() => (this.crashes = 0), this.options.stableMs ?? STABLE_MS);
+    this.stableTimer.unref();
     for (const uri of this.docs.keys()) this.send("didOpen", uri);
     return true;
   }
@@ -256,8 +264,9 @@ export class PythonServer {
     return Promise.all(
       items.map(async ({ section, scopeUri }) => {
         if (section === "python") {
-          const pythonPath = await this.options.pythonPath(scopeUri);
-          return pythonPath === undefined ? {} : { pythonPath };
+          // An answer must have one entry per item, so a failure here is a null, not a rejection.
+          const pythonPath = await this.options.pythonPath(scopeUri).catch(() => null);
+          return pythonPath === null ? null : pythonPath === undefined ? {} : { pythonPath };
         }
         if (section === "basedpyright") return { analysis };
         if (section?.endsWith(".analysis")) return analysis;
@@ -279,6 +288,9 @@ export class PythonServer {
       return;
     }
     this.options.log(`server exited with code ${code}`);
+    clearTimeout(this.stableTimer);
+    // A server that never started writes no end of stream; this rejects what waits on it.
+    this.client?.close();
     this.proc = this.client = undefined;
     this.ready = Promise.resolve(false);
     this.published.clear();
