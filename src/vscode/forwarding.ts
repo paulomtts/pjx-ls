@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { FORWARDING_SELECTOR } from "./config.ts";
 import { isForwardable, touchesSynthetic, type Mode } from "../core/forwarding.ts";
-import { componentHover, shadowedAttributes } from "../core/component-service.ts";
+import { componentHover, shadowedAttributes } from "../core/pjx-features.ts";
 import { ResolveCache } from "../core/resolve-cache.ts";
 import type { Manifests } from "./manifest-service.ts";
 import type { View, Views } from "./virtual-documents.ts";
