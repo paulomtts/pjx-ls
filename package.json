@@ -2,7 +2,7 @@
   "name": "pyjinhx-syntax-support",
   "displayName": "PyJinHx",
   "description": "Syntax highlighting and template formatting for the PyJinHx Python framework (PascalCase component tags, slots, {#def#} headers, interpolation).",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "publisher": "paulomtts",
   "license": "MIT",
   "type": "module",
