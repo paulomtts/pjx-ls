@@ -12,7 +12,8 @@ const SKIPPED = "**/{node_modules,.venv,venv,.git,__pycache__}/**";
 
 /** The path of a file as the manifest writes it: absolute, with forward slashes. */
 export const manifestPath = (uri: vscode.Uri) => uri.fsPath.replaceAll("\\", "/");
-const isSource = (document: vscode.TextDocument) => document.uri.scheme === "file" && (document.languageId === TEMPLATE_LANGUAGE_ID || document.languageId === "python");
+/** A file the manifest reads: a `.pjx` or Python file on disk. */
+export const isSource = (document: vscode.TextDocument) => document.uri.scheme === "file" && (document.languageId === TEMPLATE_LANGUAGE_ID || document.languageId === "python");
 
 /** One manifest session per workspace folder, fed by saves, file changes and the active unsaved document. */
 export class Manifests implements vscode.Disposable {

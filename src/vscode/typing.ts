@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { BraceTracker } from "../core/block-opener.ts";
+import { TEMPLATE_LANGUAGE_ID } from "./config.ts";
 
 /**
  * `{` auto-closes to `{}`; typing `#` right after that starts a block opener, so the
@@ -11,7 +12,7 @@ export function registerTyping(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument((document) => trackers.delete(document.uri.toString())),
     vscode.workspace.onDidChangeTextDocument(({ document, contentChanges }) => {
-      if (document.languageId !== "pyjinhx") return;
+      if (document.languageId !== TEMPLATE_LANGUAGE_ID) return;
       const key = document.uri.toString();
       const tracker = trackers.get(key) ?? trackers.set(key, new BraceTracker()).get(key)!;
       if (contentChanges.length !== 1) return tracker.reset();

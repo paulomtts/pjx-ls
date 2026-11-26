@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { TEMPLATE_LANGUAGE_ID } from "./config.ts";
 import { defHeaderRange } from "../core/regions.ts";
 import type { Manifest, Diagnostic } from "../core/manifest.ts";
-import { manifestPath, type Manifests } from "./manifest-service.ts";
+import { isSource, manifestPath, type Manifests } from "./manifest-service.ts";
 
 const SEVERITY: Record<string, vscode.DiagnosticSeverity> = {
   error: vscode.DiagnosticSeverity.Error,
@@ -33,7 +33,7 @@ export function registerDiagnostics(context: vscode.ExtensionContext, manifests:
   const collection = vscode.languages.createDiagnosticCollection("pyjinhx");
   const check = (document: vscode.TextDocument) => {
     const manifest = manifests.manifestFor(document.uri);
-    if (!manifest || document.uri.scheme !== "file" || (document.languageId !== TEMPLATE_LANGUAGE_ID && document.languageId !== "python")) {
+    if (!manifest || !isSource(document)) {
       return collection.delete(document.uri);
     }
     const own = manifest.diagnosticsFor(manifestPath(document.uri)).map(convert);
