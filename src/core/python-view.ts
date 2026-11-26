@@ -26,3 +26,6 @@ export function pythonView(text: string, scan: Scan = scanText(text)): PythonVie
 }
 
 export const inBody = (view: PythonView, line: number) => line >= view.firstLine && line <= view.lastLine;
+
+/** Whether a range lies wholly on body lines. */
+export const rangeInBody = (view: PythonView, range: { start: { line: number }; end: { line: number } }) => inBody(view, range.start.line) && inBody(view, range.end.line);

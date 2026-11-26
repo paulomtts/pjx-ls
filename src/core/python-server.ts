@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import type { Readable, Writable } from "node:stream";
 import { LspClient, type Cancel } from "./lsp-client.ts";
-import type { Range } from "./manifest.ts";
+import type { Position, Range } from "./manifest.ts";
 
 export interface ServerProcess {
   stdin: Writable;
@@ -50,6 +50,72 @@ interface Doc {
 const MAX_CRASHES = 3;
 const STABLE_MS = 60_000;
 const SHUTDOWN_GRACE_MS = 2000;
+
+export interface CompletionEntry {
+  label: string;
+  kind?: number;
+  detail?: string;
+  documentation?: string;
+  sortText?: string;
+  filterText?: string;
+  insertText?: string;
+  /** The range the item replaces, when the server names one. */
+  replace?: Range;
+  /** Opaque: sent back to the server to resolve the item. */
+  data?: unknown;
+}
+
+/** How a request was triggered, as LSP numbers it: 1 invoked, 2 a trigger character, 3 a retrigger of an incomplete list or a content change. */
+export interface Trigger {
+  kind: 1 | 2 | 3;
+  character?: string;
+}
+
+export interface SignatureAnswer {
+  signatures: { label: string; documentation?: string; parameters: { label: string | [number, number]; documentation?: string }[] }[];
+  activeSignature: number;
+  activeParameter?: number;
+}
+
+interface RawItem {
+  label: string;
+  kind?: number;
+  detail?: string;
+  documentation?: unknown;
+  sortText?: string;
+  filterText?: string;
+  insertText?: string;
+  textEdit?: { newText: string; range?: Range; replace?: Range };
+  additionalTextEdits?: unknown[];
+  data?: unknown;
+}
+
+interface RawSignature {
+  label: string;
+  documentation?: unknown;
+  parameters?: { label: string | [number, number]; documentation?: unknown }[];
+}
+
+const entryOf = (i: RawItem): CompletionEntry => ({
+  label: i.label,
+  kind: i.kind,
+  detail: i.detail,
+  documentation: markdownOf(i.documentation) || undefined,
+  sortText: i.sortText,
+  filterText: i.filterText,
+  insertText: i.textEdit?.newText ?? i.insertText,
+  replace: i.textEdit?.range ?? i.textEdit?.replace,
+  data: i.data,
+});
+
+// Hover contents come as a string, a MarkupContent or a list of either.
+function markdownOf(contents: unknown): string {
+  if (typeof contents === "string") return contents;
+  if (Array.isArray(contents)) return contents.map(markdownOf).filter(Boolean).join("\n\n");
+  const part = contents as { value?: string; language?: string } | null;
+  if (!part?.value) return "";
+  return part.language ? "```" + part.language + "\n" + part.value + "\n```" : part.value;
+}
 
 /** The node arguments and script arguments that start the bundled server. */
 export const serverArgs = (script: string) => ["--max-old-space-size=256", script, "--stdio"];
@@ -160,12 +226,67 @@ export class PythonServer {
 
   /** Null when the server is not running or has no token support. */
   async semanticTokens(uri: string, cancel?: Cancel): Promise<{ data: number[]; legend: Legend } | null> {
+    const answer = await this.ask<{ data: number[] }>("textDocument/semanticTokens/full", uri, { textDocument: { uri } }, cancel);
+    return answer && this.legend ? { data: answer.data, legend: this.legend } : null;
+  }
+
+  /** The hover text as markdown, or null where the server has nothing to say. */
+  async hover(uri: string, position: Position, cancel?: Cancel): Promise<{ markdown: string; range?: Range } | null> {
+    const answer = await this.ask<{ contents: unknown; range?: Range }>("textDocument/hover", uri, { textDocument: { uri }, position }, cancel);
+    const markdown = answer && markdownOf(answer.contents);
+    return markdown ? { markdown, range: answer.range } : null;
+  }
+
+  /** Where the name at `position` is defined; both answer shapes of the protocol are flattened. */
+  async definition(uri: string, position: Position, cancel?: Cancel): Promise<{ uri: string; range: Range }[]> {
+    type Link = { uri?: string; range?: Range; targetUri?: string; targetSelectionRange?: Range; targetRange?: Range };
+    const answer = await this.ask<Link | Link[]>("textDocument/definition", uri, { textDocument: { uri }, position }, cancel);
+    const links = answer === null ? [] : Array.isArray(answer) ? answer : [answer];
+    return links.flatMap((l) => {
+      const target = l.targetUri ?? l.uri;
+      const range = l.targetSelectionRange ?? l.targetRange ?? l.range;
+      return target && range ? [{ uri: target, range }] : [];
+    });
+  }
+
+  /** The completions at `position`; items with an additional edit are dropped, since that edit would land outside the block. */
+  async completion(uri: string, position: Position, trigger: Trigger, cancel?: Cancel): Promise<{ items: CompletionEntry[]; incomplete: boolean }> {
+    const context = { triggerKind: trigger.kind, triggerCharacter: trigger.character };
+    const answer = await this.ask<RawItem[] | { items: RawItem[]; isIncomplete?: boolean }>("textDocument/completion", uri, { textDocument: { uri }, position, context }, cancel);
+    const raw = !answer ? [] : Array.isArray(answer) ? answer : answer.items;
+    const incomplete = !!answer && !Array.isArray(answer) && !!answer.isIncomplete;
+    // Auto-import is off already; an item that still carries an extra edit would write outside the block.
+    return { items: raw.filter((i) => !i.additionalTextEdits?.length).map(entryOf), incomplete };
+  }
+
+  /** Fills in the detail and documentation the server leaves out of the list. */
+  async resolveCompletion(entry: CompletionEntry, cancel?: Cancel): Promise<CompletionEntry> {
+    const answer = await this.ask<RawItem>("completionItem/resolve", undefined, { label: entry.label, kind: entry.kind, data: entry.data }, cancel);
+    return answer ? { ...entry, detail: answer.detail ?? entry.detail, documentation: markdownOf(answer.documentation) || entry.documentation } : entry;
+  }
+
+  /** The signatures for the call at `position`. `active` is what the editor shows now, so a retrigger keeps its choice. */
+  async signatureHelp(uri: string, position: Position, trigger: Trigger & { isRetrigger: boolean; active?: SignatureAnswer }, cancel?: Cancel): Promise<SignatureAnswer | null> {
+    const context = { triggerKind: trigger.kind, triggerCharacter: trigger.character, isRetrigger: trigger.isRetrigger, activeSignatureHelp: trigger.active };
+    const answer = await this.ask<{ signatures: RawSignature[]; activeSignature?: number; activeParameter?: number | null }>("textDocument/signatureHelp", uri, { textDocument: { uri }, position, context }, cancel);
+    if (!answer?.signatures?.length) return null;
+    return {
+      signatures: answer.signatures.map((s) => ({
+        label: s.label,
+        documentation: markdownOf(s.documentation) || undefined,
+        parameters: (s.parameters ?? []).map((p) => ({ label: p.label, documentation: markdownOf(p.documentation) || undefined })),
+      })),
+      activeSignature: answer.activeSignature ?? 0,
+      activeParameter: answer.activeParameter ?? undefined,
+    };
+  }
+
+  // A request for an open view, answered null when the server is not up or fails.
+  private async ask<T>(method: string, uri: string | undefined, params: unknown, cancel?: Cancel): Promise<T | null> {
     const client = this.client;
-    if (!client || !(await this.ready) || !this.legend || !this.docs.has(uri)) return null;
-    const legend = this.legend;
+    if (!client || !(await this.ready) || (uri !== undefined && !this.docs.has(uri))) return null;
     try {
-      const answer = await client.request<{ data: number[] } | null>("textDocument/semanticTokens/full", { textDocument: { uri } }, cancel);
-      return answer && { data: answer.data, legend };
+      return await client.request<T | null>(method, params, cancel);
     } catch {
       return null;
     }

@@ -1,10 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import type { Legend } from "../../src/core/python-server.ts";
 import { pythonView } from "../../src/core/python-view.ts";
+import { toSource } from "../../src/core/python-locations.ts";
 import { project } from "./helpers.ts";
 import { LEGEND, translateTokens } from "../../src/core/semantic-tokens.ts";
 
@@ -122,4 +123,112 @@ test("a module created after the server started resolves once it is announced as
     fresh = decode(answer!.data, answer!.legend, view.text).find((t) => t.line === 4 && t.text === "Fresh");
   }
   assert.equal(fresh?.type, "class");
+});
+
+// Position of the nth occurrence of `text` on a 0-based line of the view.
+const at = (view: { text: string }, line: number, text: string, nth = 0) => {
+  const row = view.text.split("\n")[line];
+  let from = -1;
+  for (let i = 0; i <= nth; i++) from = row.indexOf(text, from + 1);
+  return { line, character: from };
+};
+
+test("hover on the card view names the class and the attribute", async () => {
+  const { session, open } = project();
+  const { uri, view } = open("ui/card.pjx");
+  session.sync(uri, view.text);
+  assert.match((await session.hover(uri, at(view, 2, "Keys")))!.markdown, /class Keys/);
+  assert.match((await session.hover(uri, at(view, 10, "count")))!.markdown, /int/);
+  assert.equal(await session.hover(uri, at(view, 12, "p")), null);
+});
+
+test("definition: another file, and the document itself", async () => {
+  const { session, open } = project();
+  const { uri, view } = open("ui/card.pjx");
+  session.sync(uri, view.text);
+  const keys = await session.definition(uri, at(view, 10, "Keys"));
+  assert.equal(keys.length, 1);
+  assert.ok(keys[0].uri.endsWith("/ui/keys.py"));
+  assert.equal(keys[0].range.start.line, 0);
+  const own = await session.definition(uri, at(view, 9, "TodoAppContext"));
+  assert.equal(own[0].uri, uri);
+  assert.equal(own[0].range.start.line, 6);
+});
+
+test("definition of a sibling component answers its stub, which toSource sends to the .pjx", async () => {
+  const { root, session, open } = project();
+  writeFileSync(join(root, "ui/row.pjx"), "{#python\nclass Row:\n    pass\n#}\n<p></p>\n");
+  writeFileSync(join(root, "ui/row.pyi"), "# pyjinhx.stubgen: generated from row.pjx; do not edit\nclass Row:\n    pass\n\n\n");
+  writeFileSync(join(root, "ui/list.pjx"), "{#python\nfrom ui.row import Row\n\nx = Row\n#}\n<p></p>\n");
+  const { uri, view } = open("ui/list.pjx");
+  session.sync(uri, view.text);
+  const [found] = await session.definition(uri, at(view, 3, "Row"));
+  assert.ok(found.uri.endsWith("/ui/row.pyi"), found.uri);
+  const source = toSource(found, (u) => readFileSync(fileURLToPath(u), "utf8"));
+  assert.ok(source.uri.endsWith("/ui/row.pjx"), source.uri);
+  assert.equal(source.range.start.line, 1);
+});
+
+// The card view with one more line typed at the end of the body, as an editor would have it.
+function typed(open: ReturnType<typeof project>["open"], line: string) {
+  return open("ui/card.pjx", (text) => text.replace("#}\n", `${line}\n#}\n`));
+}
+
+test("completion after `Keys.` has TODOS, and resolving it works", async () => {
+  const { session, open } = project();
+  const { uri, view } = typed(open, "_k = Keys.");
+  session.sync(uri, view.text);
+  const row = view.text.split("\n").findIndex((l) => l.startsWith("_k = Keys."));
+  const { items } = await session.completion(uri, { line: row, character: "_k = Keys.".length }, { kind: 2, character: "." });
+  const todos = items.find((i) => i.label === "TODOS");
+  assert.ok(todos, items.map((i) => i.label).join());
+  const resolved = await session.resolveCompletion(todos);
+  assert.equal(resolved.label, "TODOS");
+  assert.ok(resolved.detail || resolved.documentation, "resolve filled in nothing");
+  assert.ok(items.every((i) => !i.replace || i.replace.start.line === row), "an edit outside the line");
+});
+
+test("completion after `self.` offers the field and the method", async () => {
+  const { session, open } = project();
+  const { uri, view } = typed(open, "        self.");
+  session.sync(uri, view.text);
+  const row = view.text.split("\n").findIndex((l) => l === "        self.");
+  const labels = (await session.completion(uri, { line: row, character: 13 }, { kind: 2, character: "." })).items.map((i) => i.label);
+  assert.ok(labels.includes("count") && labels.includes("load"), labels.slice(0, 20).join());
+});
+
+test("signature help inside a call shows the parameters", async () => {
+  const { session, open } = project();
+  const { uri, view } = typed(open, "_c = TodoAppContext(");
+  session.sync(uri, view.text);
+  const row = view.text.split("\n").findIndex((l) => l.startsWith("_c = "));
+  const help = await session.signatureHelp(uri, { line: row, character: "_c = TodoAppContext(".length }, { kind: 2, character: "(", isRetrigger: false });
+  assert.ok(help, "no signature help");
+  assert.match(help.signatures[0].label, /count: int = 0/);
+  assert.equal(help.activeParameter, 0);
+});
+
+test("a retrigger keeps the signature the editor shows", async () => {
+  const { session, open } = project();
+  const { uri, view } = typed(open, "_c = TodoAppContext(");
+  session.sync(uri, view.text);
+  const row = view.text.split("\n").findIndex((l) => l.startsWith("_c = "));
+  const position = { line: row, character: "_c = TodoAppContext(".length };
+  const first = await session.signatureHelp(uri, position, { kind: 2, character: "(", isRetrigger: false });
+  const again = await session.signatureHelp(uri, position, { kind: 3, isRetrigger: true, active: first! });
+  assert.deepEqual(again?.signatures.map((s) => s.label), first!.signatures.map((s) => s.label));
+  assert.equal(again?.activeSignature, first!.activeSignature);
+});
+
+test("a stub whose marker sits below other lines still maps to its .pjx", async () => {
+  const { root, session, open } = project();
+  writeFileSync(join(root, "ui/row.pjx"), "<!-- a comment -->\n{#python\nclass Row:\n    pass\n#}\n<p></p>\n");
+  writeFileSync(join(root, "ui/row.pyi"), "\n# pyjinhx.stubgen: generated from row.pjx; do not edit\nclass Row:\n    pass\n\n\n");
+  writeFileSync(join(root, "ui/list.pjx"), "{#python\nfrom ui.row import Row\n\nx = Row\n#}\n<p></p>\n");
+  const { uri, view } = open("ui/list.pjx");
+  session.sync(uri, view.text);
+  const [found] = await session.definition(uri, at(view, 3, "Row"));
+  const source = toSource(found, (u) => readFileSync(fileURLToPath(u), "utf8"));
+  assert.ok(source.uri.endsWith("/ui/row.pjx"), source.uri);
+  assert.equal(source.range.start.line, 2);
 });

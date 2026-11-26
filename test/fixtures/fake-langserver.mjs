@@ -63,6 +63,18 @@ function handle(message) {
     case "textDocument/semanticTokens/full":
       send({ id, result: { data: [1, 0, 3, 0, 1] } });
       break;
+    case "textDocument/completion":
+      send({
+        id,
+        result: {
+          isIncomplete: false,
+          items: [
+            { label: "plain", kind: 6, textEdit: { newText: "plain", range: { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } } } },
+            { label: "needs_import", kind: 3, additionalTextEdits: [{ range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }, newText: "import x\n" }] },
+          ],
+        },
+      });
+      break;
     case "test/state":
       send({ id, result: state });
       break;

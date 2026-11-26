@@ -3,6 +3,17 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.8.0
+
+### Added
+- Hover, go to definition, completion (with the server's detail and documentation on the
+  selected item) and signature help inside `{#python` blocks, from the same private
+  basedpyright server. They answer only on the block's body lines; everywhere else the
+  existing component, HTML, CSS and JS providers answer as before.
+- Go to definition on a sibling component that resolves to its generated `.pyi` stub opens
+  the component's `.pjx` at the same position instead (stubs keep every line).
+- Auto-import completions are not offered: their edit would land outside the block.
+
 ## 0.7.1
 
 ### Added

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { globSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { fileURLToPath } from "node:url";
-import { inBody, pythonView } from "../../src/core/python-view.ts";
+import { inBody, pythonView, rangeInBody } from "../../src/core/python-view.ts";
 
 const lines = (s: string) => s.split("\n");
 
@@ -52,6 +52,12 @@ for (const [name, source] of Object.entries({
 test("inBody is true on both end lines and false one line outside", () => {
   const view = { text: "", firstLine: 2, lastLine: 5 };
   assert.deepEqual([1, 2, 5, 6].map((n) => inBody(view, n)), [false, true, true, false]);
+});
+
+test("rangeInBody needs both ends on body lines", () => {
+  const view = { text: "", firstLine: 2, lastLine: 5 };
+  const r = (a: number, b: number) => ({ start: { line: a }, end: { line: b } });
+  assert.deepEqual([r(2, 5), r(3, 3), r(1, 3), r(5, 6), r(0, 9)].map((x) => rangeInBody(view, x)), [true, true, false, false, false]);
 });
 
 const corpus = fileURLToPath(new URL("../fixtures/pyjinhx/corpus/", import.meta.url));
