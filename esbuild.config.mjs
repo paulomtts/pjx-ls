@@ -5,6 +5,8 @@ const options = {
   bundle: true,
   format: "cjs",
   platform: "node",
+  // The UMD build of vscode-html-languageservice requires its files by relative path.
+  mainFields: ["module", "main"],
   target: "node18",
   external: ["vscode"],
   outfile: "dist/extension.cjs",

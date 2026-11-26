@@ -54,6 +54,35 @@ services: the document is shown to the HTML service as plain HTML, with Jinja,
 - CSS and JS problems are not reported in `.pjx` files: the editor only computes them
   for a shown document.
 
+### Components (needs pyjinhx 1.17 or later)
+Component tags and props are read from `python -m pyjinhx.manifest`, which reads your
+project statically and imports nothing.
+
+- Completion of component tags (next to the HTML ones), of a component's props (required
+  ones first, booleans without a value) and of `Literal` values inside `tone="`.
+- Hover on a tag or a prop: the component's signature, the prop's annotation and default.
+- Go to definition: a tag goes to its class (or to the `.pjx` of a template-only
+  component), an attribute to its prop, and a name in `{{ }}` or `{% %}` to the prop or
+  member of the template's own component.
+- Inside `{{ }}`, the template's own props and members are completed where an expression
+  begins. Nothing else in Jinja is.
+- Diagnostics from the manifest (grammar errors, invalid headers, tag collisions, stub
+  warnings) with their pyjinhx code, and a warning on a `{#def` header that a Python class
+  makes stale.
+- `Card-header` and `Card.Item` are the `Card` component, as pyjinhx renders them.
+
+The manifest is read when the folder opens, and again 300 ms after a `.pjx`, `.py` or
+`.pyi` file is saved, created or deleted. The active unsaved document is sent on stdin,
+so completion follows what you type. The interpreter is `pyjinhx.pythonPath`, else the
+Python extension's environment (if installed), else `.venv` in the folder, else `python3`.
+Settings: `pyjinhx.pythonPath`, `pyjinhx.manifest.paths`, `pyjinhx.manifest.sysPath`.
+
+**Limited mode.** When pyjinhx cannot be run (not installed, older than 1.17, no
+interpreter, an untrusted workspace) the status bar says `pyjinhx: limited`. Tags and
+props then come from the `.pjx` file names and `{#def` headers only: tag completion and
+go to definition work; there is no hover detail and no diagnostics. Call-site checks
+(unknown tag, unknown or missing prop) wait for pyjinhx to report them.
+
 ### Formatting
 - Re-indents the HTML/Jinja structure (two-space) and **explodes** slotted component
   tags: each attribute on its own line, the slot value formatted recursively, and the
@@ -135,11 +164,14 @@ Python's configuration there; only the highlighting is PyJinHx.
 | Command | Description |
 |---------|-------------|
 | `PyJinHx: Format Slotted Component Tags` | Format the active component template. |
+| `PyJinHx: Refresh Component Manifest` | Read the manifest again now. |
+| `PyJinHx: Show Output` | Open the log: the commands run and how long they took. |
 
 ## Requirements
 
 VS Code (or Cursor) `^1.80.0`. No other extension is needed: the Jinja grammar is
-bundled (see `THIRD_PARTY_NOTICES.md`).
+bundled (see `THIRD_PARTY_NOTICES.md`). Component features need pyjinhx 1.17 or later in
+the project's Python environment.
 
 ## Development
 
@@ -149,6 +181,8 @@ npm run check    # type-check (tsc --noEmit)
 npm test         # unit tests (node --test; requires Node >= 23.6)
 npm run build    # bundle to dist/extension.cjs
 npm run package  # produce a .vsix
+node scripts/gen-manifest-fixture.mjs <python>  # regenerate test/fixtures/manifest/project.json with the real pyjinhx
+PJX_PYTHON=<python> npm test  # also runs the contract test against the real pyjinhx
 node scripts/sync-pyjinhx.mjs [--check] [<pyjinhx checkout>]  # vendor pyjinhx's block grammar and corpus
 UPDATE_SNAPSHOTS=1 npm test  # rewrite the grammar goldens in test/grammar/snapshots
 ```

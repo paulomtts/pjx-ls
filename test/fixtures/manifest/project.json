@@ -1,7 +1,6 @@
 {
   "manifest_version": 1,
   "grammar_version": 1,
-  "pyjinhx_version": "1.16.0",
   "roots": [
     "@ROOT@"
   ],

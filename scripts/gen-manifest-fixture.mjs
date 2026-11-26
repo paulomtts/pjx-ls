@@ -12,8 +12,10 @@ const python = process.argv[2] ?? process.env.PJX_PYTHON ?? "python3";
 
 const manifest = JSON.parse(execFileSync(python, ["-m", "pyjinhx.manifest", project], { encoding: "utf8" }));
 // Builtins live in site-packages, so they differ between installs and are not under test.
+// The version of the installed package differs between machines and is only logged.
+delete manifest.pyjinhx_version;
 manifest.components = manifest.components.filter((c) => !c.builtin);
 manifest.diagnostics = manifest.diagnostics.filter((d) => d.path.startsWith(project));
 const text = JSON.stringify(manifest, null, 2).replaceAll(project, "@ROOT@");
 fs.writeFileSync(path.join(root, "test/fixtures/manifest/project.json"), text + "\n");
-console.log(`${manifest.components.length} components, pyjinhx ${manifest.pyjinhx_version}`);
+console.log(`${manifest.components.length} components`);
