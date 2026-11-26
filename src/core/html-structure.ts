@@ -184,7 +184,7 @@ function readOpaque(text: string, startIndex: number): Parsed | null | undefined
 }
 
 function tagName(tagValue: string): string {
-  const match = tagValue.match(/^<\/?\s*([A-Za-z][A-Za-z0-9]*)/);
+  const match = tagValue.match(/^<\/?\s*([A-Za-z][\w:.-]*)/);
   return match ? match[1] : "";
 }
 
@@ -317,7 +317,7 @@ function parseTag(tagValue: string): ParsedTag {
   const selfClose = trimmed.endsWith("/>");
   const inner = trimmed.slice(1, selfClose ? -2 : -1);
 
-  const nameMatch = inner.match(/^\s*([A-Za-z][\w:-]*)/);
+  const nameMatch = inner.match(/^\s*([A-Za-z][\w:.-]*)/);
   const name = nameMatch ? nameMatch[1] : "";
   let index = nameMatch ? nameMatch[0].length : 0;
   const attrs: TagAttr[] = [];
