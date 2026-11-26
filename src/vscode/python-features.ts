@@ -3,27 +3,31 @@ import * as vscode from "vscode";
 import { TEMPLATE_SELECTOR } from "./config.ts";
 import { cancelOf, type PythonBlocks } from "./python-server.ts";
 import type { Range as ManifestRange } from "../core/manifest.ts";
-import type { CompletionEntry } from "../core/python-server.ts";
+import type { CompletionEntry, SignatureAnswer } from "../core/python-server.ts";
 import { toSource } from "../core/python-locations.ts";
-import { inBody, type PythonView } from "../core/python-view.ts";
+import { inBody, rangeInBody } from "../core/python-view.ts";
 
 const toRange = (r: ManifestRange) => new vscode.Range(r.start.line, r.start.character, r.end.line, r.end.character);
-const inside = (view: PythonView, r: ManifestRange) => inBody(view, r.start.line) && inBody(view, r.end.line);
 
-// A stub's first line says which .pjx it was generated from; 200 bytes are enough to read it.
-function firstLine(uri: string): string | undefined {
+// The stub's whole text: the marker may be on any line, and stubs are small.
+function textOf(uri: string): string | undefined {
   try {
-    const fd = fs.openSync(vscode.Uri.parse(uri).fsPath, "r");
-    try {
-      const buffer = Buffer.alloc(200);
-      return buffer.toString("utf8", 0, fs.readSync(fd, buffer, 0, 200, 0)).split("\n")[0];
-    } finally {
-      fs.closeSync(fd);
-    }
+    return fs.readFileSync(vscode.Uri.parse(uri).fsPath, "utf8");
   } catch {
     return undefined;
   }
 }
+
+// What the editor shows now, in the server's own terms.
+const answerOf = (help: vscode.SignatureHelp): SignatureAnswer => ({
+  signatures: help.signatures.map((s) => ({
+    label: s.label,
+    documentation: typeof s.documentation === "string" ? s.documentation : s.documentation?.value,
+    parameters: s.parameters.map((p) => ({ label: p.label, documentation: typeof p.documentation === "string" ? p.documentation : p.documentation?.value })),
+  })),
+  activeSignature: help.activeSignature,
+  activeParameter: help.activeParameter,
+});
 
 /** Hover, go to definition, completion and signature help for the Python in a `{#python` block; outside the body the other providers answer. */
 export function registerPythonFeatures(context: vscode.ExtensionContext, blocks: PythonBlocks): void {
@@ -43,7 +47,7 @@ export function registerPythonFeatures(context: vscode.ExtensionContext, blocks:
         async provideCompletionItems(document, position, token, trigger) {
           const view = bodyView(document, position);
           if (!view) return undefined;
-          const { items, incomplete } = await blocks.server.completion(document.uri.toString(), position, trigger.triggerCharacter, cancelOf(token));
+          const { items, incomplete } = await blocks.server.completion(document.uri.toString(), position, { kind: (trigger.triggerKind + 1) as 1 | 2 | 3, character: trigger.triggerCharacter }, cancelOf(token));
           return new vscode.CompletionList(
             items.map((entry) => {
               // LSP's kinds are one more than the editor's.
@@ -54,7 +58,7 @@ export function registerPythonFeatures(context: vscode.ExtensionContext, blocks:
               item.filterText = entry.filterText;
               item.insertText = entry.insertText;
               // A range that leaves the body would edit blanked text; the editor's word range is used then.
-              if (entry.replace && inside(view, entry.replace)) item.range = toRange(entry.replace);
+              if (entry.replace && rangeInBody(view, entry.replace)) item.range = toRange(entry.replace);
               entries.set(item, entry);
               return item;
             }),
@@ -77,7 +81,7 @@ export function registerPythonFeatures(context: vscode.ExtensionContext, blocks:
       {
         async provideSignatureHelp(document, position, token, trigger) {
           const view = bodyView(document, position);
-          const help = view && (await blocks.server.signatureHelp(document.uri.toString(), position, trigger.triggerCharacter, trigger.isRetrigger, cancelOf(token)));
+          const help = view && (await blocks.server.signatureHelp(document.uri.toString(), position, { kind: trigger.triggerKind as 1 | 2 | 3, character: trigger.triggerCharacter, isRetrigger: trigger.isRetrigger, active: trigger.activeSignatureHelp && answerOf(trigger.activeSignatureHelp) }, cancelOf(token)));
           if (!help) return undefined;
           const result = new vscode.SignatureHelp();
           result.signatures = help.signatures.map((s) => {
@@ -86,7 +90,7 @@ export function registerPythonFeatures(context: vscode.ExtensionContext, blocks:
             return signature;
           });
           result.activeSignature = help.activeSignature;
-          result.activeParameter = help.activeParameter;
+          if (help.activeParameter !== undefined) result.activeParameter = help.activeParameter;
           return result;
         },
       },
@@ -97,7 +101,7 @@ export function registerPythonFeatures(context: vscode.ExtensionContext, blocks:
         const view = bodyView(document, position);
         const answer = view && (await blocks.server.hover(document.uri.toString(), position, cancelOf(token)));
         if (!view || !answer) return undefined;
-        return new vscode.Hover(new vscode.MarkdownString(answer.markdown), answer.range && inside(view, answer.range) ? toRange(answer.range) : undefined);
+        return new vscode.Hover(new vscode.MarkdownString(answer.markdown), answer.range && rangeInBody(view, answer.range) ? toRange(answer.range) : undefined);
       },
     }),
     vscode.languages.registerDefinitionProvider(TEMPLATE_SELECTOR, {
@@ -107,9 +111,9 @@ export function registerPythonFeatures(context: vscode.ExtensionContext, blocks:
         const found = view && (await blocks.server.definition(own, position, cancelOf(token)));
         if (!view || !found) return undefined;
         return found
-          .map((location) => toSource(location, firstLine))
+          .map((location) => toSource(location, textOf))
           // A target in this document that is not in the body is blank in the view: nothing to go to.
-          .filter((location) => location.uri !== own || inside(view, location.range))
+          .filter((location) => location.uri !== own || rangeInBody(view, location.range))
           .map((location) => new vscode.Location(vscode.Uri.parse(location.uri), toRange(location.range)));
       },
     }),

@@ -164,8 +164,7 @@ test("definition of a sibling component answers its stub, which toSource sends t
   session.sync(uri, view.text);
   const [found] = await session.definition(uri, at(view, 3, "Row"));
   assert.ok(found.uri.endsWith("/ui/row.pyi"), found.uri);
-  const first = (u: string) => readFileSync(fileURLToPath(u), "utf8").split("\n")[0];
-  const source = toSource(found, first);
+  const source = toSource(found, (u) => readFileSync(fileURLToPath(u), "utf8"));
   assert.ok(source.uri.endsWith("/ui/row.pjx"), source.uri);
   assert.equal(source.range.start.line, 1);
 });
@@ -180,11 +179,12 @@ test("completion after `Keys.` has TODOS, and resolving it works", async () => {
   const { uri, view } = typed(open, "_k = Keys.");
   session.sync(uri, view.text);
   const row = view.text.split("\n").findIndex((l) => l.startsWith("_k = Keys."));
-  const { items } = await session.completion(uri, { line: row, character: "_k = Keys.".length }, ".");
+  const { items } = await session.completion(uri, { line: row, character: "_k = Keys.".length }, { kind: 2, character: "." });
   const todos = items.find((i) => i.label === "TODOS");
   assert.ok(todos, items.map((i) => i.label).join());
   const resolved = await session.resolveCompletion(todos);
   assert.equal(resolved.label, "TODOS");
+  assert.ok(resolved.detail || resolved.documentation, "resolve filled in nothing");
   assert.ok(items.every((i) => !i.replace || i.replace.start.line === row), "an edit outside the line");
 });
 
@@ -193,7 +193,7 @@ test("completion after `self.` offers the field and the method", async () => {
   const { uri, view } = typed(open, "        self.");
   session.sync(uri, view.text);
   const row = view.text.split("\n").findIndex((l) => l === "        self.");
-  const labels = (await session.completion(uri, { line: row, character: 13 }, ".")).items.map((i) => i.label);
+  const labels = (await session.completion(uri, { line: row, character: 13 }, { kind: 2, character: "." })).items.map((i) => i.label);
   assert.ok(labels.includes("count") && labels.includes("load"), labels.slice(0, 20).join());
 });
 
@@ -202,8 +202,33 @@ test("signature help inside a call shows the parameters", async () => {
   const { uri, view } = typed(open, "_c = TodoAppContext(");
   session.sync(uri, view.text);
   const row = view.text.split("\n").findIndex((l) => l.startsWith("_c = "));
-  const help = await session.signatureHelp(uri, { line: row, character: "_c = TodoAppContext(".length }, "(", false);
+  const help = await session.signatureHelp(uri, { line: row, character: "_c = TodoAppContext(".length }, { kind: 2, character: "(", isRetrigger: false });
   assert.ok(help, "no signature help");
   assert.match(help.signatures[0].label, /count: int = 0/);
   assert.equal(help.activeParameter, 0);
+});
+
+test("a retrigger keeps the signature the editor shows", async () => {
+  const { session, open } = project();
+  const { uri, view } = typed(open, "_c = TodoAppContext(");
+  session.sync(uri, view.text);
+  const row = view.text.split("\n").findIndex((l) => l.startsWith("_c = "));
+  const position = { line: row, character: "_c = TodoAppContext(".length };
+  const first = await session.signatureHelp(uri, position, { kind: 2, character: "(", isRetrigger: false });
+  const again = await session.signatureHelp(uri, position, { kind: 3, isRetrigger: true, active: first! });
+  assert.deepEqual(again?.signatures.map((s) => s.label), first!.signatures.map((s) => s.label));
+  assert.equal(again?.activeSignature, first!.activeSignature);
+});
+
+test("a stub whose marker sits below other lines still maps to its .pjx", async () => {
+  const { root, session, open } = project();
+  writeFileSync(join(root, "ui/row.pjx"), "<!-- a comment -->\n{#python\nclass Row:\n    pass\n#}\n<p></p>\n");
+  writeFileSync(join(root, "ui/row.pyi"), "\n# pyjinhx.stubgen: generated from row.pjx; do not edit\nclass Row:\n    pass\n\n\n");
+  writeFileSync(join(root, "ui/list.pjx"), "{#python\nfrom ui.row import Row\n\nx = Row\n#}\n<p></p>\n");
+  const { uri, view } = open("ui/list.pjx");
+  session.sync(uri, view.text);
+  const [found] = await session.definition(uri, at(view, 3, "Row"));
+  const source = toSource(found, (u) => readFileSync(fileURLToPath(u), "utf8"));
+  assert.ok(source.uri.endsWith("/ui/row.pjx"), source.uri);
+  assert.equal(source.range.start.line, 2);
 });

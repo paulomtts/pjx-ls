@@ -65,10 +65,16 @@ export interface CompletionEntry {
   data?: unknown;
 }
 
+/** How a request was triggered, as LSP numbers it: 1 invoked, 2 a trigger character, 3 a retrigger of an incomplete list or a content change. */
+export interface Trigger {
+  kind: 1 | 2 | 3;
+  character?: string;
+}
+
 export interface SignatureAnswer {
   signatures: { label: string; documentation?: string; parameters: { label: string | [number, number]; documentation?: string }[] }[];
   activeSignature: number;
-  activeParameter: number;
+  activeParameter?: number;
 }
 
 interface RawItem {
@@ -243,9 +249,9 @@ export class PythonServer {
     });
   }
 
-  /** The completions at `position`; items that would edit outside the block's own line are dropped. */
-  async completion(uri: string, position: Position, trigger: string | undefined, cancel?: Cancel): Promise<{ items: CompletionEntry[]; incomplete: boolean }> {
-    const context = trigger ? { triggerKind: 2, triggerCharacter: trigger } : { triggerKind: 1 };
+  /** The completions at `position`; items with an additional edit are dropped, since that edit would land outside the block. */
+  async completion(uri: string, position: Position, trigger: Trigger, cancel?: Cancel): Promise<{ items: CompletionEntry[]; incomplete: boolean }> {
+    const context = { triggerKind: trigger.kind, triggerCharacter: trigger.character };
     const answer = await this.ask<RawItem[] | { items: RawItem[]; isIncomplete?: boolean }>("textDocument/completion", uri, { textDocument: { uri }, position, context }, cancel);
     const raw = !answer ? [] : Array.isArray(answer) ? answer : answer.items;
     const incomplete = !!answer && !Array.isArray(answer) && !!answer.isIncomplete;
@@ -255,19 +261,14 @@ export class PythonServer {
 
   /** Fills in the detail and documentation the server leaves out of the list. */
   async resolveCompletion(entry: CompletionEntry, cancel?: Cancel): Promise<CompletionEntry> {
-    if (!this.client || !(await this.ready)) return entry;
-    try {
-      const answer = await this.client.request<RawItem | null>("completionItem/resolve", { label: entry.label, kind: entry.kind, data: entry.data }, cancel);
-      return answer ? { ...entry, detail: answer.detail ?? entry.detail, documentation: markdownOf(answer.documentation) || entry.documentation } : entry;
-    } catch {
-      return entry;
-    }
+    const answer = await this.ask<RawItem>("completionItem/resolve", undefined, { label: entry.label, kind: entry.kind, data: entry.data }, cancel);
+    return answer ? { ...entry, detail: answer.detail ?? entry.detail, documentation: markdownOf(answer.documentation) || entry.documentation } : entry;
   }
 
-  /** The signatures for the call at `position`, with the active one and its active parameter. */
-  async signatureHelp(uri: string, position: Position, trigger: string | undefined, retrigger: boolean, cancel?: Cancel): Promise<SignatureAnswer | null> {
-    const context = { triggerKind: trigger ? 2 : 1, triggerCharacter: trigger, isRetrigger: retrigger };
-    const answer = await this.ask<{ signatures: RawSignature[]; activeSignature?: number; activeParameter?: number }>("textDocument/signatureHelp", uri, { textDocument: { uri }, position, context }, cancel);
+  /** The signatures for the call at `position`. `active` is what the editor shows now, so a retrigger keeps its choice. */
+  async signatureHelp(uri: string, position: Position, trigger: Trigger & { isRetrigger: boolean; active?: SignatureAnswer }, cancel?: Cancel): Promise<SignatureAnswer | null> {
+    const context = { triggerKind: trigger.kind, triggerCharacter: trigger.character, isRetrigger: trigger.isRetrigger, activeSignatureHelp: trigger.active };
+    const answer = await this.ask<{ signatures: RawSignature[]; activeSignature?: number; activeParameter?: number | null }>("textDocument/signatureHelp", uri, { textDocument: { uri }, position, context }, cancel);
     if (!answer?.signatures?.length) return null;
     return {
       signatures: answer.signatures.map((s) => ({
@@ -276,14 +277,14 @@ export class PythonServer {
         parameters: (s.parameters ?? []).map((p) => ({ label: p.label, documentation: markdownOf(p.documentation) || undefined })),
       })),
       activeSignature: answer.activeSignature ?? 0,
-      activeParameter: answer.activeParameter ?? 0,
+      activeParameter: answer.activeParameter ?? undefined,
     };
   }
 
   // A request for an open view, answered null when the server is not up or fails.
-  private async ask<T>(method: string, uri: string, params: unknown, cancel?: Cancel): Promise<T | null> {
+  private async ask<T>(method: string, uri: string | undefined, params: unknown, cancel?: Cancel): Promise<T | null> {
     const client = this.client;
-    if (!client || !(await this.ready) || !this.docs.has(uri)) return null;
+    if (!client || !(await this.ready) || (uri !== undefined && !this.docs.has(uri))) return null;
     try {
       return await client.request<T | null>(method, params, cancel);
     } catch {
@@ -359,7 +360,7 @@ export class PythonServer {
 
   private async initialize(proc: ServerProcess, client: LspClient): Promise<boolean> {
     const folders = this.options.folders();
-    const result = await client.request<{ capabilities?: { semanticTokensProvider?: { legend: Legend }; completionProvider?: { triggerCharacters?: string[] } } }>("initialize", {
+    const result = await client.request<{ capabilities?: { semanticTokensProvider?: { legend: Legend } } }>("initialize", {
       processId: process.pid,
       rootUri: folders[0]?.uri ?? null,
       workspaceFolders: folders,
@@ -367,7 +368,6 @@ export class PythonServer {
     });
     if (proc !== this.proc) return false;
     this.legend = result?.capabilities?.semanticTokensProvider?.legend;
-    this.options.log(`completion triggers: ${JSON.stringify(result?.capabilities?.completionProvider?.triggerCharacters ?? [])}`);
     client.notify("initialized", {});
     // cursorpyright's build needed this nudge before it asked for configuration.
     client.notify("workspace/didChangeConfiguration", { settings: {} });
