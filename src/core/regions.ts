@@ -387,3 +387,16 @@ function readTag(text: string, start: number): Tag | null {
   tag.range.end = p + 1;
   return tag;
 }
+
+/**
+ * The range of the document's `{#def#}` header: a `{#def` block anywhere, or the
+ * legacy `{# def ... #}` as the first content, where it cannot be mistaken for prose.
+ */
+export function defHeaderRange(text: string): Range | null {
+  const { blocks, regions } = scan(text);
+  const def = blocks.find((b) => b.keyword === "def");
+  if (def) return { start: def.opener.start, end: def.closer.end };
+  const first = text.search(/\S/);
+  const comment = regions.find((r) => r.kind === "comment" && r.start === first);
+  return comment && /^\{#-?\s*def\b/.test(text.slice(comment.start, comment.end)) ? comment : null;
+}
