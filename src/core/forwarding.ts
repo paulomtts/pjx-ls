@@ -1,13 +1,6 @@
+import type { Range as LineRange } from "./manifest.ts";
 import type { Range, Scan } from "./regions.ts";
 
-export interface Position {
-  line: number;
-  character: number;
-}
-export interface LineRange {
-  start: Position;
-  end: Position;
-}
 /** A view line that holds a synthetic `<style>`/`<script>` tag from this column on. */
 export interface Span {
   line: number;
