@@ -140,6 +140,10 @@ Python's configuration there; only the highlighting is PyJinHx.
 
 ## Known limitations
 
+- A workspace folder with no `.pjx` file does not run the manifest until one exists, so a
+  folder of `template = ...` components in `.py` files only gets no component features.
+- There is no component completion, hover or definition inside slot values
+  (`<Card body="<Ba|">`).
 - Do not toggle comments on a block opener, closer or one-line header line
   (`{#def … #}`, `{#css`, `{#js`, `{#python`, `#}`). The editor sees those lines as a
   `{# #}` comment: the first toggle strips the delimiters, and toggling again can turn

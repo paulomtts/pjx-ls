@@ -38,8 +38,12 @@ function tagAt(text: string, scan: Scan, offset: number): Tag | undefined {
   return scan.tags.find((t) => !t.closing && t.range.start < offset && (offset < t.range.end || (offset === t.range.end && text[t.range.end - 1] !== ">")));
 }
 
+// `<` in a script, a stylesheet or a block body is code, not a tag.
+const inCode = (scan: Scan, offset: number) => [...scan.embedded, ...scan.blocks].some((b) => inside(b.body, offset));
+
 /** Completion of component tags, of the props of the tag the cursor is in, and of their `Literal` values. */
 export function componentCompletions(manifest: Manifest, text: string, scan: Scan, offset: number): Entry[] {
+  if (inCode(scan, offset)) return [];
   const tag = tagAt(text, scan, offset);
   if (!tag) {
     const typed = /<([A-Za-z0-9]*)$/.exec(text.slice(0, offset));
@@ -58,6 +62,8 @@ export function componentCompletions(manifest: Manifest, text: string, scan: Sca
     return (prop?.literalValues ?? []).map((v) => ({ label: String(v), kind: "value", replace: value.value!, sortText: String(v) }));
   }
   const typing = tag.attributes.find((a) => inside(a.nameRange, offset));
+  // An attribute that already has its `=` is renamed, not given another value.
+  const bare = typing !== undefined && text[typing.nameRange.end] === "=";
   const used = new Set(tag.attributes.filter((a) => a !== typing).map((a) => a.name));
   return own.props.filter((p) => !used.has(p.name)).map((p) => ({
     label: p.name,
@@ -65,7 +71,7 @@ export function componentCompletions(manifest: Manifest, text: string, scan: Sca
     detail: p.annotation ?? undefined,
     documentation: propDocs(p),
     // A boolean is written as a bare attribute; anything else takes a value.
-    snippet: p.annotation?.trim() === "bool" ? undefined : `${p.name}="$1"`,
+    snippet: bare || p.annotation?.trim() === "bool" ? undefined : `${p.name}="$1"`,
     replace: typing?.nameRange ?? { start: offset, end: offset },
     sortText: `${p.required ? 0 : 1}${p.name}`,
     retrigger: !!p.literalValues,
@@ -80,6 +86,7 @@ function tags(manifest: Manifest, replace: Span, prefix: string): Entry[] {
 
 /** Hover on a component tag or one of its props. */
 export function componentHover(manifest: Manifest, scan: Scan, offset: number): { markdown: string; range: Span } | null {
+  if (inCode(scan, offset)) return null;
   const tag = scan.tags.find((t) => t.range.start < offset && offset <= t.range.end);
   const found = tag && componentOf(manifest, tag);
   if (!tag || !found) return null;

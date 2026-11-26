@@ -70,8 +70,9 @@ export class ManifestSession {
 
   private async refreshBuffer(path: string): Promise<void> {
     const version = this.versions.get(path);
-    const current = () => this.texts.has(path) && this.versions.get(path) === version;
-    const found = this.mode.kind === "full" && current() ? await this.o.python() : null;
+    // Also gone if a full run has since fallen back to limited mode: there is nothing to lay a buffer over.
+    const current = () => this.mode.kind === "full" && this.texts.has(path) && this.versions.get(path) === version;
+    const found = current() ? await this.o.python() : null;
     if (!found || !current()) return;
     const args = ["--stdin", "--filename", path, ...this.o.settings().sysPath.flatMap((p) => ["--sys-path", p])];
     const lane = this.lanes.get(path) ?? new Lane(this.o.spawn, this.o.timeoutMs);

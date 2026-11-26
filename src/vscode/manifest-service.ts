@@ -83,7 +83,7 @@ export class Manifests implements vscode.Disposable {
     const session = this.sessionFor(document.uri);
     const file = manifestPath(document.uri);
     // A Python file matters to the manifest only if it holds components or has a template beside it.
-    const relevant = document.languageId === TEMPLATE_LANGUAGE_ID || session?.manifest.forPath(file).length || fs.existsSync(file.replace(/\.py$/, ".pjx"));
+    const relevant = document.languageId === TEMPLATE_LANGUAGE_ID || session?.manifest.forPath(file).length || fs.existsSync(file.replace(/\.pyi?$/, ".pjx"));
     if (relevant) session?.requestBuffer(file, () => document.getText());
   }
 

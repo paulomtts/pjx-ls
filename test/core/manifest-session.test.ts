@@ -191,3 +191,17 @@ test("settings are read at each run, so a change shows at the next", async () =>
   await session.refresh();
   assert.deepEqual(runs.map((r) => r.args), [["/a"], ["/b"]]);
 });
+
+test("a buffer's answer is dropped if a full run fell back to limited meanwhile", async () => {
+  let failFull = false;
+  const { session } = harness({}, (args) => (args.includes("--stdin") ? {} : failFull ? { code: 2, stderr: "bad" } : {}));
+  await session.refresh();
+  session.requestBuffer(`${PROJECT}/ui/badge.pjx`, () => "x");
+  await wait(11);
+  failFull = true;
+  await session.refresh();
+  await wait(40);
+  assert.equal(session.mode.kind, "limited");
+  assert.deepEqual(session.manifest.components.map((c) => c.tag), ["Zed"]);
+  session.dispose();
+});

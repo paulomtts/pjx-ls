@@ -117,3 +117,18 @@ test("a {#css or {#js block above the cursor changes nothing", () => {
   const { text, scan: parsed, offset } = at(above + "<Badge to|ne='calm'>");
   assert.equal(text.slice(...Object.values(componentHover(manifest, parsed, offset)!.range) as [number, number]), "tone");
 });
+
+test("< in a script, a style or a js/css/python block body is code, not a tag", () => {
+  assert.deepEqual(labels("{#js\nif (a <B|)\n#}\n"), []);
+  assert.deepEqual(labels("{#css\na <B|\n#}\n"), []);
+  assert.deepEqual(labels("{#python\nx = a <B|\n#}\n<p/>"), []);
+  assert.deepEqual(labels("<script>if (a <B|)</script>"), []);
+  assert.deepEqual(labels("<style>a <B|</style>"), []);
+  assert.ok(labels("<script></script><Ba|").includes("Badge"));
+});
+
+test("choosing a prop on an attribute that has its value renames it", () => {
+  const item = complete('<Badge to|ne="calm">').find((i) => i.label === "tone")!;
+  assert.equal(item.snippet, undefined);
+  assert.deepEqual(item.replace, { start: 7, end: 11 });
+});
