@@ -398,5 +398,6 @@ export function defHeaderRange(text: string): Range | null {
   if (def) return { start: def.opener.start, end: def.closer.end };
   const first = text.search(/\S/);
   const comment = regions.find((r) => r.kind === "comment" && r.start === first);
-  return comment && /^\{#-?\s*def\b/.test(text.slice(comment.start, comment.end)) ? comment : null;
+  const written = comment ? text.slice(comment.start, comment.end) : "";
+  return /^\{#-?\s*def\b/.test(written) && written.endsWith("#}") ? comment! : null;
 }

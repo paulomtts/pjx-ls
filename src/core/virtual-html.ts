@@ -1,4 +1,4 @@
-import { scan, type Range } from "./regions.ts";
+import { scan as scanText, type Range, type Scan } from "./regions.ts";
 
 const blank = (s: string) => s.replace(/[^\r\n]/g, " ");
 // An expression is one identifier, however many lines it spans.
@@ -24,8 +24,8 @@ function lineEnd(text: string, from: number): number {
  * `#}` they replace, which moves nothing: only blanks follow `{#css` on its line,
  * and the rest of the line after `#}` is blanked.
  */
-export function virtualHtml(text: string): string {
-  const { regions, blocks, embedded, unclosedPython } = scan(text);
+export function virtualHtml(text: string, scan: Scan = scanText(text)): string {
+  const { regions, blocks, embedded, unclosedPython } = scan;
   const limit = unclosedPython?.start ?? text.length;
   const elements = new Map(blocks.filter((b) => b.keyword === "css" || b.keyword === "js").map((b) => [b.opener.start, b]));
   const out: string[] = [];

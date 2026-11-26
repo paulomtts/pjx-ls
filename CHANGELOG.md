@@ -15,7 +15,9 @@ adheres to [Semantic Versioning](https://semver.org/).
 - An editor test suite (`npm run test:editor`) on `@vscode/test-electron`.
 
 ### Changed
-- The stale `{#def#}` header diagnostic reads the header with the scanner.
+- The stale `{#def#}` header diagnostic reads the header with the scanner: a `{#def` block is
+  found anywhere in the document (the legacy `{# def` only as the first content), and a header
+  that is never closed is not one.
 
 ## 0.3.0
 

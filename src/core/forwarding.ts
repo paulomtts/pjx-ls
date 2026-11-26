@@ -1,4 +1,4 @@
-import type { Scan } from "./regions.ts";
+import type { Range, Scan } from "./regions.ts";
 
 export interface Position {
   line: number;
@@ -14,18 +14,45 @@ export interface Span {
   from: number;
 }
 
-const within = (start: number, end: number, offset: number) => start <= offset && offset <= end;
+export type Mode = "cursor" | "hover";
 
-/** Whether the view has the source's own character at `offset`, so the HTML service may be asked. */
-export function forwardable(text: string, scan: Scan, offset: number): boolean {
-  if (scan.unclosedPython && offset >= scan.unclosedPython.start) return false;
+/**
+ * Whether `offset` falls in `range`. A cursor sits between characters, so it is inside
+ * only strictly between the ends; hover asks about the character to its right. A range
+ * that stops at the end of the text with no closing delimiter also holds the cursor there.
+ */
+export function inside(range: Range, offset: number, mode: Mode, openEnded = false): boolean {
+  if (mode === "hover") return range.start <= offset && (offset < range.end || (openEnded && offset === range.end));
+  return range.start < offset && (offset < range.end || (openEnded && offset === range.end));
+}
+
+const CLOSERS = { expression: "}}", statement: "%}", comment: "#}" } as const;
+
+function excludedRanges(text: string, scan: Scan): { range: Range; openEnded: boolean }[] {
+  const excluded: { range: Range; openEnded: boolean }[] = [];
+  const add = (range: Range, openEnded = false) => excluded.push({ range, openEnded });
+  if (scan.unclosedPython) add({ start: scan.unclosedPython.start, end: text.length }, true);
+  const blockStarts = new Set<number>();
   for (const b of scan.blocks) {
     if (b.keyword !== "css" && b.keyword !== "js") continue;
-    if (within(b.body.start, b.closer.start, offset)) return true;
+    blockStarts.add(b.opener.start);
     const lineEnd = text.indexOf("\n", b.closer.end);
-    if (within(b.opener.start, b.body.start, offset) || within(b.closer.start, lineEnd === -1 ? text.length : lineEnd, offset)) return false;
+    add({ start: b.opener.start, end: b.body.start });
+    add({ start: b.closer.start, end: lineEnd === -1 ? text.length : lineEnd }, true);
   }
-  return !scan.regions.some((r) => (r.body ? !within(r.body.start, r.body.end, offset) && within(r.start, r.end, offset) : r.start <= offset && offset < r.end));
+  for (const r of scan.regions) {
+    if (blockStarts.has(r.start)) continue;
+    if (r.body) {
+      add({ start: r.start, end: r.body.start });
+      add({ start: r.body.end, end: r.end });
+    } else add(r, !text.slice(r.start, r.end).endsWith(CLOSERS[r.kind as keyof typeof CLOSERS]));
+  }
+  return excluded;
+}
+
+/** Whether the view has the source's own text at `offset`, so the HTML service may be asked. */
+export function forwardable(text: string, scan: Scan, offset: number, mode: Mode = "cursor"): boolean {
+  return !excludedRanges(text, scan).some(({ range, openEnded }) => inside(range, offset, mode, openEnded));
 }
 
 const lineAndColumn = (text: string, offset: number): Span => {
