@@ -1,39 +1,12 @@
-import { afterEach, test } from "node:test";
+import { test } from "node:test";
 import assert from "node:assert/strict";
-import { cpSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { nodeServer, PythonServer, type Legend } from "../../src/core/python-server.ts";
+import { pathToFileURL } from "node:url";
+import type { Legend } from "../../src/core/python-server.ts";
 import { pythonView } from "../../src/core/python-view.ts";
+import { project } from "./helpers.ts";
 import { LEGEND, translateTokens } from "../../src/core/semantic-tokens.ts";
-
-const server = fileURLToPath(new URL("../../dist/basedpyright/langserver.index.js", import.meta.url));
-const fixture = fileURLToPath(new URL("../fixtures/python-block/", import.meta.url));
-
-const sessions: PythonServer[] = [];
-afterEach(() => sessions.splice(0).forEach((s) => s.dispose()));
-
-// A session on a throwaway copy of the fixture project: tests write into it.
-function project() {
-  const root = mkdtempSync(join(tmpdir(), "pjx-block-"));
-  cpSync(fixture, root, { recursive: true });
-  const session = new PythonServer({
-    start: () => nodeServer(server),
-    folders: () => [{ uri: pathToFileURL(root).toString(), name: "project" }],
-    pythonPath: async () => undefined,
-    typeCheckingMode: () => "standard",
-    log: () => {},
-  });
-  sessions.push(session);
-  const open = (name: string, edit = (text: string) => text) => {
-    const file = join(root, name);
-    const source = edit(readFileSync(file, "utf8"));
-    const view = pythonView(source)!;
-    return { uri: pathToFileURL(file).toString(), view, source };
-  };
-  return { root, session, open };
-}
 
 // The server's relative data as 1-based line, column, text and type.
 function decode(data: number[], legend: Legend, text: string) {

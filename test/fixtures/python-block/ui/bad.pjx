@@ -1,0 +1,8 @@
+{#python
+from ui.keys import Keys
+
+
+def size(key: Keys | None) -> int:
+    return len(key.TODOS) + missing
+#}
+<p>{{ size }}</p>
