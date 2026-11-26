@@ -51,6 +51,11 @@ adheres to [Semantic Versioning](https://semver.org/).
 - `scripts/sync-pyjinhx.mjs` vendors pyjinhx's `block_grammar.json` and its
   conformance corpus; a CI job fails when they drift.
 
+### Known issues
+- Toggling comments on a block opener, closer or one-line `{#def` header changes it
+  (twice can give `{# def`), and Toggle Line Comment does nothing on multi-line `{#def`
+  body lines; see the README.
+
 Also in 0.3.0, from the formatter safety work:
 
 ### Changed
