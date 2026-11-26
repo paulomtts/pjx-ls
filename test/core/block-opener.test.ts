@@ -76,3 +76,24 @@ test("any other change clears the memory", () => {
   moved.onChange(keystroke(0, "{}"), "{}");
   assert.equal(moved.onChange(keystroke(5, "#"), "{}   {#}"), null);
 });
+
+test("a tag mentioned in a string or expression does not make the rest of the file code", () => {
+  const stray = (marked: string) => marked.indexOf("|") + 1;
+  for (const marked of [
+    '{#python\nTAG = "<script src=x>"\n#}\n{|}',
+    '<p title="<style>">x</p>\n{|}',
+    "<p title='<script>'>x</p>\n{|}",
+    '{{ "<script>" | safe }}\n{|}',
+    '{% set tag = "<style>" %}\n{|}',
+    '{#js\nel.innerHTML = "<style>";\n#}\n{|}',
+    '{#def a: str = "<script>" #}\n{|}',
+  ]) {
+    assert.equal(at(marked), stray(marked), marked);
+  }
+});
+
+test("a real script, style or open block is still code after such mentions", () => {
+  assert.equal(at('<p title="<style>">x</p><script>\n{|}'), null);
+  assert.equal(at('{{ "<script>" }}<style>\n{|}'), null);
+  assert.equal(at('{#js\nx = "<style>";\n{|}'), null);
+});
