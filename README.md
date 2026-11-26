@@ -100,7 +100,15 @@ workspace (the server asks your interpreter for its search paths). If the server
 three times it is left off until the window reloads, and the status bar tooltip says so.
 Settings: `pyjinhx.pythonBlock.enabled` (default on; off stops the server) and
 `pyjinhx.pythonBlock.serverPath` (another basedpyright `langserver.index.js`).
-Hover, go to definition, completion and diagnostics in the block are planned.
+Hover, go to definition and completion in the block are planned.
+
+The same server reports **diagnostics** for the block's lines (source `basedpyright`),
+following the project's `[tool.pyright]` table or `pyrightconfig.json`. When the project
+configures neither, `standard` is used (`pyjinhx.pythonBlock.typeCheckingMode` changes
+that fallback; `off` makes the block as quiet as a `.py` file in a project without Pyright
+configuration, which is Cursor's own default). A diagnostic on a range where pyjinhx
+already reports something is left out. Turn them off with
+`pyjinhx.pythonBlock.diagnostics`; the colours stay.
 
 **Limited mode.** When pyjinhx cannot be run (not installed, older than 1.17, no
 interpreter, an untrusted workspace) the status bar says `pyjinhx: limited`. Tags and

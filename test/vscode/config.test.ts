@@ -36,3 +36,11 @@ test("the python block's settings exist with their defaults", () => {
   assert.equal(settings["pyjinhx.pythonBlock.serverPath"].default, "");
   assert.ok(pkg.capabilities.untrustedWorkspaces.restrictedConfigurations.includes("pyjinhx.pythonBlock.serverPath"));
 });
+
+test("the block's diagnostics are on by default and fall back to standard", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+  const settings = pkg.contributes.configuration.properties;
+  assert.equal(settings["pyjinhx.pythonBlock.diagnostics"].default, true);
+  assert.equal(settings["pyjinhx.pythonBlock.typeCheckingMode"].default, "standard");
+  assert.deepEqual(settings["pyjinhx.pythonBlock.typeCheckingMode"].enum, ["off", "basic", "standard", "strict", "recommended", "all"]);
+});

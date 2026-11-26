@@ -2,7 +2,7 @@
   "name": "pyjinhx-syntax-support",
   "displayName": "PyJinHx",
   "description": "Syntax highlighting and template formatting for the PyJinHx Python framework (PascalCase component tags, slots, {#def#} headers, interpolation).",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "publisher": "paulomtts",
   "license": "MIT",
   "type": "module",
@@ -79,6 +79,8 @@
         "pyjinhx.generateStubs": { "type": "boolean", "default": true, "markdownDescription": "Write `<name>.pyi` beside each `.pjx` with a `{#python` block, as `python -m pyjinhx.stubgen` does, when the manifest reports it missing or stale." },
         "pyjinhx.pythonBlock.enabled": { "type": "boolean", "default": true, "markdownDescription": "Colours and, later, completion and hover inside `{#python` blocks, from a private basedpyright process started when a `.pjx` with a block is open. Uses about 300 MB of memory." },
         "pyjinhx.pythonBlock.serverPath": { "type": "string", "default": "", "scope": "machine-overridable", "markdownDescription": "Another `langserver.index.js` of basedpyright to run instead of the bundled one." },
+        "pyjinhx.pythonBlock.diagnostics": { "type": "boolean", "default": true, "markdownDescription": "Show basedpyright's diagnostics for the lines of a `{#python` block. They follow the project's `[tool.pyright]` table or `pyrightconfig.json`." },
+        "pyjinhx.pythonBlock.typeCheckingMode": { "type": "string", "enum": ["off", "basic", "standard", "strict", "recommended", "all"], "default": "standard", "markdownDescription": "The checking mode for `{#python` blocks in a project that has no `[tool.pyright]` table and no `pyrightconfig.json`. A project's own configuration always wins." },
         "pyjinhx.manifest.paths": { "type": "array", "items": { "type": "string" }, "default": [], "description": "Folders or files to read components from, relative to the workspace folder. Empty: the whole folder." },
         "pyjinhx.manifest.sysPath": { "type": "array", "items": { "type": "string" }, "default": [], "description": "Directories modules are imported from (`--sys-path`), relative to the workspace folder; they decide how a component's module is named." }
       }
