@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { formatPyjinhxTemplate } from "../../src/core/html-structure.ts";
+import { formatPyjinhxTemplate } from "../../src/core/format.ts";
 
 // Each case is [name, input, exact output]; opaque regions keep their bytes.
 const cases: [string, string, string][] = [

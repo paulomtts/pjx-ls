@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { formatPyjinhxTemplate } from "../../src/core/html-structure.ts";
+import { formatPyjinhxTemplate } from "../../src/core/format.ts";
 
 test("nested block elements indent 2 spaces per level", () => {
   assert.equal(

@@ -163,7 +163,7 @@ Python's configuration there; only the highlighting is PyJinHx.
   colour, because the injected Jinja still sits inside the CSS scope.
 
 - Whitespace next to block-level tags (the `BLOCK_ELEMENTS` list in
-  `src/core/html-structure.ts`) is treated as non-rendering. That is wrong for
+  `src/core/format.ts`) is treated as non-rendering. That is wrong for
   elements styled `display: inline-block` (e.g. inline-block `<li>` menus can gain
   gaps).
 - Whitespace inside slot values is re-laid out.

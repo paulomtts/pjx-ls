@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync, globSync } from "node:fs";
 import { join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
-import { formatPyjinhxTemplate } from "../../src/core/html-structure.ts";
+import { formatPyjinhxTemplate } from "../../src/core/format.ts";
 
 // Progressive .pjx fixtures (simple -> complex), each exercising one more
 // feature of the formatter. test/fixtures/templates/NN-name.pjx is the input;

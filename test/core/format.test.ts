@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { formatPyjinhxTemplate } from "../../src/core/html-structure.ts";
+import { formatPyjinhxTemplate } from "../../src/core/format.ts";
 
 test("a slotted tag explodes: attributes one-per-line, slot recursively formatted", () => {
   assert.equal(
