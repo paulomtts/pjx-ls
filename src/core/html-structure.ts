@@ -14,7 +14,7 @@ const DEF_HEADER = /^\{#-?\s*def\b/;
 
 type TokenType = "opaque" | "jinja" | "jinja_expr" | "open" | "close" | "self_close" | "text";
 
-export interface Token {
+interface Token {
   type: TokenType;
   value: string;
   name?: string;
@@ -187,10 +187,6 @@ function readOpaque(text: string, startIndex: number): Parsed | null | undefined
 function tagName(tagValue: string): string {
   const match = tagValue.match(/^<\/?\s*([A-Za-z][\w:.-]*)/);
   return match ? match[1] : "";
-}
-
-export function tokenizeHtmlTemplate(text: string): Token[] {
-  return tokenize(text).tokens;
 }
 
 /** `complete` is false when an unterminated construct cut the scan short. */
@@ -376,7 +372,7 @@ function renderExplodedTag(parsed: ParsedTag, baseIndent: string): string {
     }
     if (isHtmlSlotValue(attr.value) && canReindent(attr.value)) {
       lines.push(`${attrIndent}${attr.name}="`);
-      const formatted = formatHtmlStructure(attr.value).replace(/\n+$/, "");
+      const formatted = formatPyjinhxTemplate(attr.value).replace(/\n+$/, "");
       for (const line of formatted.split("\n")) {
         lines.push(line.trim().length ? attrIndent + INDENT + line : "");
       }
@@ -480,7 +476,12 @@ function hasTextAfterHeader(tokens: Token[]): boolean {
   );
 }
 
-export function formatHtmlStructure(text: string): string {
+/**
+ * Format a PyJinHx template: structural HTML/Jinja re-indentation with slot-aware
+ * tag explosion (slotted component tags lay their attributes one-per-line and
+ * recursively format their slot values).
+ */
+export function formatPyjinhxTemplate(text: string): string {
   if (!text.includes("\r\n")) return formatLf(text);
   // A file mixing CRLF and bare LF cannot be restored byte-for-byte.
   if (/(?<!\r)\n/.test(text)) return text;

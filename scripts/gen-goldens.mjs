@@ -11,7 +11,7 @@
 import { readFileSync, writeFileSync, mkdirSync, globSync, existsSync } from "node:fs";
 import { dirname, basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { formatPyjinhxTemplate } from "../src/core/format.ts";
+import { formatPyjinhxTemplate } from "../src/core/html-structure.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const inputs = globSync("test/fixtures/templates/*.pjx", { cwd: root });
