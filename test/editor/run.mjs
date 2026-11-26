@@ -33,17 +33,21 @@ await build({
 // desktop name, started by electron directly, keeps the run apart.
 function cursorLauncher(binary) {
   const app = path.join(path.dirname(fs.realpathSync(binary)), "resources/app");
-  const entry = fs
-    .readFileSync(path.join(app, "cursor.mjs"), "utf8")
-    .replace("import.meta.dirname", JSON.stringify(app))
-    .replace('new URL("./package.json", import.meta.url)', `new URL(${JSON.stringify(`file://${app}/package.json`)})`)
-    .replace('name + ".desktop"', '"pjxtest.desktop"');
+  // Each patch must change the text: isolation must never silently fail.
+  const patch = (text, from, to) => {
+    if (!text.includes(from)) throw new Error(`cursor.mjs no longer contains ${from}; update the launcher in test/editor/run.mjs`);
+    return text.replace(from, to);
+  };
+  let entry = fs.readFileSync(path.join(app, "cursor.mjs"), "utf8");
+  entry = patch(entry, "import.meta.dirname", JSON.stringify(app));
+  entry = patch(entry, 'new URL("./package.json", import.meta.url)', `new URL(${JSON.stringify(`file://${app}/package.json`)})`);
+  entry = patch(entry, 'name + ".desktop"', '"pjxtest.desktop"');
   fs.mkdirSync(cache, { recursive: true });
   fs.writeFileSync(path.join(cache, "cursor.mjs"), entry);
   const script = path.join(cache, "cursor-test");
   fs.writeFileSync(
     script,
-    `#!/bin/sh\nexec /usr/lib/electron42/electron --class=pjxtest ${path.join(cache, "cursor.mjs")} --password-store=basic "$@"\n`,
+    `#!/bin/sh\nexec ${process.env.PJX_ELECTRON || "/usr/lib/electron42/electron"} --class=pjxtest ${path.join(cache, "cursor.mjs")} --password-store=basic "$@"\n`,
     { mode: 0o755 },
   );
   return script;

@@ -45,7 +45,10 @@ services: the document is shown to the HTML service as plain HTML, with Jinja,
 - JavaScript intelligence is the HTML service's embedded mode: one file, DOM typings, no
   project imports (the TypeScript service does not serve custom schemes).
 - Nothing is offered inside Jinja, `{#def`, `{#python` or the `{#css`/`{#js` tag lines.
-- No HTML features inside slot values.
+- No HTML features inside slot values, and no relative path completion for `href`/`src`
+  (the view has no directory).
+- The view is a `pjx-embedded:` HTML document, so other extensions that act on HTML
+  (Emmet, Tailwind, AI assistants) may contribute to it too.
 - The HTML service does not auto-close tags here; the language configuration's pairs
   cover the common case.
 - CSS and JS problems are not reported in `.pjx` files: the editor only computes them

@@ -38,8 +38,6 @@ jobs:
 
       - name: Editor tests
         run: xvfb-run -a npm run test:editor
-        env:
-          PJX_SKIP_SPIKE: "1"
 
   # Separate from `build` so a red run names its cause. It checks out exactly the
   # ref recorded in SOURCE.json, so it stays green until someone re-syncs. To update:
