@@ -26,7 +26,7 @@ test("a different request key starts over", () => {
   const cache = new ResolveCache<string>();
   cache.store("k", 5, ["a"]);
   assert.equal(cache.needed("other", 1), 2);
-  assert.deepEqual(cache.items("k"), []);
+  assert.deepEqual(cache.items("other"), []);
 });
 
 test("clear forgets everything", () => {

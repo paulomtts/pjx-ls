@@ -28,9 +28,17 @@ export function inside(range: Range, offset: number, mode: Mode, openEnded = fal
 
 const CLOSERS = { expression: "}}", statement: "%}", comment: "#}" } as const;
 
-function excludedRanges(text: string, scan: Scan): { range: Range; openEnded: boolean }[] {
-  const excluded: { range: Range; openEnded: boolean }[] = [];
-  const add = (range: Range, openEnded = false) => excluded.push({ range, openEnded });
+export interface Exclusions {
+  /** Sorted by start. */
+  ranges: { range: Range; openEnded: boolean }[];
+  /** `reach[i]` is the furthest end among `ranges[0..i]`. */
+  reach: number[];
+}
+
+/** The stretches of the source the view does not hold as written, ready for `isForwardable`. */
+export function exclusions(text: string, scan: Scan): Exclusions {
+  const ranges: Exclusions["ranges"] = [];
+  const add = (range: Range, openEnded = false) => ranges.push({ range, openEnded });
   if (scan.unclosedPython) add({ start: scan.unclosedPython.start, end: text.length }, true);
   const blockStarts = new Set<number>();
   for (const b of scan.blocks) {
@@ -47,13 +55,29 @@ function excludedRanges(text: string, scan: Scan): { range: Range; openEnded: bo
       add({ start: r.body.end, end: r.end });
     } else add(r, !text.slice(r.start, r.end).endsWith(CLOSERS[r.kind as keyof typeof CLOSERS]));
   }
-  return excluded;
+  ranges.sort((a, b) => a.range.start - b.range.start);
+  let furthest = -1;
+  const reach = ranges.map(({ range }) => (furthest = Math.max(furthest, range.end)));
+  return { ranges, reach };
 }
 
 /** Whether the view has the source's own text at `offset`, so the HTML service may be asked. */
-export function forwardable(text: string, scan: Scan, offset: number, mode: Mode = "cursor"): boolean {
-  return !excludedRanges(text, scan).some(({ range, openEnded }) => inside(range, offset, mode, openEnded));
+export function isForwardable({ ranges, reach }: Exclusions, offset: number, mode: Mode = "cursor"): boolean {
+  let low = 0;
+  let high = ranges.length;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if (ranges[middle].range.start <= offset) low = middle + 1;
+    else high = middle;
+  }
+  for (let i = low - 1; i >= 0 && reach[i] >= offset; i--) {
+    if (inside(ranges[i].range, offset, mode, ranges[i].openEnded)) return false;
+  }
+  return true;
 }
+
+export const forwardable = (text: string, scan: Scan, offset: number, mode: Mode = "cursor") =>
+  isForwardable(exclusions(text, scan), offset, mode);
 
 const lineAndColumn = (text: string, offset: number): Span => {
   const start = offset === 0 ? 0 : text.lastIndexOf("\n", offset - 1) + 1;
