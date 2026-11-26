@@ -32,4 +32,3 @@ export function project(typeCheckingMode = "standard") {
   };
   return { root, session, open };
 }
-

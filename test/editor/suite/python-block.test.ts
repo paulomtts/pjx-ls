@@ -91,7 +91,8 @@ suite("python block diagnostics", () => {
     const doc = await open("tokens.pjx");
     await vscode.window.showTextDocument(doc);
     await eventually(() => tokensOf(doc.uri), (t) => !none(t));
-    await wait(500);
+    // The server's unused-parameter hint on `ctx` shows its analysis of this text is in.
+    await eventually(() => basedpyright(doc.uri), (d) => d.some((x) => x.severity === vscode.DiagnosticSeverity.Hint));
     assert.deepStrictEqual(basedpyright(doc.uri).filter((d) => d.severity !== vscode.DiagnosticSeverity.Hint), []);
   });
 

@@ -102,13 +102,17 @@ Settings: `pyjinhx.pythonBlock.enabled` (default on; off stops the server) and
 `pyjinhx.pythonBlock.serverPath` (another basedpyright `langserver.index.js`).
 Hover, go to definition and completion in the block are planned.
 
-The same server reports **diagnostics** for the block's lines (source `basedpyright`),
-following the project's `[tool.pyright]` table or `pyrightconfig.json`. When the project
-configures neither, `standard` is used (`pyjinhx.pythonBlock.typeCheckingMode` changes
-that fallback; `off` makes the block as quiet as a `.py` file in a project without Pyright
-configuration, which is Cursor's own default). A diagnostic on a range where pyjinhx
-already reports something is left out. Turn them off with
-`pyjinhx.pythonBlock.diagnostics`; the colours stay.
+The same server reports **diagnostics** for the block's lines (source `basedpyright`).
+pjx-ls does not read your Pyright configuration: basedpyright does. If the project has a
+`pyrightconfig.json`, a `[tool.pyright]` table or a `[tool.basedpyright]` table, the server
+ignores `pyjinhx.pythonBlock.typeCheckingMode` completely, and a config that does not set
+`typeCheckingMode` gets basedpyright's own default, `recommended`, which is much louder
+(5 diagnostics against 1 in one measured project whose `[tool.pyright]` only set
+`include`). Set `typeCheckingMode` in the project config. Only a project with none of those
+configs uses `pyjinhx.pythonBlock.typeCheckingMode` (default `standard`; `off` makes the
+block as quiet as a `.py` file in a project without Pyright configuration, which is
+Cursor's own default). A diagnostic on a range where pyjinhx already reports something is
+left out. Turn them off with `pyjinhx.pythonBlock.diagnostics`; the colours stay.
 
 **Limited mode.** When pyjinhx cannot be run (not installed, older than 1.17, no
 interpreter, an untrusted workspace) the status bar says `pyjinhx: limited`. Tags and

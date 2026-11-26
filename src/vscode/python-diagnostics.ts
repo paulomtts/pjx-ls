@@ -21,14 +21,14 @@ export function registerPythonDiagnostics(context: vscode.ExtensionContext, bloc
     const pushed = blocks.server.diagnostics(uri);
     // A list computed for older text must not paint its ranges onto newer text; a fresh one follows.
     if (!pushed || pushed.version !== blocks.server.versionOf(uri)) return;
-    const manifestRanges = manifests.manifestFor(document.uri)?.diagnosticsFor(manifestPath(document.uri)).map((d) => ({ start: d.range.start, end: d.range.end })) ?? [];
+    const manifestRanges = manifests.manifestFor(document.uri)?.diagnosticsFor(manifestPath(document.uri)).map((d) => d.range) ?? [];
     collection.set(
       document.uri,
       blockDiagnostics(pushed.items, view, manifestRanges).map((item) => {
         const { start, end } = item.range;
         const diagnostic = new vscode.Diagnostic(new vscode.Range(start.line, start.character, end.line, end.character), item.message, SEVERITY[(item.severity ?? 1) - 1]);
         diagnostic.source = "basedpyright";
-        diagnostic.code = item.code;
+        diagnostic.code = item.codeDescription ? { value: item.code ?? "", target: vscode.Uri.parse(item.codeDescription.href) } : item.code;
         diagnostic.tags = item.tags?.flatMap((tag) => TAGS[tag] ?? []);
         return diagnostic;
       }),

@@ -52,15 +52,12 @@ test("off: nothing for bad.pjx, the hint stays on card.pjx", async () => {
 
 test("a project's own pyright configuration wins over the fallback", async () => {
   const { root, session, open } = project("strict");
-  writeFileSync(join(root, "pyproject.toml"), '[tool.pyright]\ntypeCheckingMode = "off"\n');
+  // Positive control: the config turns one rule on by name, so its diagnostic proves the file was read.
+  writeFileSync(join(root, "pyproject.toml"), '[tool.pyright]\ntypeCheckingMode = "off"\nreportUndefinedVariable = "error"\n');
   const { uri, view } = open("ui/bad.pjx");
   session.sync(uri, view.text);
-  // Nothing to wait for: settle on the card's hint, which every mode reports, then look.
-  const card = open("ui/card.pjx");
-  session.sync(card.uri, card.view.text);
-  await diagnosticsFor(session, card.uri, (i) => i.length > 0);
-  const codes = (await diagnosticsFor(session, uri)).map((d) => d.code);
-  assert.ok(!codes.includes("reportOptionalMemberAccess"), codes.join());
+  const codes = (await diagnosticsFor(session, uri, (i) => i.length > 0)).map((d) => d.code);
+  assert.deepEqual(codes, ["reportUndefinedVariable"]);
 });
 
 test("an edit that removes the error clears it for the new version", async () => {

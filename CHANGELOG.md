@@ -7,8 +7,11 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - Diagnostics inside `{#python` blocks, from the same private basedpyright server, shown
-  with source `basedpyright` on the block's lines only. They follow the project's
-  `[tool.pyright]` table or `pyrightconfig.json`; where there is none, `standard` is used.
+  with source `basedpyright` on the block's lines only. basedpyright, not pjx-ls, reads the
+  project's `pyrightconfig.json`, `[tool.pyright]` or `[tool.basedpyright]`; with any of
+  them the fallback setting is ignored, and a config without `typeCheckingMode` gets
+  basedpyright's own, louder `recommended`, so set it there. Only a project with no such
+  config gets `standard`.
   A diagnostic that overlaps one pyjinhx already reports on the same range is not shown
   twice, and a list computed for older text is never painted onto newer text.
 - `pyjinhx.pythonBlock.diagnostics` (default on) and `pyjinhx.pythonBlock.typeCheckingMode`
