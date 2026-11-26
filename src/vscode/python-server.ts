@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
 import * as vscode from "vscode";
 import { isComponentTemplate } from "./config.ts";
 import { findPython, onPythonEnvironmentChange } from "./python-env.ts";
@@ -14,6 +16,14 @@ export const cancelOf = (token: vscode.CancellationToken): Cancel => ({
   onCancel: (listener) => void token.onCancellationRequested(listener),
 });
 
+/** The `serverPath` setting as an absolute path; a relative one is taken from the first workspace folder. */
+function configuredServer(): string | undefined {
+  const value = vscode.workspace.getConfiguration("pyjinhx").get<string>("pythonBlock.serverPath", "").trim();
+  if (!value) return undefined;
+  const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  return path.isAbsolute(value) || !folder ? value : path.resolve(folder, value);
+}
+
 const setting = <T>(name: string, fallback: T) => vscode.workspace.getConfiguration("pyjinhx").get<T>(name, fallback);
 
 /** The private Python server for `{#python` blocks, and the views of the open documents it is kept in step with. */
@@ -23,13 +33,15 @@ export class PythonBlocks implements vscode.Disposable {
   readonly onDidChange = this.changed.event;
   private readonly subscriptions: vscode.Disposable[] = [this.changed];
   private readonly views = new Map<string, { version: number; view: PythonView | null }>();
+  private serverUsed: string | undefined;
   private readonly pendingFiles = new Map<string, 1 | 2 | 3>();
   private readonly files = new Debouncer(100, () => this.filesChanged());
 
   constructor(context: vscode.ExtensionContext, output: vscode.OutputChannel) {
     this.server = new PythonServer({
       start: () => {
-        const script = setting("pythonBlock.serverPath", "") || context.asAbsolutePath("dist/basedpyright/langserver.index.js");
+        const script = configuredServer() ?? context.asAbsolutePath("dist/basedpyright/langserver.index.js");
+        this.serverUsed = configuredServer();
         // The extension host is Electron; this makes it run the server script as plain node.
         return nodeServer(script, { ...process.env, ELECTRON_RUN_AS_NODE: "1" });
       },
@@ -64,23 +76,37 @@ export class PythonBlocks implements vscode.Disposable {
     void onPythonEnvironmentChange(() => this.settingsChanged()).then((d) => d && this.subscriptions.push(d));
   }
 
-  /** The Python view of a `.pjx` document, synced to the server; null when there is nothing to serve. */
-  viewOf(document: vscode.TextDocument): PythonView | null {
-    if (!isComponentTemplate(document) || this.offReason() !== undefined || !setting("pythonBlock.enabled", true)) return null;
+  // The view of a document's current text, cached by version.
+  private viewFor(document: vscode.TextDocument): PythonView | null {
     const uri = document.uri.toString();
     let entry = this.views.get(uri);
     if (entry?.version !== document.version) {
       entry = { version: document.version, view: pythonView(document.getText()) };
       this.views.set(uri, entry);
     }
-    if (entry.view) this.server.sync(uri, entry.view.text);
-    else this.server.close(uri);
     return entry.view;
+  }
+
+  /** Whether a `.pjx` document has a `{#python` block the server could serve. */
+  hasBlock(document: vscode.TextDocument): boolean {
+    return isComponentTemplate(document) && this.viewFor(document) !== null;
+  }
+
+  /** The Python view of a `.pjx` document, synced to the server; null when there is nothing to serve. */
+  viewOf(document: vscode.TextDocument): PythonView | null {
+    if (!isComponentTemplate(document) || this.offReason() !== undefined || !setting("pythonBlock.enabled", true)) return null;
+    const view = this.viewFor(document);
+    const uri = document.uri.toString();
+    if (view) this.server.sync(uri, view.text);
+    else this.server.close(uri);
+    return view;
   }
 
   /** Why the server will not run for the open documents, when that is not the user's own setting. */
   offReason(): string | undefined {
     if (!vscode.workspace.isTrusted) return "the workspace is not trusted";
+    const custom = configuredServer();
+    if (custom && !fs.existsSync(custom)) return `pyjinhx.pythonBlock.serverPath ${custom} does not exist`;
     if (this.server.state === "off") return "the server stopped three times; reload the window to try again";
     return undefined;
   }
@@ -92,8 +118,8 @@ export class PythonBlocks implements vscode.Disposable {
   }
 
   private settingsChanged(): void {
-    if (setting("pythonBlock.enabled", true)) this.server.configurationChanged();
-    else this.server.stop();
+    if (!setting("pythonBlock.enabled", true) || configuredServer() !== this.serverUsed) this.server.stop();
+    else this.server.configurationChanged();
     this.changed.fire();
   }
 

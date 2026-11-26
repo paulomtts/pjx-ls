@@ -12,7 +12,7 @@ export function registerStatus(context: vscode.ExtensionContext, manifests: Mani
     const document = vscode.window.activeTextEditor?.document;
     const isTemplate = document?.languageId === TEMPLATE_LANGUAGE_ID;
     const reason = isTemplate ? manifests.limitedReason(document.uri) : undefined;
-    const blockOff = isTemplate ? blocks.offReason() : undefined;
+    const blockOff = isTemplate && blocks.hasBlock(document) ? blocks.offReason() : undefined;
     if (!reason && !blockOff) return item.hide();
     const limited = reason && `Tags and props come from the .pjx files only: no hover details, no diagnostics.\n\n${reason}.\n\nFix: install pyjinhx 1.17 or later in the project's environment, or set pyjinhx.pythonPath.`;
     item.text = reason ? "pyjinhx: limited" : "pyjinhx: python block off";

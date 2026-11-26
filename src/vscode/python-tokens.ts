@@ -14,10 +14,15 @@ export function registerPythonTokens(context: vscode.ExtensionContext, blocks: P
       {
         onDidChangeSemanticTokens: changed.event,
         async provideDocumentSemanticTokens(document, token) {
+          const uri = document.uri.toString();
           const view = blocks.viewOf(document);
-          const answer = view && (await blocks.server.semanticTokens(document.uri.toString(), cancelOf(token)));
+          if (!view) return undefined;
+          const version = blocks.server.versionOf(uri);
+          const answer = await blocks.server.semanticTokens(uri, cancelOf(token));
+          // The answer is for the text the server had when asked; if that moved on, the editor asks again.
+          if (blocks.server.versionOf(uri) !== version) throw new vscode.CancellationError();
           // No answer keeps the grammar's colours; an empty one would too, but would also cache.
-          return answer && view ? new vscode.SemanticTokens(new Uint32Array(translateTokens(answer.data, answer.legend, view))) : undefined;
+          return answer ? new vscode.SemanticTokens(new Uint32Array(translateTokens(answer.data, answer.legend, view))) : undefined;
         },
       },
       new vscode.SemanticTokensLegend([...LEGEND.tokenTypes], [...LEGEND.tokenModifiers]),
