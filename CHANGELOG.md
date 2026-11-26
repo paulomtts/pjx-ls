@@ -3,6 +3,23 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.7.1
+
+### Added
+- Diagnostics inside `{#python` blocks, from the same private basedpyright server, shown
+  with source `basedpyright` on the block's lines only. basedpyright, not pjx-ls, reads the
+  project's `pyrightconfig.json`, `[tool.pyright]` or `[tool.basedpyright]`; with any of
+  them the fallback setting is ignored, and a config without `typeCheckingMode` gets
+  basedpyright's own, louder `recommended`, so set it there. Only a project with no such
+  config gets `standard`.
+  A diagnostic that overlaps one pyjinhx already reports on the same range is not shown
+  twice, and a list computed for older text is never painted onto newer text.
+- `pyjinhx.pythonBlock.diagnostics` (default on) and `pyjinhx.pythonBlock.typeCheckingMode`
+  (`off`, `basic`, `standard`, `strict`, `recommended`, `all`; default `standard`, used only
+  when the project configures nothing).
+- "Unnecessary" hints (an unused parameter) fade the name as in a `.py` file and do not
+  appear in the Problems panel.
+
 ## 0.7.0
 
 ### Added

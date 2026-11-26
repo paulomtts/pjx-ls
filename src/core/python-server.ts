@@ -36,6 +36,8 @@ export interface ServerDiagnostic {
   code?: string | number;
   message: string;
   tags?: number[];
+  /** A link to the rule's documentation. */
+  codeDescription?: { href: string };
 }
 
 type State = "idle" | "starting" | "ready" | "off";
@@ -230,7 +232,8 @@ export class PythonServer {
     client.onError((error) => this.options.log(`handler failed: ${error}`));
     client.onRequest("workspace/configuration", (params) => this.configuration(params.items));
     client.onNotification("window/logMessage", (params) => this.options.log(String(params.message)));
-    client.onNotification("textDocument/publishDiagnostics", (params) => this.publish(params));
+    // A stopped or replaced process must not publish into the new one's state.
+    client.onNotification("textDocument/publishDiagnostics", (params) => client === this.client && this.publish(params));
     this.ready = this.initialize(proc, client).catch(() => false);
   }
 

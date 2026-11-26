@@ -50,7 +50,7 @@ export class PythonBlocks implements vscode.Disposable {
         const folder = (scopeUri && vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(scopeUri))) || vscode.workspace.workspaceFolders?.[0];
         return folder && (await findPython(folder))?.python;
       },
-      typeCheckingMode: () => "standard",
+      typeCheckingMode: () => setting("pythonBlock.typeCheckingMode", "standard"),
       log: (line) => output.appendLine(`[python block] ${line}`),
     });
     const watcher = vscode.workspace.createFileSystemWatcher("**/*.{py,pyi}");

@@ -64,3 +64,43 @@ suite("python block tokens", () => {
     assert.ok(none(await eventually(() => tokensOf(doc.uri), none)));
   });
 });
+
+suite("python block diagnostics", () => {
+  const bad = () => vscode.Uri.joinPath(root(), "ui", "bad_block.pjx");
+  const text = '{#python\nclass Keys:\n    TODOS = "todos"\n\n\ndef size(key: Keys | None) -> int:\n    return len(key.TODOS) + missing\n#}\n<p>{{ size }}</p>\n';
+  const basedpyright = (uri: vscode.Uri) => vscode.languages.getDiagnostics(uri).filter((d) => d.source === "basedpyright");
+
+  // Created here, not committed: the fixture project is also the manifest contract's project.
+  suiteSetup(async () => vscode.workspace.fs.writeFile(bad(), Buffer.from(text)));
+  suiteTeardown(async () => {
+    await vscode.workspace.fs.delete(bad(), { useTrash: false });
+  });
+  teardown(async () => {
+    await vscode.workspace.getConfiguration("pyjinhx").update("pythonBlock.diagnostics", undefined, vscode.ConfigurationTarget.Global);
+  });
+
+  test("errors lie on the block's lines, with source basedpyright", async () => {
+    const doc = await vscode.workspace.openTextDocument(bad());
+    await vscode.window.showTextDocument(doc);
+    const found = await eventually(() => basedpyright(doc.uri), (d) => d.length === 2);
+    assert.deepStrictEqual(found.map((d) => [d.range.start.line, d.severity, typeof d.code === "object" ? d.code.value : d.code]).sort(), [[6, vscode.DiagnosticSeverity.Error, "reportOptionalMemberAccess"], [6, vscode.DiagnosticSeverity.Error, "reportUndefinedVariable"]]);
+    assert.ok(found.every((d) => d.range.start.line >= 1 && d.range.end.line <= 6));
+  });
+
+  test("a block with no errors has nothing above a hint", async () => {
+    const doc = await open("tokens.pjx");
+    await vscode.window.showTextDocument(doc);
+    await eventually(() => tokensOf(doc.uri), (t) => !none(t));
+    // The server's unused-parameter hint on `ctx` shows its analysis of this text is in.
+    await eventually(() => basedpyright(doc.uri), (d) => d.some((x) => x.severity === vscode.DiagnosticSeverity.Hint));
+    assert.deepStrictEqual(basedpyright(doc.uri).filter((d) => d.severity !== vscode.DiagnosticSeverity.Hint), []);
+  });
+
+  test("with pyjinhx.pythonBlock.diagnostics off there are none", async () => {
+    const doc = await vscode.workspace.openTextDocument(bad());
+    await vscode.window.showTextDocument(doc);
+    await eventually(() => basedpyright(doc.uri), (d) => d.length > 0);
+    await vscode.workspace.getConfiguration("pyjinhx").update("pythonBlock.diagnostics", false, vscode.ConfigurationTarget.Global);
+    assert.deepStrictEqual(await eventually(() => basedpyright(doc.uri), (d) => d.length === 0), []);
+  });
+});
