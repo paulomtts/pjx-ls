@@ -98,7 +98,7 @@ test("a raw region keeps its body and marks its delimiters", () => {
   assert.equal(slice(text, raw.body!), "{{ x }}{#");
 });
 
-test("nothing inside a raw region is a region or a tag", () => {
+test("a raw region is one region, and plain text to the html scan", () => {
   const { regions, tags } = scan("{% raw %}<b>{{ x }}</b>{% endraw %}<i>");
   assert.deepEqual(regions.map((r) => r.kind), ["raw"]);
   assert.deepEqual(tags.map((t) => t.name), ["b", "b", "i"]);
