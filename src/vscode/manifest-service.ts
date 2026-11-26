@@ -93,6 +93,11 @@ export class Manifests implements vscode.Disposable {
     return folder && this.sessions.get(folder.uri.toString());
   }
 
+  /** The manifest of every workspace folder. */
+  all(): Manifest[] {
+    return [...this.sessions.values()].map((s) => s.manifest);
+  }
+
   manifestFor(uri: vscode.Uri): Manifest | undefined {
     return this.sessionFor(uri)?.manifest;
   }

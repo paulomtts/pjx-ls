@@ -3,6 +3,15 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.6.0
+
+### Added
+- `pyjinhx.generateStubs` (default on): the stub of a single-file component is written
+  automatically when the manifest reports `stub-missing` or `stub-stale`, on opening the
+  folder and after a save. Documents found together are done in one `pyjinhx.stubgen` run.
+  A failed run is logged once and not retried until the document is saved again. The quick
+  fix stays for when the setting is off, and now covers `stub-stale` too.
+
 ## 0.5.2
 
 ### Tests
