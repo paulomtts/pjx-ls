@@ -1,13 +1,6 @@
+import type { Range as LineRange } from "./manifest.ts";
 import type { Range, Scan } from "./regions.ts";
 
-export interface Position {
-  line: number;
-  character: number;
-}
-export interface LineRange {
-  start: Position;
-  end: Position;
-}
 /** A view line that holds a synthetic `<style>`/`<script>` tag from this column on. */
 export interface Span {
   line: number;
@@ -75,9 +68,6 @@ export function isForwardable({ ranges, reach }: Exclusions, offset: number, mod
   }
   return true;
 }
-
-export const forwardable = (text: string, scan: Scan, offset: number, mode: Mode = "cursor") =>
-  isForwardable(exclusions(text, scan), offset, mode);
 
 const lineAndColumn = (text: string, offset: number): Span => {
   const start = offset === 0 ? 0 : text.lastIndexOf("\n", offset - 1) + 1;

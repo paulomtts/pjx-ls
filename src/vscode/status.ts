@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { TEMPLATE_LANGUAGE_ID } from "../config.ts";
+import { TEMPLATE_LANGUAGE_ID } from "./config.ts";
 import type { Manifests } from "./manifest-service.ts";
 
 /** "pyjinhx: limited" while a .pjx file is open in a folder whose manifest could not be read. */

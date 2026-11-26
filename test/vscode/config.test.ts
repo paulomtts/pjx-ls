@@ -1,11 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { TEMPLATE_SELECTOR } from "../../src/config.ts";
-import {
-  isComponentTemplate,
-  type TemplateDocumentLike,
-} from "../../src/vscode/component-template.ts";
+import { isComponentTemplate, TEMPLATE_SELECTOR, type TemplateDocumentLike } from "../../src/vscode/config.ts";
 
 const make = (over: Partial<TemplateDocumentLike> = {}): TemplateDocumentLike => ({
   uri: { scheme: "file" },

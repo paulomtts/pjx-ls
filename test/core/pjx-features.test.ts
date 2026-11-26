@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseManifest, Manifest, type Component } from "../../src/core/manifest.ts";
-import { componentCompletions, componentHover, shadowedAttributes } from "../../src/core/component-service.ts";
+import { componentCompletions, componentHover, shadowedAttributes } from "../../src/core/pjx-features.ts";
 import { scan } from "../../src/core/regions.ts";
 import { manifestText } from "./fixture.ts";
 

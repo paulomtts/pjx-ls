@@ -1,10 +1,9 @@
 import * as vscode from "vscode";
-import { TEMPLATE_LANGUAGE_ID } from "../config.ts";
+import { TEMPLATE_LANGUAGE_ID } from "./config.ts";
 import { Debouncer } from "../core/debounce.ts";
 import { exclusions, syntheticSpans, type Exclusions, type Span } from "../core/forwarding.ts";
 import { scan, type Scan } from "../core/regions.ts";
-import { virtualHtml } from "../core/virtual-html.ts";
-import { VIEW_SCHEME, sourceUriOf, viewPath } from "../core/view-uri.ts";
+import { VIEW_SCHEME, sourceUriOf, viewPath, virtualHtml } from "../core/virtual-html.ts";
 
 const REFRESH_DELAY_MS = 75;
 

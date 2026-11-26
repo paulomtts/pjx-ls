@@ -1,7 +1,6 @@
 import * as assert from "node:assert";
 import * as vscode from "vscode";
-import { virtualHtml } from "../../../src/core/virtual-html.ts";
-import { VIEW_SCHEME, viewPath } from "../../../src/core/view-uri.ts";
+import { VIEW_SCHEME, viewPath, virtualHtml } from "../../../src/core/virtual-html.ts";
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 

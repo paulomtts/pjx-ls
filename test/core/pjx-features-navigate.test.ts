@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseManifest } from "../../src/core/manifest.ts";
-import { definitionAt, nameCompletions } from "../../src/core/navigate.ts";
+import { definitionAt, nameCompletions } from "../../src/core/pjx-features.ts";
 import { scan } from "../../src/core/regions.ts";
 import { manifestText, PROJECT } from "./fixture.ts";
 
