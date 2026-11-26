@@ -15,7 +15,7 @@ test("components are found by tag and by path", () => {
 
 test("all four kinds are read", () => {
   const kinds = Object.fromEntries(manifest.components.map((c) => [c.tag, c.kind]));
-  assert.deepEqual(kinds, { Alert: "template", Badge: "split", Broken: "template", Modal: "py-template", Panel: "pjx-python", Stale: "split" });
+  assert.deepEqual(kinds, { Alert: "template", Badge: "split", Broken: "template", Modal: "py-template", Panel: "pjx-python", Stale: "split", Tokens: "pjx-python" });
 });
 
 test("lines become 0-based and columns stay", () => {

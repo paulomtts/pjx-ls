@@ -1,6 +1,6 @@
 // A scripted language server for the client and session tests: speaks LSP framing on stdio
 // and records what it is sent, which a `test/state` request reads back.
-import { writeFileSync } from "node:fs";
+import { renameSync, writeFileSync } from "node:fs";
 
 const state = { configuration: null, documents: [], configurationAsked: 0, initialize: null, watched: [], nudges: 0 };
 let buffer = Buffer.alloc(0);
@@ -100,6 +100,10 @@ process.stdin.on("data", (chunk) => {
     buffer = buffer.subarray(head + 4 + length);
     handle(JSON.parse(body));
     // A test that does not own our stdout reads what we recorded from this file.
-    if (process.env.FAKE_STATE) writeFileSync(process.env.FAKE_STATE, JSON.stringify(state));
+    // Written beside and renamed, so a reader never sees half a file.
+    if (process.env.FAKE_STATE) {
+      writeFileSync(`${process.env.FAKE_STATE}.tmp`, JSON.stringify(state));
+      renameSync(`${process.env.FAKE_STATE}.tmp`, process.env.FAKE_STATE);
+    }
   }
 });
