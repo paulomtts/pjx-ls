@@ -28,3 +28,11 @@ test("the formatter selector and activation events cover only the pyjinhx langua
   const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
   assert.deepEqual(pkg.activationEvents, ["onLanguage:pyjinhx"]);
 });
+
+test("the python block's settings exist with their defaults", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+  const settings = pkg.contributes.configuration.properties;
+  assert.equal(settings["pyjinhx.pythonBlock.enabled"].default, true);
+  assert.equal(settings["pyjinhx.pythonBlock.serverPath"].default, "");
+  assert.ok(pkg.capabilities.untrustedWorkspaces.restrictedConfigurations.includes("pyjinhx.pythonBlock.serverPath"));
+});

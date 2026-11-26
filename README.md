@@ -87,6 +87,21 @@ documents found at once are done in one run. If a run fails, the error goes to t
 PyJinHx output channel and it is not retried until the document is saved again. With the
 setting off, the warning stays and offers a **Generate stub for this document** quick fix.
 
+**Python block intelligence.** Names inside a `{#python` block are coloured by what they
+are (classes, properties, parameters, functions, enum members), as in a `.py` file. The
+colours come from a private [basedpyright](https://github.com/DetachHead/basedpyright)
+language server bundled with the extension (pinned to 1.40.2) and started only when a
+`.pjx` with a block is open, with a 256 MB heap limit (about 300 MB of memory in use). The
+server is shown the block as a Python file with the same lines and columns as the
+`.pjx`, so nothing is translated back. A sibling component's class resolves through its
+`.pyi` stub (see **Stubs**), and a change to a `.py` or `.pyi` file recolours the open
+blocks. Everything outside the block keeps the grammar's colours. Needs a trusted
+workspace (the server asks your interpreter for its search paths). If the server stops
+three times it is left off until the window reloads, and the status bar tooltip says so.
+Settings: `pyjinhx.pythonBlock.enabled` (default on; off stops the server) and
+`pyjinhx.pythonBlock.serverPath` (another basedpyright `langserver.index.js`).
+Hover, go to definition, completion and diagnostics in the block are planned.
+
 **Limited mode.** When pyjinhx cannot be run (not installed, older than 1.17, no
 interpreter, an untrusted workspace) the status bar says `pyjinhx: limited`. Tags and
 props then come from the `.pjx` file names and `{#def` headers only: tag and prop
@@ -195,7 +210,9 @@ the project's Python environment.
 npm install
 npm run check    # type-check (tsc --noEmit)
 npm test         # unit tests (node --test; requires Node >= 23.6)
-npm run build    # bundle to dist/extension.cjs
+npm run build    # bundle to dist/extension.cjs, plus the basedpyright server in dist/basedpyright
+npm run test:lsp # drive the bundled server headlessly (after build)
+xvfb-run -a env -u WAYLAND_DISPLAY npm run test:editor  # editor tests, only ever under Xvfb on Linux
 npm run package  # produce a .vsix
 node scripts/gen-manifest-fixture.mjs <python>  # regenerate test/fixtures/manifest/project.json with the real pyjinhx
 PJX_PYTHON=<python> npm test  # also runs the contract test against the real pyjinhx

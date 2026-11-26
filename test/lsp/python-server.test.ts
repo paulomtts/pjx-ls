@@ -109,3 +109,26 @@ test("translated tokens use only LEGEND and stay inside the body", async () => {
   assert.ok(tokens.every((t) => t.type !== undefined && t.line >= 2 && t.line <= 11));
   assert.deepEqual(tokens.filter((t) => t.text === "self").map((t) => t.type), ["parameter", "parameter"]);
 });
+
+test("typing: each sync asks for tokens and cancels the one before", async () => {
+  const { session, open } = project();
+  const { uri, source } = open("ui/card.pjx");
+  let cancelPrevious = () => {};
+  const asked: Promise<{ data: number[]; legend: Legend } | null>[] = [];
+  let text = "";
+  for (let i = 0; i < 20; i++) {
+    text = pythonView(source.replace("    count: int = 0", `    count${"x".repeat(i)}: int = 0`))!.text;
+    session.sync(uri, text);
+    cancelPrevious();
+    let cancelled = false;
+    let listener = () => {};
+    asked.push(session.semanticTokens(uri, { get cancelled() { return cancelled; }, onCancel: (l) => void (listener = l) }));
+    cancelPrevious = () => {
+      cancelled = true;
+      listener();
+    };
+  }
+  const answers = await Promise.all(asked);
+  const last = answers[19]!;
+  assert.ok(decode(last.data, last.legend, text).some((t) => t.line === 8 && t.text === `count${"x".repeat(19)}`));
+});
