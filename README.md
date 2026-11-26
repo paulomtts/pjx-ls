@@ -88,6 +88,14 @@ Python's configuration there; only the highlighting is PyJinHx.
 
 ## Known limitations
 
+- Toggle Line Comment or Toggle Block Comment on a line holding a one-line
+  `{#def … #}` header (or any `{#css`/`{#js`/`{#python` opener) treats the header as a
+  `{# #}` comment and strips its delimiters, and toggling again does not restore it. The
+  header is not in a Python region at its own delimiters, so the editor cannot know
+  better, and any override would have to hijack the comment keys for the whole language.
+  Comment the lines inside a multi-line block body instead (CSS `/* */`, JS `//`,
+  Python `#`).
+
 - `{{` and `{%` auto-close inside `{#css`/`{#js`/`{#python` bodies, where Jinja does not
   render; the editor offers no per-region switch for that.
 - A `template = """…"""` at 4 spaces (or one tab) is highlighted as PyJinHx wherever it
