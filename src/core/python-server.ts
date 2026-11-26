@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import type { Readable, Writable } from "node:stream";
 import { LspClient, type Cancel } from "./lsp-client.ts";
-import type { Range } from "./manifest.ts";
+import type { Position, Range } from "./manifest.ts";
 
 export interface ServerProcess {
   stdin: Writable;
@@ -50,6 +50,15 @@ interface Doc {
 const MAX_CRASHES = 3;
 const STABLE_MS = 60_000;
 const SHUTDOWN_GRACE_MS = 2000;
+
+// Hover contents come as a string, a MarkupContent or a list of either.
+function markdownOf(contents: unknown): string {
+  if (typeof contents === "string") return contents;
+  if (Array.isArray(contents)) return contents.map(markdownOf).filter(Boolean).join("\n\n");
+  const part = contents as { value?: string; language?: string } | null;
+  if (!part?.value) return "";
+  return part.language ? "```" + part.language + "\n" + part.value + "\n```" : part.value;
+}
 
 /** The node arguments and script arguments that start the bundled server. */
 export const serverArgs = (script: string) => ["--max-old-space-size=256", script, "--stdio"];
@@ -160,12 +169,35 @@ export class PythonServer {
 
   /** Null when the server is not running or has no token support. */
   async semanticTokens(uri: string, cancel?: Cancel): Promise<{ data: number[]; legend: Legend } | null> {
+    const answer = await this.ask<{ data: number[] }>("textDocument/semanticTokens/full", uri, { textDocument: { uri } }, cancel);
+    return answer && this.legend ? { data: answer.data, legend: this.legend } : null;
+  }
+
+  /** The hover text as markdown, or null where the server has nothing to say. */
+  async hover(uri: string, position: Position, cancel?: Cancel): Promise<{ markdown: string; range?: Range } | null> {
+    const answer = await this.ask<{ contents: unknown; range?: Range }>("textDocument/hover", uri, { textDocument: { uri }, position }, cancel);
+    const markdown = answer && markdownOf(answer.contents);
+    return markdown ? { markdown, range: answer.range } : null;
+  }
+
+  /** Where the name at `position` is defined; both answer shapes of the protocol are flattened. */
+  async definition(uri: string, position: Position, cancel?: Cancel): Promise<{ uri: string; range: Range }[]> {
+    type Link = { uri?: string; range?: Range; targetUri?: string; targetSelectionRange?: Range; targetRange?: Range };
+    const answer = await this.ask<Link | Link[]>("textDocument/definition", uri, { textDocument: { uri }, position }, cancel);
+    const links = answer === null ? [] : Array.isArray(answer) ? answer : [answer];
+    return links.flatMap((l) => {
+      const target = l.targetUri ?? l.uri;
+      const range = l.targetSelectionRange ?? l.targetRange ?? l.range;
+      return target && range ? [{ uri: target, range }] : [];
+    });
+  }
+
+  // A request for an open view, answered null when the server is not up or fails.
+  private async ask<T>(method: string, uri: string, params: unknown, cancel?: Cancel): Promise<T | null> {
     const client = this.client;
-    if (!client || !(await this.ready) || !this.legend || !this.docs.has(uri)) return null;
-    const legend = this.legend;
+    if (!client || !(await this.ready) || !this.docs.has(uri)) return null;
     try {
-      const answer = await client.request<{ data: number[] } | null>("textDocument/semanticTokens/full", { textDocument: { uri } }, cancel);
-      return answer && { data: answer.data, legend };
+      return await client.request<T | null>(method, params, cancel);
     } catch {
       return null;
     }
