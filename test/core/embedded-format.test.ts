@@ -263,3 +263,14 @@ test("the whole pipeline is a fixed point", async () => {
   const out = await P(fixture("19-style-script.pjx"));
   assert.ok(out.includes("<section>\n  <style>\n    .a{color:red}\n  </style>"));
 });
+
+test("an element with no close tag is no body", async () => {
+  // A half-typed `<script>` runs to the end of the text; the markup after it is not script.
+  for (const text of ['<script>\nlet a=1\n<div class="x">hi</div>\n', "<style>\n.a{}\n<p>x</p>\n"]) {
+    assert.deepEqual(kinds(text), [[text.startsWith("<style") ? "css" : "js", "it has no close tag"]], text);
+    const { format, seen } = to("X");
+    assert.ok((await formatEmbedded(text, { css: format, js: format })) === text, text);
+    assert.deepEqual(seen, []);
+  }
+  assert.deepEqual(kinds("<script>\nlet a=1\n</SCRIPT>"), [["js", null]]);
+});

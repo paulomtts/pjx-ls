@@ -47,7 +47,8 @@ export function embeddedBodies(text: string, scan: Scan = scanText(text)): Body[
       range: element.body,
       tagStart: tag.range.start,
       line: lineOf(text, tag.range.start),
-      skip: jinja ? "it holds Jinja" : null,
+      // With no close tag the body runs to the end of the text, over the markup after it.
+      skip: jinja ? "it holds Jinja" : element.body.end === text.length ? "it has no close tag" : null,
     });
   }
   return bodies.sort((a, b) => a.range.start - b.range.start);
