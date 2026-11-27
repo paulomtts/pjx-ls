@@ -6,7 +6,8 @@ import { fakeSpawn } from "./fixture.ts";
 
 const PY: RuffCommand = { command: "py", args: ["-m", "ruff"] };
 const BIN: RuffCommand = { command: "/bin/ruff", args: [] };
-const request = { filename: "/w/ui/total.py", cwd: "/w", candidates: async () => [PY, BIN] };
+let missing: string[] = [];
+const request = { filename: "/w/ui/total.py", cwd: "/w", candidates: async () => [PY, BIN], onMissing: (tried: string) => void missing.push(tried) };
 const noModule = { code: 1, stdout: "", stderr: "py: No module named ruff" };
 const ok = { code: 0, stdout: "x = 1\n", stderr: "" };
 const tick = () => new Promise((r) => setTimeout(r, 0));
@@ -14,9 +15,9 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
 function setup(timeoutMs?: number) {
   const { spawn, calls } = fakeSpawn();
   const log: string[] = [];
-  const missing: string[] = [];
-  const ruff = new Ruff(spawn, (l) => log.push(l), timeoutMs, (tried) => missing.push(tried));
-  return { ruff, calls, log, missing };
+  missing = [];
+  const ruff = new Ruff(spawn, (l) => log.push(l), timeoutMs);
+  return { ruff, calls, log };
 }
 
 test("the name and the arguments", () => {
@@ -65,7 +66,7 @@ test("ENOENT is a miss like a missing module", async () => {
 });
 
 test("nothing found: null, said once per cwd, and the miss is not remembered", async () => {
-  const { ruff, calls, log, missing } = setup();
+  const { ruff, calls, log } = setup();
   for (let i = 0; i < 2; i++) {
     const run = ruff.format("x=1\n", request);
     await tick();
@@ -114,7 +115,7 @@ test("a failing ruff leaves the body alone, is logged, and the command is rememb
 });
 
 test("exit 1 with another message is a failure, not a miss", async () => {
-  const { ruff, calls, missing } = setup();
+  const { ruff, calls } = setup();
   const run = ruff.format("x=1\n", request);
   await tick();
   calls[0].finish({ code: 1, stdout: "", stderr: "Traceback (most recent call last)" });

@@ -44,3 +44,13 @@ test("the block's diagnostics are on by default and fall back to standard", () =
   assert.equal(settings["pyjinhx.pythonBlock.typeCheckingMode"].default, "standard");
   assert.deepEqual(settings["pyjinhx.pythonBlock.typeCheckingMode"].enum, ["off", "basic", "standard", "strict", "recommended", "all"]);
 });
+
+test("the ruff formatting setting defaults on, and ruff is covered by the untrusted description", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+  const setting = pkg.contributes.configuration.properties["pyjinhx.format.python"];
+  assert.equal(setting.default, "ruff");
+  assert.deepEqual(setting.enum, ["ruff", "off"]);
+  const untrusted = pkg.capabilities.untrustedWorkspaces;
+  assert.deepEqual(untrusted.restrictedConfigurations, ["pyjinhx.pythonPath", "pyjinhx.pythonBlock.serverPath"]);
+  assert.match(untrusted.description, /ruff/);
+});

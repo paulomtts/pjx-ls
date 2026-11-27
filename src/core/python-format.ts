@@ -61,6 +61,8 @@ export interface RuffRequest {
   /** In the order to try: the interpreter's module, then the one on `PATH`. Asked only when nothing is remembered for `cwd`. */
   candidates: () => Promise<RuffCommand[]>;
   cancel?: Cancel;
+  /** Hears what was tried, at the moment (once per cwd) that no candidate could be started. */
+  onMissing?: (tried: string) => void;
 }
 
 type Run = Exit | "missing" | "timeout" | "cancelled" | { failure: string };
@@ -75,14 +77,11 @@ export class Ruff {
   private readonly spawn: Spawn;
   private readonly log: (line: string) => void;
   private readonly timeoutMs: number;
-  private readonly onMissing: (tried: string) => void;
 
-  /** `onMissing` hears what was tried, once per cwd, when no candidate could be started. */
-  constructor(spawn: Spawn, log: (line: string) => void, timeoutMs = 5_000, onMissing: (tried: string) => void = () => {}) {
+  constructor(spawn: Spawn, log: (line: string) => void, timeoutMs = 5_000) {
     this.spawn = spawn;
     this.log = log;
     this.timeoutMs = timeoutMs;
-    this.onMissing = onMissing;
   }
 
   /** The formatted module, or null when ruff is missing, fails, times out or is cancelled. Never rejects. */
@@ -114,7 +113,7 @@ export class Ruff {
       this.told.add(request.cwd);
       const tried = candidates.map(shown).join(", ") || "nothing";
       this.log(`ruff was not found (tried: ${tried}): {#python bodies are not formatted. Install ruff in the project's environment or on PATH, or set pyjinhx.format.python to "off".`);
-      this.onMissing(tried);
+      request.onMissing?.(tried);
     }
     return null;
   }

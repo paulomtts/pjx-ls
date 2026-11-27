@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Stands in for `python` in tests: prints the stored manifest of test/fixtures/project for
 // `-m pyjinhx.manifest`, the way the real command would for the files of that project.
+// For `-m ruff format --stdin-filename <f>.py -` it plays a tiny ruff: `x=1` becomes `x = 1`; a body
+// holding SYNTAX fails like a parse error (exit 2) and one holding NOMODULE like a missing module.
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,6 +12,24 @@ const project = path.join(here, "project");
 const manifest = JSON.parse(fs.readFileSync(path.join(here, "manifest/project.json"), "utf8").replaceAll("@ROOT@", project));
 
 const args = process.argv.slice(2);
+if (args[0] === "-m" && args[1] === "ruff") {
+  if (args[2] !== "format" || args[3] !== "--stdin-filename" || !args[4]?.endsWith(".py") || args[5] !== "-") {
+    console.error(`fake-python: unexpected ruff arguments ${args.join(" ")}`);
+    process.exit(1);
+  }
+  if (process.env.PJX_FAKE_LOG) fs.appendFileSync(process.env.PJX_FAKE_LOG, `ruff ${args[4]} cwd=${process.cwd()}\n`);
+  const stdin = fs.readFileSync(0, "utf8");
+  if (stdin.includes("NOMODULE")) {
+    console.error("fake-python: No module named ruff");
+    process.exit(1);
+  }
+  if (stdin.includes("SYNTAX")) {
+    console.error(`error: Failed to parse ${args[4]}`);
+    process.exit(2);
+  }
+  process.stdout.write(stdin.trim().replace(/^(\w+)[ \t]*=[ \t]*(.+)$/gm, "$1 = $2") + "\n");
+  process.exit(0);
+}
 if (args[0] !== "-m" || args[1] !== "pyjinhx.manifest") {
   console.error(`fake-python: unexpected arguments ${args.join(" ")}`);
   process.exit(1);

@@ -18,7 +18,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const output = vscode.window.createOutputChannel(OUTPUT_CHANNEL_NAME);
   output.appendLine("PyJinHx extension activated.");
   context.subscriptions.push(output);
-  registerFormatting(context);
+  registerFormatting(context, output);
   registerTyping(context);
   const views = new Views();
   views.register(context);
