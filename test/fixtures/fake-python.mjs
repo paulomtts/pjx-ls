@@ -3,6 +3,8 @@
 // `-m pyjinhx.manifest`, the way the real command would for the files of that project.
 // For `-m ruff format --stdin-filename <f>.py -` it plays a tiny ruff: `x=1` becomes `x = 1`; a body
 // holding SYNTAX fails like a parse error (exit 2) and one holding NOMODULE like a missing module.
+// For `-m ruff check --select I001 --fix-only --stdin-filename <f>.py -` it sorts the leading run of
+// `import <name>` lines and changes nothing else (SYNTAX passes through with exit 0, as in ruff).
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,22 +15,32 @@ const manifest = JSON.parse(fs.readFileSync(path.join(here, "manifest/project.js
 
 const args = process.argv.slice(2);
 if (args[0] === "-m" && args[1] === "ruff") {
-  if (args[2] !== "format" || args[3] !== "--stdin-filename" || !args[4]?.endsWith(".py") || args[5] !== "-") {
+  const formatting = args[2] === "format" && args[3] === "--stdin-filename" && args[4]?.endsWith(".py") && args[5] === "-";
+  const sorting = args.slice(2, 6).join(" ") === "check --select I001 --fix-only" && args[6] === "--stdin-filename" && args[7]?.endsWith(".py") && args[8] === "-";
+  if (!formatting && !sorting) {
     console.error(`fake-python: unexpected ruff arguments ${args.join(" ")}`);
     process.exit(1);
   }
-  if (process.env.PJX_FAKE_LOG) fs.appendFileSync(process.env.PJX_FAKE_LOG, `ruff ${args[4]} cwd=${process.cwd()}\n`);
+  const target = formatting ? args[4] : args[7];
+  if (process.env.PJX_FAKE_LOG) fs.appendFileSync(process.env.PJX_FAKE_LOG, `ruff ${formatting ? "format" : "check"} ${target} cwd=${process.cwd()}\n`);
   const stdin = fs.readFileSync(0, "utf8");
   if (stdin.includes("NOMODULE")) {
     console.error("fake-python: No module named ruff");
     process.exit(1);
   }
+  if (sorting) {
+    const lines = stdin.split("\n");
+    let end = 0;
+    while (end < lines.length && /^import \w+$/.test(lines[end])) end++;
+    process.stdout.write([...lines.slice(0, end).sort(), ...lines.slice(end)].join("\n"));
+    process.exit(0);
+  }
   if (stdin.includes("SYNTAX")) {
-    console.error(`error: Failed to parse ${args[4]}`);
+    console.error(`error: Failed to parse ${target}`);
     process.exit(2);
   }
   process.stdout.write(stdin.trim().replace(/^(\w+)[ \t]*=[ \t]*(.+)$/gm, "$1 = $2") + "\n");
-  process.exit(0);
+process.exit(0);
 }
 if (args[0] !== "-m" || args[1] !== "pyjinhx.manifest") {
   console.error(`fake-python: unexpected arguments ${args.join(" ")}`);

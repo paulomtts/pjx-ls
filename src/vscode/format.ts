@@ -51,8 +51,8 @@ export function registerFormatting(context: vscode.ExtensionContext, output: vsc
   };
 
   function pythonBody(document: vscode.TextDocument, token?: vscode.CancellationToken): FormatBody | null {
-    const setting = vscode.workspace.getConfiguration("pyjinhx", document.uri).get("format.python", "ruff");
-    if (!usesRuff(setting, vscode.workspace.isTrusted)) return null;
+    const config = vscode.workspace.getConfiguration("pyjinhx", document.uri);
+    if (!usesRuff(config.get("format.python", "ruff"), vscode.workspace.isTrusted)) return null;
     const folder = vscode.workspace.getWorkspaceFolder(document.uri);
     return (body) =>
       ruff.format(body, {
@@ -61,6 +61,7 @@ export function registerFormatting(context: vscode.ExtensionContext, output: vsc
         candidates: candidates(folder),
         cancel: token && cancelOf(token),
         onMissing: () => noticeMissingRuff(document),
+        sortImports: config.get("format.sortImports", true),
       });
   }
 

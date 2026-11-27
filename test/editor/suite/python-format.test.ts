@@ -11,6 +11,7 @@ const file = () => vscode.Uri.joinPath(root(), "ui", "fmt_block.pjx");
 const GLOBAL = vscode.ConfigurationTarget.Global;
 
 const SOURCE = "{#python\nx=1\ny  =  2\n#}\n<div><p>hi</p></div>\n";
+const IMPORTS = "{#python\nimport sys\nimport os\nx=1\n#}\n<p>hi</p>\n";
 const FORMATTED = "{#python\nx = 1\ny = 2\n#}\n<div>\n  <p>hi</p>\n</div>\n";
 
 async function eventually<T>(ask: () => Thenable<T> | T, holds: (v: T) => boolean): Promise<T> {
@@ -53,6 +54,7 @@ suite("format with ruff", () => {
   });
   teardown(async () => {
     await vscode.workspace.getConfiguration("pyjinhx").update("format.python", undefined, GLOBAL);
+    await vscode.workspace.getConfiguration("pyjinhx").update("format.sortImports", undefined, GLOBAL);
     await vscode.workspace.getConfiguration("editor", { languageId: "pyjinhx" }).update("formatOnSave", undefined, GLOBAL, true);
     await vscode.commands.executeCommand("workbench.action.files.revert");
   });
@@ -75,6 +77,34 @@ suite("format with ruff", () => {
     const doc = await reset(SOURCE.replace("x=1", "SYNTAX x=1"));
     await format(doc);
     assert.strictEqual(doc.getText(), "{#python\nSYNTAX x=1\ny  =  2\n#}\n<div>\n  <p>hi</p>\n</div>\n");
+  });
+
+  test("Format Document sorts the imports of the body, and a second run does nothing", async () => {
+    const doc = await reset(IMPORTS);
+    assert.ok((await format(doc)) > 0);
+    assert.strictEqual(doc.getText(), "{#python\nimport os\nimport sys\nx = 1\n#}\n<p>hi</p>\n");
+    assert.strictEqual(await format(doc), 0);
+  });
+
+  test("with pyjinhx.format.sortImports off the imports keep their order", async () => {
+    await vscode.workspace.getConfiguration("pyjinhx").update("format.sortImports", false, GLOBAL);
+    const doc = await reset(IMPORTS);
+    await format(doc);
+    assert.strictEqual(doc.getText(), "{#python\nimport sys\nimport os\nx = 1\n#}\n<p>hi</p>\n");
+  });
+
+  test("with pyjinhx.format.python off sortImports changes nothing", async () => {
+    await vscode.workspace.getConfiguration("pyjinhx").update("format.python", "off", GLOBAL);
+    await vscode.workspace.getConfiguration("pyjinhx").update("format.sortImports", true, GLOBAL);
+    const doc = await reset(IMPORTS);
+    await format(doc);
+    assert.strictEqual(doc.getText(), IMPORTS);
+  });
+
+  test("a body ruff rejects keeps its import order, and the markup is still formatted", async () => {
+    const doc = await reset(IMPORTS.replace("x=1", "SYNTAX x=1").replace("<p>hi</p>", "<div><p>hi</p></div>"));
+    await format(doc);
+    assert.strictEqual(doc.getText(), "{#python\nimport sys\nimport os\nSYNTAX x=1\n#}\n<div>\n  <p>hi</p>\n</div>\n");
   });
 
   test("the pyjinhx.formatSlots command does the same", async () => {
