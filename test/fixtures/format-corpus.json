@@ -38,7 +38,7 @@
   "test/fixtures/pyjinhx/corpus/python_empty_body.pjx": "{#python\n#}\n<p></p>\n",
   "test/fixtures/pyjinhx/corpus/python_error_before_second_css.pjx": "{#python\nx = '#}'\n#}\n{#css\na\n#}\n{#css\nb\n#}\n",
   "test/fixtures/pyjinhx/corpus/python_forms_that_are_prose.pjx": "{# python\nx = 1\n#}\n{#python x = 1 #}\n{#pythonic\ny = 2\n#}\n<p></p>\n",
-  "test/fixtures/pyjinhx/corpus/python_opener_indented_is_a_comment.pjx": "<p></p>\n{#python\nx = 1\n#}\n",
+  "test/fixtures/pyjinhx/corpus/python_opener_indented_is_a_comment.pjx": "<p></p>\n  {#python\nx = 1\n#}\n",
   "test/fixtures/pyjinhx/corpus/python_text_after_closer.pjx": "{#python\nx = 1\n#} <p></p>\n",
   "test/fixtures/pyjinhx/corpus/python_text_looks_like_css.pjx": "{#python\nx = \"{#css\"\n#}\n<p></p>\n{#css\n.a { color: red; }\n#}\n",
   "test/fixtures/pyjinhx/corpus/python_unclosed.pjx": "<p></p>\n{#python\nx = 1\n<p></p>\n",

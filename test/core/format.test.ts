@@ -261,3 +261,19 @@ for (const [name, input, output] of blockLines) {
     assert.equal(formatPyjinhxTemplate(output), output);
   });
 }
+
+// The formatter never turns a comment into a block, or a document into one with a block error.
+for (const [name, input, output] of [
+  ["an indented opener at the top level", "  {#python\nimport os\n#}\n<p>x</p>", "  {#python\nimport os\n#}\n<p>x</p>"],
+  ["an indented opener and closer", "  {#python\n  x = 1\n  #}\n<p>x</p>", "  {#python\n  x = 1\n  #}\n<p>x</p>"],
+  [
+    "an indented opener inside an element is still formatted",
+    "<div>\n  {#python\n  x = 1\n  #}\n</div>",
+    "<div>\n  {#python\n  x = 1\n  #}\n</div>\n",
+  ],
+]) {
+  test(`never creates a python block: ${name}`, () => {
+    assert.equal(formatPyjinhxTemplate(input), output);
+    assert.equal(formatPyjinhxTemplate(output), output);
+  });
+}

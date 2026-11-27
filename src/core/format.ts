@@ -458,5 +458,9 @@ function formatLf(text: string): string {
     }
   }
 
-  return `${lines.join("\n").trimEnd()}\n`;
+  const result = `${lines.join("\n").trimEnd()}\n`;
+  // Moving a line must not make a comment a block, nor a block error: pyjinhx would run or reject it.
+  const after = scan(result);
+  const hasPython = (x: Scan) => x.blocks.some((b) => b.keyword === "python");
+  return after.error || hasPython(after) !== hasPython(s) ? text : result;
 }
