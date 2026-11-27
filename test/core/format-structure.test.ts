@@ -116,3 +116,17 @@ test("a non-def {# comment #} is depth-neutral", () => {
 test("empty input returned unchanged", () => {
   assert.equal(formatPyjinhxTemplate(""), "");
 });
+
+test("the > of a multi-line open tag stays where it was written", () => {
+  const wrapped = '<form class="a"\n      hx-post="/x">\n<span>t</span>\n</form>';
+  assert.equal(
+    formatPyjinhxTemplate(wrapped),
+    '<form class="a"\n      hx-post="/x">\n  <span>t</span>\n</form>\n',
+  );
+  const own = '<div\n  class="a"\n>\n<p>x</p>\n</div>';
+  assert.equal(formatPyjinhxTemplate(own), '<div\n  class="a"\n>\n  <p>x</p>\n</div>\n');
+  for (const input of [wrapped, own]) {
+    const once = formatPyjinhxTemplate(input);
+    assert.equal(formatPyjinhxTemplate(once), once);
+  }
+});

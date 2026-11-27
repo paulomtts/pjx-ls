@@ -244,16 +244,6 @@ function renderExplodedTag(text: string, tag: Tag, regions: Region[], baseIndent
 
 // ── Structural re-indentation ──────────────────────────────────────────────
 
-function hasElementChildren(tokens: Token[], startIndex: number): boolean {
-  for (let index = startIndex + 1; index < tokens.length; index += 1) {
-    const token = tokens[index];
-    if (token.type === "open" || token.type === "opaque") return true;
-    if (token.type === "self_close") continue;
-    if (token.type === "close") return false;
-  }
-  return false;
-}
-
 function tryInlineElement(tokens: Token[], startIndex: number): { endIndex: number; value: string } | null {
   const openToken = tokens[startIndex];
   if (openToken.type !== "open") return null;
@@ -444,26 +434,9 @@ function formatLf(text: string): string {
         continue;
       }
 
-      const childElements = hasElementChildren(tokens, index);
-      let tagText = token.value.trim();
-      let trailingBracket = "";
-
-      if (childElements && tagText.endsWith(">") && !tagText.endsWith("/>")) {
-        tagText = tagText.slice(0, -1).trimEnd();
-        trailingBracket = ">";
-      }
-
-      if (tagText.includes("\n")) {
-        const parts = tagText.split("\n");
-        const firstLine = baseIndent + parts[0].trimStart();
-        const rest = parts.slice(1).join("\n");
-        emit(index, rest ? `${firstLine}\n${rest}` : firstLine);
-        if (trailingBracket) {
-          lines.push(baseIndent + trailingBracket);
-        }
-      } else {
-        emit(index, baseIndent + tagText + trailingBracket);
-      }
+      // A tag written over several lines keeps its other lines, `>` included, as written.
+      const [first, ...rest] = token.value.trim().split("\n");
+      emit(index, [baseIndent + first.trimStart(), ...rest].join("\n"));
       depth += 1;
     }
   }
