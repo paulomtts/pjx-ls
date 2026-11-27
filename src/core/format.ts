@@ -1,5 +1,5 @@
-import { defHeaderRange, scan, type Range, type Scan, type Tag } from "./regions.ts";
-import { isHtmlSlotValue, readDoubleQuotedContent } from "./slots.ts";
+import { defHeaderRange, scan, type Attribute, type Range, type Region, type Scan, type Tag } from "./regions.ts";
+import { isHtmlSlotValue } from "./slots.ts";
 
 export const INDENT = "  ";
 
@@ -134,56 +134,60 @@ function tokenize(text: string, s: Scan = scan(text)): { tokens: Token[]; comple
 
 // ── Tag attribute parsing & slot-aware rendering ───────────────────────────
 
-interface TagAttr {
-  name: string;
-  /** null for a valueless/bare attribute (e.g. `disabled`). */
-  value: string | null;
+/** A run of a tag's inside with no whitespace outside attribute values and Jinja; `attribute` when it is exactly one. */
+interface Piece extends Range {
+  attribute?: Attribute;
 }
 
-interface ParsedTag {
-  name: string;
-  attrs: TagAttr[];
-  selfClose: boolean;
+/** The value of an attribute written `name="value"` (spaces around `=` allowed, nothing else between); null for any other form. */
+function doubleQuoted(text: string, attribute: Attribute): string | null {
+  const value = attribute.value;
+  if (!value || text[value.start - 1] !== '"' || text[value.end] !== '"') return null;
+  if (!/^\s*=\s*$/.test(text.slice(attribute.nameRange.end, value.start - 1))) return null;
+  return text.slice(value.start, value.end);
 }
 
-/** Parse an opening or self-closing tag into its name and attributes. */
-function parseTag(tagValue: string): ParsedTag {
-  const trimmed = tagValue.trim();
-  const selfClose = trimmed.endsWith("/>");
-  const inner = trimmed.slice(1, selfClose ? -2 : -1);
+function attributeEnd(text: string, attribute: Attribute): number {
+  if (!attribute.value) return attribute.nameRange.end;
+  const quoted = text[attribute.value.start - 1] === '"' || text[attribute.value.start - 1] === "'";
+  return Math.min(text.length, attribute.value.end + (quoted ? 1 : 0));
+}
 
-  const nameMatch = inner.match(/^\s*([A-Za-z][\w:.-]*)/);
-  const name = nameMatch ? nameMatch[1] : "";
-  let index = nameMatch ? nameMatch[0].length : 0;
-  const attrs: TagAttr[] = [];
-
-  while (index < inner.length) {
-    while (index < inner.length && /\s/.test(inner[index])) index += 1;
-    if (index >= inner.length) break;
-
-    const rest = inner.slice(index);
-    const quoted = rest.match(/^([\w:@.-]+)\s*=\s*"/);
-    if (quoted) {
-      const openQuoteIndex = index + quoted[0].length - 1;
-      const parsed = readDoubleQuotedContent(inner, openQuoteIndex);
-      if (!parsed) break;
-      attrs.push({ name: quoted[1], value: parsed.content });
-      index = parsed.closeIndex + 1;
+function pieces(text: string, tag: Tag, regions: Region[]): Piece[] {
+  const end = tag.range.end - (tag.selfClosing ? 2 : 1);
+  const spans: (Range & { attribute?: Attribute })[] = [
+    ...tag.attributes.map((attribute) => ({ start: attribute.nameRange.start, end: attributeEnd(text, attribute), attribute })),
+    ...regions.filter((r) => r.start >= tag.nameRange.end && r.end <= end),
+  ].sort((a, b) => a.start - b.start);
+  const found: Piece[] = [];
+  let p = tag.nameRange.end;
+  while (p < end) {
+    if (/\s/.test(text[p])) {
+      p += 1;
       continue;
     }
-
-    const bare = rest.match(/^([^\s]+)/);
-    if (!bare) break;
-    attrs.push({ name: bare[1], value: null });
-    index += bare[0].length;
+    const start = p;
+    let only: Piece["attribute"];
+    let count = 0;
+    while (p < end && !/\s/.test(text[p])) {
+      const span = spans.find((s) => s.start === p);
+      if (span && span.end > p) {
+        only = span.attribute;
+        count += 1;
+        p = Math.min(span.end, end);
+      } else {
+        count += 2;
+        p += 1;
+      }
+    }
+    found.push({ start, end: p, attribute: count === 1 ? only : undefined });
   }
-
-  return { name, attrs, selfClose };
+  return found;
 }
 
-function tagHasSlot(parsed: ParsedTag): boolean {
-  return parsed.attrs.some((attr) => attr.value !== null && isHtmlSlotValue(attr.value));
-}
+const isSlot = (value: string | null): value is string => value !== null && isHtmlSlotValue(value);
+
+const tagHasSlot = (text: string, tag: Tag): boolean => tag.attributes.some((a) => isSlot(doubleQuoted(text, a)));
 
 /**
  * Re-indenting prefixes every line, so a slot value with a multi-line token
@@ -199,28 +203,32 @@ function canReindent(slotValue: string): boolean {
  * own indented line, slot values recursively formatted, and the closing
  * `>` / `/>` on its own line at the tag's indent.
  */
-function renderExplodedTag(parsed: ParsedTag, baseIndent: string): string {
+function renderExplodedTag(text: string, tag: Tag, regions: Region[], baseIndent: string): string {
   const attrIndent = baseIndent + INDENT;
-  const lines: string[] = [`${baseIndent}<${parsed.name}`];
+  const lines: string[] = [`${baseIndent}<${tag.name}`];
 
-  for (const attr of parsed.attrs) {
-    if (attr.value === null) {
-      lines.push(attrIndent + attr.name);
+  for (const piece of pieces(text, tag, regions)) {
+    // Glued to the name, it is part of the name (`<h{{ level }}`).
+    if (piece.start === tag.nameRange.end) {
+      lines[0] += text.slice(piece.start, piece.end);
       continue;
     }
-    if (isHtmlSlotValue(attr.value) && canReindent(attr.value)) {
-      lines.push(`${attrIndent}${attr.name}="`);
-      const formatted = formatPyjinhxTemplate(attr.value).replace(/\n+$/, "");
+    const value = piece.attribute ? doubleQuoted(text, piece.attribute) : null;
+    if (isSlot(value) && canReindent(value)) {
+      lines.push(`${attrIndent}${piece.attribute!.name}="`);
+      const formatted = formatPyjinhxTemplate(value).replace(/\n+$/, "");
       for (const line of formatted.split("\n")) {
         lines.push(line.trim().length ? attrIndent + INDENT + line : "");
       }
       lines.push(`${attrIndent}"`);
-      continue;
+    } else if (value !== null) {
+      lines.push(`${attrIndent}${piece.attribute!.name}="${value}"`);
+    } else {
+      lines.push(attrIndent + text.slice(piece.start, piece.end));
     }
-    lines.push(`${attrIndent}${attr.name}="${attr.value}"`);
   }
 
-  lines.push(baseIndent + (parsed.selfClose ? "/>" : ">"));
+  lines.push(baseIndent + (tag.selfClosing ? "/>" : ">"));
   return lines.join("\n");
 }
 
@@ -392,9 +400,8 @@ function formatLf(text: string): string {
     }
 
     if (token.type === "self_close") {
-      const parsed = parseTag(token.value);
-      if (tagHasSlot(parsed) && !touchesText(tokens, index)) {
-        emit(index, renderExplodedTag(parsed, baseIndent));
+      if (tagHasSlot(text, token.tag!) && !touchesText(tokens, index)) {
+        emit(index, renderExplodedTag(text, token.tag!, s.regions, baseIndent));
       } else {
         emit(index, baseIndent + token.value.trim());
       }
@@ -402,9 +409,8 @@ function formatLf(text: string): string {
     }
 
     if (token.type === "open") {
-      const parsed = parseTag(token.value);
-      if (tagHasSlot(parsed) && !touchesText(tokens, index)) {
-        emit(index, renderExplodedTag(parsed, baseIndent));
+      if (tagHasSlot(text, token.tag!) && !touchesText(tokens, index)) {
+        emit(index, renderExplodedTag(text, token.tag!, s.regions, baseIndent));
         depth += 1;
         continue;
       }

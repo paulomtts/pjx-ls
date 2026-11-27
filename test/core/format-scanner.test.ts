@@ -66,6 +66,52 @@ const cases: [string, string, string | null][] = [
     "<div><script>a</scripts>b</script><p>y</p></div>",
     "<div>\n  <script>a</scripts>b</script>\n  <p>y</p>\n</div>\n",
   ],
+  [
+    "19: another attribute with an apostrophe",
+    `<Card title="it's" body="<p>x</p>"/>`,
+    `<Card\n  title="it's"\n  body="\n    <p>x</p>\n  "\n/>\n`,
+  ],
+  [
+    "20: a single-quoted value with a space",
+    `<Card a='x y' body="<p>Hi</p>"/>`,
+    `<Card\n  a='x y'\n  body="\n    <p>Hi</p>\n  "\n/>\n`,
+  ],
+  [
+    "20: spaces around = of a single-quoted value",
+    `<Card a = 'x' body="<p>Hi</p>"/>`,
+    `<Card\n  a = 'x'\n  body="\n    <p>Hi</p>\n  "\n/>\n`,
+  ],
+  [
+    "20: a #ref value with a space",
+    `<Card #ref="a b" body="<p>Hi</p>"/>`,
+    `<Card\n  #ref="a b"\n  body="\n    <p>Hi</p>\n  "\n/>\n`,
+  ],
+  [
+    "21: Jinja between attributes, spaced",
+    `<Card {% if a %} x="1" {% endif %} body="<p>Hi</p>"/>`,
+    `<Card\n  {% if a %}\n  x="1"\n  {% endif %}\n  body="\n    <p>Hi</p>\n  "\n/>\n`,
+  ],
+  [
+    "21: Jinja glued to an attribute",
+    `<Card {% if a %}x="1"{% endif %} body="<p>Hi</p>"/>`,
+    `<Card\n  {% if a %}x="1"{% endif %}\n  body="\n    <p>Hi</p>\n  "\n/>\n`,
+  ],
+  [
+    "21: an expression as an attribute",
+    `<Card {{ attrs }} body="<p>Hi</p>"/>`,
+    `<Card\n  {{ attrs }}\n  body="\n    <p>Hi</p>\n  "\n/>\n`,
+  ],
+  [
+    "21: Jinja between = and the quote",
+    `<Card v={% if a %}"s" body="<p>Hi</p>"/>`,
+    `<Card\n  v={% if a %}"s"\n  body="\n    <p>Hi</p>\n  "\n/>\n`,
+  ],
+  [
+    "21: Jinja glued to the tag name",
+    `<Card{{ x }} body="<p>Hi</p>"/>`,
+    `<Card{{ x }}\n  body="\n    <p>Hi</p>\n  "\n/>\n`,
+  ],
+  ["22: alternating quotes", `<X body="<Card title='say "hi"'/>"/>`, `<X body="<Card title='say "hi"'/>"/>\n`],
 ];
 
 for (const [name, input, output] of cases) {
@@ -76,3 +122,11 @@ for (const [name, input, output] of cases) {
     assert.equal(formatPyjinhxTemplate(result), result, "idempotent");
   });
 }
+
+const solid = (text: string) => text.replace(/\s+/g, "");
+
+test("the formatter moves whitespace and nothing else, on every row and slot test", () => {
+  for (const [name, input] of cases) {
+    assert.equal(solid(formatPyjinhxTemplate(input)), solid(input), name);
+  }
+});
