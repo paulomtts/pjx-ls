@@ -188,3 +188,14 @@ test("a slotted tag name with dots, dashes or underscores is not split", () => {
     );
   }
 });
+
+test("an exploded tag writes name=\"value\", and keeps unquoted, bare and single-quoted attributes", () => {
+  assert.equal(
+    formatPyjinhxTemplate(`<Card a = "x" n=3 on body='<p>s</p>' slot = "<p>Hi</p>"/>`),
+    `<Card\n  a="x"\n  n=3\n  on\n  body='<p>s</p>'\n  slot="\n    <p>Hi</p>\n  "\n/>\n`,
+  );
+});
+
+test("a single-quoted markup value is not a slot", () => {
+  assert.equal(formatPyjinhxTemplate(`<Card body='<p>Hi</p>'/>`), `<Card body='<p>Hi</p>'/>\n`);
+});
