@@ -1,0 +1,13 @@
+{#python
+from dataclasses import dataclass
+@dataclass
+class Total:
+  count:int=0
+  label : str='items'
+  def text(self,suffix = "") :
+      return f"{self.count} {self.label}"+suffix
+#}
+<div class="total">
+  <span>{{ text() }}</span>
+  <p>{{ label }}</p>
+</div>
