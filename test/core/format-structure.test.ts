@@ -72,7 +72,7 @@ test("interpolation containing < and quotes is not mis-tokenized", () => {
 });
 
 test("a bare double-quote inside {{ }} in an attribute does not terminate the tag", () => {
-  // Locks the {{ }}-skip in readQuotedString: without it, the " inside the
+  // The scanner lexes Jinja before tags: without that, the " inside the
   // interpolation would close the attribute and corrupt the tag.
   assert.equal(
     formatPyjinhxTemplate(`<div a="{{ x or "y" }}"><span>t</span></div>`),

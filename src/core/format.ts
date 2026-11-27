@@ -1,3 +1,4 @@
+import { defHeaderRange, scan, type Range, type Scan, type Tag } from "./regions.ts";
 import { isHtmlSlotValue, readDoubleQuotedContent } from "./slots.ts";
 
 export const INDENT = "  ";
@@ -8,9 +9,6 @@ const JINJA_BLOCKS = new Set(["if", "for", "macro", "block", "filter", "with", "
 const VOID_ELEMENTS = new Set([
   "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr",
 ]);
-// pyjinhx only recognises `{#python` with the opener in column 0.
-const PYTHON_BLOCK = /^\{#-?python\b/;
-const DEF_HEADER = /^\{#-?\s*def\b/;
 
 type TokenType = "opaque" | "jinja" | "jinja_expr" | "open" | "close" | "self_close" | "text";
 
@@ -18,6 +16,12 @@ interface Token {
   type: TokenType;
   value: string;
   name?: string;
+  /** The scanner's tag, for an open or self-closing tag. */
+  tag?: Tag;
+  /** The `{#def` header, which a blank line follows. */
+  header?: boolean;
+  /** The `{#python` block, whose opener stays in column 0. */
+  python?: boolean;
   /** Whether a line break precedes this token in the source. */
   newlineBefore: boolean;
   /** Whether whitespace (or the start of the text) precedes this token in the source. */
@@ -44,156 +48,53 @@ function jinjaTag(value: string): JinjaTag | undefined {
   return undefined;
 }
 
-interface Parsed {
-  value: string;
-  endIndex: number;
+/** Elements kept byte for byte, with the scanner's script and style elements. */
+const VERBATIM_ELEMENTS = new Set(["textarea", "pre"]);
+
+interface Atom extends Range {
+  type: TokenType;
+  tag?: Tag;
 }
 
-function readQuotedString(text: string, startIndex: number, quote: string): Parsed | null {
-  let index = startIndex + 1;
-  let value = quote;
-  while (index < text.length) {
-    const character = text[index];
-    value += character;
-    if (character === quote) {
-      return { value, endIndex: index };
+const REGION_TOKEN = { expression: "jinja_expr", statement: "jinja", comment: "jinja", raw: "opaque" } as const;
+
+/** The scanner's regions, comments and tags in document order; a verbatim element is one atom. Null when one has no close tag. */
+function atoms(s: Scan): Atom[] | null {
+  const found: Atom[] = [
+    ...s.regions.map((r) => ({ start: r.start, end: r.end, type: REGION_TOKEN[r.kind] })),
+    ...s.htmlComments.map((c) => ({ ...c, type: "opaque" as const })),
+  ];
+  const bodyEnd = new Map(s.embedded.map((e) => [e.body.start, e.body.end]));
+  for (let i = 0; i < s.tags.length; i += 1) {
+    const tag = s.tags[i];
+    const name = tag.name.toLowerCase();
+    if (tag.closing) {
+      found.push({ ...tag.range, type: "close", tag });
+    } else if (tag.selfClosing || VOID_ELEMENTS.has(name)) {
+      found.push({ ...tag.range, type: "self_close", tag });
+    } else if (bodyEnd.has(tag.range.end) || VERBATIM_ELEMENTS.has(name)) {
+      // A script or style ends where the scanner ends its body; a pre or textarea at its next close tag.
+      const end = bodyEnd.get(tag.range.end);
+      const close = s.tags.findIndex(
+        (t, j) => j > i && (end === undefined ? t.closing && t.name.toLowerCase() === name : t.range.start === end),
+      );
+      if (close === -1) return null;
+      found.push({ start: tag.range.start, end: s.tags[close].range.end, type: "opaque" });
+      i = close;
+    } else {
+      found.push({ ...tag.range, type: "open", tag });
     }
-    if (character === "{" && text[index + 1] === "{") {
-      index += 2;
-      while (index < text.length - 1 && !(text[index] === "}" && text[index + 1] === "}")) {
-        value += text[index];
-        index += 1;
-      }
-      if (index < text.length) {
-        value += text[index];
-        index += 1;
-      }
-      if (index < text.length) {
-        value += text[index];
-      }
-      index += 1;
-      continue;
-    }
-    index += 1;
   }
-  return null;
+  return found.sort((a, b) => a.start - b.start || b.end - a.end);
 }
 
-function readTag(text: string, startIndex: number): Parsed | null {
-  let index = startIndex + 1;
-  let value = "<";
-  while (index < text.length) {
-    const character = text[index];
-    value += character;
-    if (character === '"') {
-      const parsed = readQuotedString(text, index, '"');
-      if (!parsed) {
-        return null;
-      }
-      value = text.slice(startIndex, parsed.endIndex + 1);
-      index = parsed.endIndex + 1;
-      continue;
-    }
-    if (character === "'") {
-      const parsed = readQuotedString(text, index, "'");
-      if (!parsed) {
-        return null;
-      }
-      value = text.slice(startIndex, parsed.endIndex + 1);
-      index = parsed.endIndex + 1;
-      continue;
-    }
-    if (character === ">") {
-      return { value, endIndex: index };
-    }
-    index += 1;
-  }
-  return null;
-}
-
-/** Index of the first `endMarker` at or after `from`, skipping quoted strings (backslash escapes honoured). */
-function findEndOutsideStrings(text: string, from: number, endMarker: string): number {
-  let index = from;
-  while (index < text.length) {
-    const character = text[index];
-    if (character === '"' || character === "'") {
-      index += 1;
-      while (index < text.length && text[index] !== character) {
-        index += text[index] === "\\" ? 2 : 1;
-      }
-      if (index >= text.length) return -1;
-    } else if (text.startsWith(endMarker, index)) {
-      return index;
-    }
-    index += 1;
-  }
-  return -1;
-}
-
-function readJinja(text: string, startIndex: number, marker: string, endMarker: string): Parsed | null {
-  const bodyStart = startIndex + marker.length;
-  // Comments are prose: an apostrophe in them is not a string.
-  const endIndex =
-    marker === "{#" ? text.indexOf(endMarker, bodyStart) : findEndOutsideStrings(text, bodyStart, endMarker);
-  if (endIndex === -1) {
-    return null;
-  }
-  return {
-    value: text.slice(startIndex, endIndex + endMarker.length),
-    endIndex: endIndex + endMarker.length - 1,
-  };
-}
-
-const COMMENT_OPEN = /<!--/y;
-const DECLARATION_OPEN = /<!/y;
-const RAW_OPEN = /\{%[-+]?\s*raw\s*[-+]?%\}/y;
-const RAW_TEXT_OPEN = /<(script|style|textarea|pre)(?=[\s/>])/iy;
-
-/** Index just past the first match of `closing` after `from`, or -1. */
-function endOfFirst(closing: RegExp, text: string, from: number): number {
-  closing.lastIndex = from;
-  const close = closing.exec(text);
-  return close ? close.index + close[0].length : -1;
-}
-
-/**
- * Read a region whose contents must reach the output untouched: HTML comments,
- * `<!…>` declarations, `{% raw %}` blocks and script/style/textarea/pre elements.
- * Returns undefined when `startIndex` begins no such region, null when it never
- * terminates.
- */
-function readOpaque(text: string, startIndex: number): Parsed | null | undefined {
-  const opens = (opener: RegExp) => {
-    opener.lastIndex = startIndex;
-    return opener.exec(text);
-  };
-  let closing: RegExp;
-  if (opens(COMMENT_OPEN)) {
-    closing = /-->/g;
-  } else if (opens(DECLARATION_OPEN)) {
-    closing = />/g;
-  } else if (opens(RAW_OPEN)) {
-    closing = /\{%[-+]?\s*endraw\s*[-+]?%\}/g;
-  } else {
-    const element = opens(RAW_TEXT_OPEN);
-    if (!element) return undefined;
-    closing = new RegExp(`</${element[1]}\\s*>`, "ig");
-  }
-  const end = endOfFirst(closing, text, startIndex + 1);
-  if (end === -1) return null;
-  return { value: text.slice(startIndex, end), endIndex: end - 1 };
-}
-
-function tagName(tagValue: string): string {
-  const match = tagValue.match(/^<\/?\s*([A-Za-z][\w:.-]*)/);
-  return match ? match[1] : "";
-}
-
-/** `complete` is false when an unterminated construct cut the scan short. */
-function tokenize(text: string): { tokens: Token[]; complete: boolean } {
+/** `complete` is false when something is never closed, or a tag and a `{% raw %}` region overlap. */
+function tokenize(text: string, s: Scan = scan(text)): { tokens: Token[]; complete: boolean } {
   const tokens: Token[] = [];
-  let complete = true;
-  let index = 0;
+  const all = s.unterminated ? null : atoms(s);
+  if (!all) return { tokens, complete: false };
+  const header = defHeaderRange(text, s);
+  const python = s.blocks.find((b) => b.keyword === "python");
   const add = (start: number, token: Omit<Token, "spaceBefore" | "newlineBefore">): void => {
     let back = start;
     while (back > 0 && /\s/.test(text[back - 1]) && text[back - 1] !== "\n") back -= 1;
@@ -203,95 +104,32 @@ function tokenize(text: string): { tokens: Token[]; complete: boolean } {
       newlineBefore: back > 0 && text[back - 1] === "\n",
     });
   };
+  const addText = (start: number, end: number): void => {
+    const gap = text.slice(start, end);
+    const value = gap.trim();
+    if (value) add(start + gap.length - gap.trimStart().length, { type: "text", value });
+  };
 
-  while (index < text.length) {
-    const character = text[index];
-
-    const opaque = character === "<" || character === "{" ? readOpaque(text, index) : undefined;
-    if (opaque === null) {
-      complete = false;
-      break;
-    }
-    if (opaque) {
-      add(index, { type: "opaque", value: opaque.value });
-      index = opaque.endIndex + 1;
+  let at = 0;
+  for (const atom of all) {
+    // Inside the atom before it: Jinja in a tag, markup in a comment or a raw region.
+    if (atom.start < at) {
+      if (atom.end > at) return { tokens, complete: false };
       continue;
     }
-    if (character === "{" && text[index + 1] === "#") {
-      const parsed = readJinja(text, index, "{#", "#}");
-      if (!parsed) {
-        complete = false;
-        break;
-      }
-      add(index, { type: "jinja", value: parsed.value });
-      index = parsed.endIndex + 1;
-      continue;
-    }
-    if (character === "{" && text[index + 1] === "%") {
-      const parsed = readJinja(text, index, "{%", "%}");
-      if (!parsed) {
-        complete = false;
-        break;
-      }
-      add(index, { type: "jinja", value: parsed.value });
-      index = parsed.endIndex + 1;
-      continue;
-    }
-    if (character === "{" && text[index + 1] === "{") {
-      const parsed = readJinja(text, index, "{{", "}}");
-      if (!parsed) {
-        complete = false;
-        break;
-      }
-      add(index, { type: "jinja_expr", value: parsed.value });
-      index = parsed.endIndex + 1;
-      continue;
-    }
-    if (character === "<") {
-      const parsed = readTag(text, index);
-      if (!parsed) {
-        complete = false;
-        break;
-      }
-      const tagValue = parsed.value.trim();
-      if (tagValue.startsWith("</")) {
-        add(index, { type: "close", value: tagValue, name: tagName(tagValue) });
-      } else if (tagValue.endsWith("/>") || VOID_ELEMENTS.has(tagName(tagValue).toLowerCase())) {
-        add(index, { type: "self_close", value: tagValue, name: tagName(tagValue) });
-      } else {
-        add(index, { type: "open", value: tagValue, name: tagName(tagValue) });
-      }
-      index = parsed.endIndex + 1;
-      continue;
-    }
-    if (/\s/.test(character)) {
-      index += 1;
-      continue;
-    }
-
-    const textStart = index;
-    while (index < text.length) {
-      const nextCharacter = text[index];
-      if (nextCharacter === "<") break;
-      if (
-        nextCharacter === "{" &&
-        (text[index + 1] === "#" || text[index + 1] === "%" || text[index + 1] === "{")
-      ) {
-        break;
-      }
-      index += 1;
-    }
-    if (index > textStart) {
-      const textValue = text.slice(textStart, index).trim();
-      if (textValue.length > 0) {
-        add(textStart, { type: "text", value: textValue });
-      }
-      continue;
-    }
-    index += 1;
+    addText(at, atom.start);
+    add(atom.start, {
+      type: atom.type,
+      value: text.slice(atom.start, atom.end),
+      name: atom.tag?.name,
+      tag: atom.tag,
+      header: atom.start === header?.start,
+      python: atom.start === python?.opener.start,
+    });
+    at = atom.end;
   }
-
-  return { tokens, complete };
+  addText(at, text.length);
+  return { tokens, complete: true };
 }
 
 // ── Tag attribute parsing & slot-aware rendering ───────────────────────────
@@ -464,13 +302,11 @@ function isBalanced(tokens: Token[]): boolean {
   return stack.length === 0;
 }
 
-/** Format with `\n` line endings, restoring the document's own EOL afterwards. */
 /** A `{#def` closer followed by more text on its line means the header was not what it seems. */
 function hasTextAfterHeader(tokens: Token[]): boolean {
   return tokens.some(
     (token, index) =>
-      token.type === "jinja" &&
-      DEF_HEADER.test(token.value) &&
+      token.header &&
       index + 1 < tokens.length &&
       !tokens[index + 1].newlineBefore,
   );
@@ -488,11 +324,15 @@ export function formatPyjinhxTemplate(text: string): string {
   return formatLf(text.replaceAll("\r\n", "\n")).replaceAll("\n", "\r\n");
 }
 
+/** Format with `\n` line endings, restoring the document's own EOL afterwards. */
 function formatLf(text: string): string {
   // Blank lines before a leading `{#` comment or header are the author's layout.
   const lead = /^(?:[ \t]*\n)+(?=[ \t]*\{#)/.exec(text)?.[0];
   if (lead) return lead + formatLf(text.slice(lead.length));
-  const { tokens, complete } = tokenize(text);
+  const s = scan(text);
+  // A block error: the Python and CSS/JS steps leave the text alone, and so does this one.
+  if (s.error) return text;
+  const { tokens, complete } = tokenize(text, s);
   if (tokens.length === 0 || !complete || !isBalanced(tokens) || hasTextAfterHeader(tokens)) {
     return text;
   }
@@ -529,12 +369,12 @@ function formatLf(text: string): string {
       const trimmed = token.value.trim();
       const kind = jinjaTag(trimmed)?.kind;
       const level = kind === "close" || kind === "mid" ? Math.max(0, depth - 1) : depth;
-      emit(index, (PYTHON_BLOCK.test(trimmed) ? "" : INDENT.repeat(level)) + trimmed);
+      emit(index, (token.python ? "" : INDENT.repeat(level)) + trimmed);
       if (kind === "open") depth += 1;
       if (kind === "close") depth = level;
       // A {#def … #} header is always separated from the rest of the file by a
       // blank line (a trailing one is removed by the final trimEnd()).
-      if (DEF_HEADER.test(trimmed)) {
+      if (token.header) {
         lines.push("");
       }
       continue;
