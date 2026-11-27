@@ -272,7 +272,10 @@ function tryInlineElement(tokens: Token[], startIndex: number, baseIndent: strin
     }
     if (token.type === "text" || token.type === "jinja_expr") {
       inner += (token.spaceBefore && (inner || keepEdges) ? " " : "") + token.value;
-      const written = token.value.split("\n").map((line) => line.trim()).join(`\n${innerIndent}`);
+      // An expression's lines are its own: a string in it may span them.
+      const written = token.type === "jinja_expr"
+        ? token.value
+        : token.value.split("\n").map((line) => line.trim()).join(`\n${innerIndent}`);
       if (token.newlineBefore || content.length === 0) content.push(innerIndent + written);
       else content[content.length - 1] += (token.spaceBefore ? " " : "") + written;
       continue;

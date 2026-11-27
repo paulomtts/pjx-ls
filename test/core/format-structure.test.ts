@@ -147,6 +147,11 @@ const broken: [string, string, string][] = [
   ],
   ["written on one line", "<p>Hello {{ name }}</p>", "<p>Hello {{ name }}</p>\n"],
   ["a break on one side only", "<span>\n  a</span>", "<span> a</span>\n"],
+  [
+    "an expression over several lines is kept as written",
+    '<p>\n  {{ _("Hello\n     world") }}\n</p>',
+    '<p>\n  {{ _("Hello\n     world") }}\n</p>\n',
+  ],
 ];
 
 for (const [name, input, output] of broken) {
