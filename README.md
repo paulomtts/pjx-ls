@@ -78,7 +78,7 @@ The manifest is read when the folder opens, and again 300 ms after a `.pjx`, `.p
 `.pyi` file is saved, created or deleted. The active unsaved document is sent on stdin,
 so completion follows what you type. The interpreter is `pyjinhx.pythonPath`, else the
 Python extension's environment (if installed), else `.venv` in the folder, else `python3`.
-Settings: `pyjinhx.pythonPath`, `pyjinhx.generateStubs`, `pyjinhx.manifest.paths`, `pyjinhx.manifest.sysPath`.
+Settings: `pyjinhx.pythonPath`, `pyjinhx.generateStubs`, `pyjinhx.format.python`, `pyjinhx.manifest.paths`, `pyjinhx.manifest.sysPath`.
 
 **Stubs.** With `pyjinhx.generateStubs` on (the default), a `.pjx` with a `{#python` block
 gets its `<name>.pyi` written beside it, as `python -m pyjinhx.stubgen` does, whenever the
@@ -124,13 +124,21 @@ props then come from the `.pjx` file names and `{#def` headers only: tag and pro
 completion, hover (the header's signature) and go to definition work; a component whose
 props are in a `.py` file (split, `template = ...`, `{#python`) has none there, and there
 are no diagnostics. Call-site checks
-(unknown tag, unknown or missing prop) wait for pyjinhx to report them.
+(unknown tag, unknown or missing prop) wait for pyjinhx to report them. An untrusted
+workspace also runs no ruff, so `{#python` bodies are not formatted there.
 
 ### Formatting
 - Re-indents the HTML/Jinja structure (two-space) and **explodes** slotted component
   tags: each attribute on its own line, the slot value formatted recursively, and the
   closing `>` / `/>` on its own line.
 - Always keeps a blank line between a `{#def … #}` header and the rest of the file.
+- Formats the body of a `{#python` block with **ruff** (`ruff format`), using the
+  project's own ruff configuration (`pyproject.toml`, `ruff.toml`). ruff is looked for as
+  `<interpreter> -m ruff` in the project's environment, then as `ruff` on `PATH`; it is
+  not bundled. Without ruff, on a body ruff cannot parse, and in an untrusted workspace
+  the body is left exactly as it is and the rest of the file is still formatted; the
+  reason is in **PyJinHx: Show Output**. When ruff is not found at all, one message
+  per session offers a **Turn off** button. `pyjinhx.format.python: "off"` turns it off.
 - **Idempotent** — running it again changes nothing.
 - Available as **Format Document**, the **PyJinHx: Format Slotted Component Tags**
   command, and **format-on-save** (opt-in through VS Code's own setting, see below).
@@ -149,6 +157,9 @@ Install from the Marketplace. Formatting on save is off by default; enable it fo
 A global `"editor.formatOnSave": true` also formats `.pjx` files. The extension is the only formatter registered for `.pjx`, so VS Code uses it
 automatically; add `"editor.defaultFormatter": "paulomtts.pyjinhx-syntax-support"` to
 the same block if you have other formatters installed.
+
+On save the file is formatted first and written second, so the `.pyi` stub (see
+**Stubs**) is generated from the formatted block.
 
 `.pjx` files are formatted anywhere. The extension does not register for the `html`,
 `jinja` or `jinja-html` languages, so it never competes with their formatters.
@@ -178,6 +189,9 @@ Python's configuration there; only the highlighting is PyJinHx.
 
 ## Known limitations
 
+- `{#css` and `{#js` bodies are not formatted yet.
+- The Python body is formatted as a module of its own: ruff is told the file is
+  `<name>.py` beside the `.pjx`, and `exclude` patterns are not applied to it.
 - A workspace folder with no `.pjx` file does not run the manifest until one exists, so a
   folder of `template = ...` components in `.py` files only gets no component features.
 - There is no component completion, hover or definition inside slot values

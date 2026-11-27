@@ -3,6 +3,30 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.9.0
+
+### Added
+- The formatter (Format Document, the command, format on save) now formats the body of
+  a `{#python` block with the project's `ruff format`, found as `<interpreter> -m ruff`
+  and then as `ruff` on `PATH`, with the project's ruff configuration. The opener and
+  the closing `#}` are not touched, CRLF files stay CRLF, and a second run changes
+  nothing.
+- `pyjinhx.format.python` (`ruff`, the default, or `off`).
+- The body is left exactly as it is when ruff is not installed, cannot parse it,
+  takes more than 5 s, or would write a `#}` into it; the reason is one line in the
+  PyJinHx output. When ruff is not found at all, one information message per session
+  offers a **Turn off** button (it sets `pyjinhx.format.python` to `off` where the
+  setting was resolved from: the workspace folder or workspace if it was set there,
+  else the user settings). Other failures never show a notification. In an untrusted
+  workspace ruff is not run.
+
+### Changed
+- Formatting a `.pjx` whose `{#python` body is not ruff-clean now changes that body.
+
+### Fixed
+- Output of the interpreter is decoded as one UTF-8 stream, so a non-ASCII character
+  can no longer be damaged at a chunk boundary.
+
 ## 0.8.0
 
 ### Added
