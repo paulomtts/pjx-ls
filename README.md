@@ -78,7 +78,7 @@ The manifest is read when the folder opens, and again 300 ms after a `.pjx`, `.p
 `.pyi` file is saved, created or deleted. The active unsaved document is sent on stdin,
 so completion follows what you type. The interpreter is `pyjinhx.pythonPath`, else the
 Python extension's environment (if installed), else `.venv` in the folder, else `python3`.
-Settings: `pyjinhx.pythonPath`, `pyjinhx.generateStubs`, `pyjinhx.format.python`, `pyjinhx.manifest.paths`, `pyjinhx.manifest.sysPath`.
+Settings: `pyjinhx.pythonPath`, `pyjinhx.generateStubs`, `pyjinhx.format.python`, `pyjinhx.format.sortImports`, `pyjinhx.manifest.paths`, `pyjinhx.manifest.sysPath`.
 
 **Stubs.** With `pyjinhx.generateStubs` on (the default), a `.pjx` with a `{#python` block
 gets its `<name>.pyi` written beside it, as `python -m pyjinhx.stubgen` does, whenever the
@@ -133,7 +133,11 @@ workspace also runs no ruff, so `{#python` bodies are not formatted there.
   closing `>` / `/>` on its own line.
 - Always keeps a blank line between a `{#def … #}` header and the rest of the file.
 - Formats the body of a `{#python` block with **ruff** (`ruff format`), using the
-  project's own ruff configuration (`pyproject.toml`, `ruff.toml`). ruff is looked for as
+  project's own ruff configuration (`pyproject.toml`, `ruff.toml`). Imports in the
+  block are sorted first (ruff's `I001` fix with the project's
+  `[tool.ruff.lint.isort]` settings; no other lint rule is run, whatever the project
+  selects). `pyjinhx.format.sortImports: false` turns the sorting off; a
+  `# isort: skip_file` line does it for one block. ruff is looked for as
   `<interpreter> -m ruff` in the project's environment, then as `ruff` on `PATH`; it is
   not bundled. Without ruff, on a body ruff cannot parse, and in an untrusted workspace
   the body is left exactly as it is and the rest of the file is still formatted; the
@@ -192,6 +196,8 @@ Python's configuration there; only the highlighting is PyJinHx.
 - `{#css` and `{#js` bodies are not formatted yet.
 - The Python body is formatted as a module of its own: ruff is told the file is
   `<name>.py` beside the `.pjx`, and `exclude` patterns are not applied to it.
+- Import sorting follows `unfixable` and `per-file-ignores` but not `ignore`, and a
+  project's `required-imports` are not added to a block.
 - A workspace folder with no `.pjx` file does not run the manifest until one exists, so a
   folder of `template = ...` components in `.py` files only gets no component features.
 - There is no component completion, hover or definition inside slot values

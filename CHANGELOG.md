@@ -6,12 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/).
 ## 0.9.0
 
 ### Added
-- The formatter (Format Document, the command, format on save) now formats the body of
+- The formatter (Format Document, the command, format on save) now sorts the imports of and
+  formats the body of
   a `{#python` block with the project's `ruff format`, found as `<interpreter> -m ruff`
   and then as `ruff` on `PATH`, with the project's ruff configuration. The opener and
   the closing `#}` are not touched, CRLF files stay CRLF, and a second run changes
   nothing.
 - `pyjinhx.format.python` (`ruff`, the default, or `off`).
+- `pyjinhx.format.sortImports` (default `true`): the imports of the block are sorted
+  with ruff's `I001` fix before formatting. If that step fails, the body is still
+  formatted.
 - The body is left exactly as it is when ruff is not installed, cannot parse it,
   takes more than 5 s, or would write a `#}` into it; the reason is one line in the
   PyJinHx output. When ruff is not found at all, one information message per session
