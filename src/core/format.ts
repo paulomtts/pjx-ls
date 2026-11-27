@@ -1,6 +1,6 @@
 import { isHtmlSlotValue, readDoubleQuotedContent } from "./slots.ts";
 
-const INDENT = "  ";
+export const INDENT = "  ";
 
 const JINJA_TAG_NAME = /^\{%[-+]?\s*(\w+)/;
 const INLINE_SET = /^\{%[-+]?\s*set\s+[\w\s,().]+=/;
