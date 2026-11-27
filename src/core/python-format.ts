@@ -72,6 +72,7 @@ export interface RuffRequest {
 
 type Run = Exit | "missing" | "timeout" | "cancelled" | { failure: string };
 type Label = "ruff check" | "ruff format";
+type Deadline = { at?: number };
 
 const shown = (c: RuffCommand) => [c.command, ...c.args].join(" ");
 
@@ -93,7 +94,8 @@ export class Ruff {
   /** The formatted module (its imports sorted first when asked), or null when ruff is missing, fails, times out or is cancelled. Never rejects. */
   async format(source: string, request: RuffRequest): Promise<string | null> {
     if (request.cancel?.cancelled) return null;
-    const deadline = Date.now() + this.timeoutMs;
+    // One time limit for both steps, counted from the first spawn: looking for ruff can wake the Python extension.
+    const deadline: Deadline = {};
     const name = path.basename(request.filename);
     let body = source;
     if (request.sortImports) {
@@ -112,7 +114,7 @@ export class Ruff {
   }
 
   /** One ruff subcommand: the run of the first candidate that is not missing, which is then remembered. */
-  private async step(label: Label, args: string[], source: string, request: RuffRequest, deadline: number): Promise<Run> {
+  private async step(label: Label, args: string[], source: string, request: RuffRequest, deadline: Deadline): Promise<Run> {
     const name = path.basename(request.filename);
     const remembered = this.found.get(request.cwd);
     if (remembered) {
@@ -153,14 +155,15 @@ export class Ruff {
     return null;
   }
 
-  private async run(command: RuffCommand, label: Label, args: string[], source: string, request: RuffRequest, deadline: number): Promise<Run> {
+  private async run(command: RuffCommand, label: Label, args: string[], source: string, request: RuffRequest, deadline: Deadline): Promise<Run> {
     if (request.cancel?.cancelled) return "cancelled";
     const started = Date.now();
+    const at = (deadline.at ??= started + this.timeoutMs);
     const process = this.spawn(command.command, [...command.args, ...args], source, request.cwd);
     process.exit.catch(() => {});
     let timer: NodeJS.Timeout | undefined;
     const stop = new Promise<"timeout" | "cancelled">((resolve) => {
-      timer = setTimeout(() => resolve("timeout"), Math.max(0, deadline - started));
+      timer = setTimeout(() => resolve("timeout"), Math.max(0, at - started));
       request.cancel?.onCancel(() => resolve("cancelled"));
     });
     try {

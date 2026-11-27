@@ -325,3 +325,14 @@ test("cancelled between the steps starts no format", async () => {
   assert.equal(await run, null);
   assert.equal(calls.length, 1);
 });
+
+test("looking for ruff does not use up the time ruff has", async () => {
+  const { ruff, calls } = setup(50);
+  const slow = { ...sorting, candidates: () => new Promise<RuffCommand[]>((r) => setTimeout(() => r([PY]), 80)) };
+  const run = ruff.format("import sys\n", slow);
+  await new Promise((r) => setTimeout(r, 90));
+  calls[0].finish(sorted);
+  await tick();
+  calls[1].finish(ok);
+  assert.equal(await run, "x = 1\n");
+});
