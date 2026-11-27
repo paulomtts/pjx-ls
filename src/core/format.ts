@@ -244,21 +244,34 @@ function renderExplodedTag(text: string, tag: Tag, regions: Region[], baseIndent
 
 // ── Structural re-indentation ──────────────────────────────────────────────
 
-function tryInlineElement(tokens: Token[], startIndex: number): { endIndex: number; value: string } | null {
+/**
+ * An element whose children are only text and `{{ }}`, written on one line, unless the source has a
+ * line break after its open tag and one before its close tag: then it stays written over lines.
+ */
+function tryInlineElement(tokens: Token[], startIndex: number, baseIndent: string): { endIndex: number; value: string } | null {
   const openToken = tokens[startIndex];
   if (openToken.type !== "open") return null;
 
   // Edge whitespace inside a block-level element collapses; elsewhere it renders.
   const keepEdges = !isBlockTag(openToken);
   let inner = "";
+  const content: string[] = [];
+  const innerIndent = baseIndent + INDENT;
   for (let index = startIndex + 1; index < tokens.length; index += 1) {
     const token = tokens[index];
     if (token.type === "close" && token.name === openToken.name) {
+      const broken = index > startIndex + 1 && tokens[startIndex + 1].newlineBefore && token.newlineBefore;
+      if (broken) {
+        return { endIndex: index, value: [openToken.value, ...content, baseIndent + token.value].join("\n") };
+      }
       const trailing = keepEdges && token.spaceBefore ? " " : "";
       return { endIndex: index, value: `${openToken.value}${inner}${trailing}${token.value}` };
     }
     if (token.type === "text" || token.type === "jinja_expr") {
       inner += (token.spaceBefore && (inner || keepEdges) ? " " : "") + token.value;
+      const written = token.value.split("\n").map((line) => line.trim()).join(`\n${innerIndent}`);
+      if (token.newlineBefore || content.length === 0) content.push(innerIndent + written);
+      else content[content.length - 1] += (token.spaceBefore ? " " : "") + written;
       continue;
     }
     return null;
@@ -427,7 +440,7 @@ function formatLf(text: string): string {
         continue;
       }
 
-      const inlineElement = tryInlineElement(tokens, index);
+      const inlineElement = tryInlineElement(tokens, index, baseIndent);
       if (inlineElement) {
         emit(index, baseIndent + inlineElement.value.trim());
         index = inlineElement.endIndex;
