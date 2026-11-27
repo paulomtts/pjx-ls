@@ -27,6 +27,8 @@ work to do; the goldens show the result.
 | 15 | `minified-realistic` | Minified capstone: only block-level boundaries break |
 | 16 | `python-block` | A `{#python` body is kept byte for byte by the pjx rules; ruff formats it in the editor, see `expected-ruff/` |
 | 17 | `python-after-markup` | A block after markup and `{#css`, padded with blank lines |
+| 18 | `css-js-blocks` | The pjx rules keep `{#css` and `{#js` bodies byte for byte; the editor's formatters do them in the editor |
+| 19 | `style-script` | `<style>` and `<script>` bodies, a module, a JSON script, a script with Jinja and a one-line script: only the open tag's line moves |
 
 ## Notes on behavior
 

@@ -1,9 +1,11 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
+import { formatEmbedded, type Formatters } from "../core/embedded-format.ts";
 import { formatPyjinhxTemplate } from "../core/format.ts";
 import { nodeSpawn } from "../core/manifest-runner.ts";
 import { formatPythonBlock, Ruff, stdinFilename, usesRuff, type FormatBody, type RuffCommand } from "../core/python-format.ts";
 import { FORMAT_SLOTS_COMMAND, isComponentTemplate, TEMPLATE_SELECTOR } from "./config.ts";
+import { BodyFormatter, type Indentation } from "./embedded-format.ts";
 import { findPython, onPath, onPythonEnvironmentChange } from "./python-env.ts";
 import { cancelOf } from "./python-server.ts";
 
@@ -43,6 +45,8 @@ export function registerFormatting(context: vscode.ExtensionContext, output: vsc
   }
 
   const ruff = new Ruff(nodeSpawn, log);
+  const bodies = new BodyFormatter();
+  bodies.register(context);
 
   const candidates = (folder?: vscode.WorkspaceFolder) => async (): Promise<RuffCommand[]> => {
     const python = folder && (await findPython(folder));
@@ -66,21 +70,26 @@ export function registerFormatting(context: vscode.ExtensionContext, output: vsc
   }
 
   /** Returns the formatted text only if it differs from the current document, else null. */
-  async function nextFormattedText(document: vscode.TextDocument, token?: vscode.CancellationToken): Promise<string | null> {
+  async function nextFormattedText(document: vscode.TextDocument, indentation: Indentation, token?: vscode.CancellationToken): Promise<string | null> {
     if (!isComponentTemplate(document)) return null;
     const text = document.getText();
     const version = document.version;
     const format = pythonBody(document, token);
     const withPython = format ? await formatPythonBlock(text, format, log) : text;
-    const formatted = formatPyjinhxTemplate(withPython);
+    const config = vscode.workspace.getConfiguration("pyjinhx", document.uri);
+    const formatters: Formatters = {};
+    for (const kind of ["css", "js"] as const) {
+      if (config.get(`format.${kind}`, true)) formatters[kind] = (source) => bodies.format(kind, source, indentation, log, token);
+    }
+    const formatted = await formatEmbedded(formatPyjinhxTemplate(withPython), formatters, log);
     // An answer for text that has since changed is dropped; the next format does it again.
     return formatted === text || document.version !== version || token?.isCancellationRequested ? null : formatted;
   }
 
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(TEMPLATE_SELECTOR, {
-      async provideDocumentFormattingEdits(document, _options, token) {
-        const formatted = await nextFormattedText(document, token);
+      async provideDocumentFormattingEdits(document, options, token) {
+        const formatted = await nextFormattedText(document, options, token);
         return formatted === null ? [] : [fullDocumentEdit(document, formatted)];
       },
     }),
@@ -93,7 +102,11 @@ export function registerFormatting(context: vscode.ExtensionContext, output: vsc
         return;
       }
       const document = editor.document;
-      const formatted = await nextFormattedText(document);
+      const { tabSize, insertSpaces } = editor.options;
+      const formatted = await nextFormattedText(document, {
+        tabSize: typeof tabSize === "number" ? tabSize : 2,
+        insertSpaces: typeof insertSpaces === "boolean" ? insertSpaces : true,
+      });
       if (formatted === null) {
         return;
       }

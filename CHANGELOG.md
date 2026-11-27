@@ -3,6 +3,28 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.10.0
+
+### Added
+- The formatter (Format Document, the command, format on save) now formats the body of
+  a `{#css` or `{#js` block and of a `<style>` or `<script>` element with the editor's
+  own CSS and JavaScript formatters, with the editor's indentation and its `css.format.*`
+  and `javascript.format.*` settings. A block's body starts in column 0; an element's body
+  stands one level inside its tag. A second run changes nothing.
+- `pyjinhx.format.css` and `pyjinhx.format.js` (both default `true`).
+- Left as they are, quietly (one line in the PyJinHx output): a body with Jinja in it, a
+  `<script>` whose `type` is not JavaScript, `<style lang>`, a one-line body, a body that
+  would be shifted and holds a multi-line template literal, and every body when the
+  editor's CSS or TypeScript extension is off. In an untrusted workspace CSS is formatted
+  and JS is not (the editor turns its TypeScript extension off there).
+
+### Changed
+- Formatting a `.pjx` whose CSS or JS bodies are not as the editor's formatters would
+  write them now changes those bodies; set `pyjinhx.format.css` / `pyjinhx.format.js` to
+  `false` to keep them. The built-in CSS formatter is not Prettier: set
+  `css.format.newlineBetweenRules` to `false` and `css.format.spaceAroundSelectorSeparator`
+  to `true` to keep a Prettier-style stylesheet as it is.
+
 ## 0.9.0
 
 ### Added
