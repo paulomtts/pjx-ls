@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { defHeaderRange } from "../../src/core/regions.ts";
+import { defHeaderRange, scan } from "../../src/core/regions.ts";
 
 test("defHeaderRange returns correct range for header with no leading whitespace", () => {
   const text = "{# def foo(bar: str) #}<div></div>";
@@ -59,4 +59,16 @@ test("defHeaderRange finds the {#def form wherever it stands", () => {
 test("defHeaderRange ignores a header that is never closed", () => {
   assert.equal(defHeaderRange("{# def a: int\n<p>{{ a }}</p>\n"), null);
   assert.equal(defHeaderRange("{#def a: int\n<p>{{ a }}</p>\n"), null);
+});
+
+test("defHeaderRange given a scan answers as it does without one", () => {
+  const texts = [
+    "{# def foo(bar: str) #}<div></div>",
+    "\n\n  {# def x: int = 0 #}\n<div></div>",
+    "{# just a comment #}<div></div>",
+    "{#css\n.a {}\n#}\n{#def a: int #}\n<p></p>",
+    "{#- def title: str -#}\n<h1>{{ title }}</h1>",
+    "{# def a: int\n<p>{{ a }}</p>\n",
+  ];
+  for (const text of texts) assert.deepEqual(defHeaderRange(text, scan(text)), defHeaderRange(text));
 });

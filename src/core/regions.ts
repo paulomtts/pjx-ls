@@ -78,6 +78,12 @@ export interface Scan {
   error: BlockError | null;
   /** From a `{#python` opener that nothing closes to the end of the text. */
   unclosedPython: Range | null;
+  /**
+   * The first Jinja delimiter, `{% raw %}`, HTML comment, tag or script/style body that
+   * nothing closes. It runs to the end of the text, except a `{#python` opener with no
+   * `#}`, which is its own line.
+   */
+  unterminated: Range | null;
   regions: Region[];
   htmlComments: Range[];
   embedded: Embedded[];
@@ -117,13 +123,18 @@ interface Lexeme {
   comment: string | null;
   /** A `{#python` opener with no `#}` after it. */
   unclosedOpener: boolean;
+  /** Nothing closes it: a `{% raw %}`, `{#python` opener or delimiter that runs on. */
+  open: boolean;
 }
 
 export function scan(text: string): Scan {
   const base = text.startsWith("﻿") ? 1 : 0;
   const lexemes = lex(text, base);
   const regions = lexemes.map((l) => l.region);
-  return { ...findBlocks(text, base, lexemes), regions, ...scanHtml(maskRegions(text, regions)) };
+  const { unterminatedHtml, ...html } = scanHtml(maskRegions(text, regions));
+  const open = lexemes.find((l) => l.open)?.region ?? null;
+  const unterminated = open && (!unterminatedHtml || open.start < unterminatedHtml.start) ? open : unterminatedHtml;
+  return { ...findBlocks(text, base, lexemes), unterminated, regions, ...html };
 }
 
 function lex(text: string, base: number): Lexeme[] {
@@ -134,6 +145,7 @@ function lex(text: string, base: number): Lexeme[] {
       region: regionOf(m),
       comment: m.groups!.comment ?? null,
       unclosedOpener: m.groups!.unclosed !== undefined,
+      open: m.groups!.rawOpen !== undefined || m.groups!.unclosed !== undefined || m.groups!.swallow !== undefined,
     });
   }
   return lexemes;
@@ -290,12 +302,13 @@ function maskRegions(text: string, regions: Region[]): string {
 
 type Html = Pick<Scan, "htmlComments" | "embedded" | "tags">;
 
-function scanHtml(text: string): Html {
-  const html: Html = { htmlComments: [], embedded: [], tags: [] };
+function scanHtml(text: string): Html & { unterminatedHtml: Range | null } {
+  const html: Html & { unterminatedHtml: Range | null } = { htmlComments: [], embedded: [], tags: [], unterminatedHtml: null };
   for (let i = text.indexOf("<"); i !== -1; i = text.indexOf("<", i)) {
     if (text.startsWith("<!--", i)) {
       const close = text.indexOf("-->", i + 4);
       const end = close === -1 ? text.length : close + 3;
+      if (close === -1) html.unterminatedHtml ??= { start: i, end };
       html.htmlComments.push({ start: i, end });
       i = end;
     } else if (text[i + 1] === "!" || text[i + 1] === "?") {
@@ -308,18 +321,28 @@ function scanHtml(text: string): Html {
         continue;
       }
       html.tags.push(tag);
+      if (neverClosed(text, tag)) html.unterminatedHtml ??= { start: i, end: text.length };
       i = tag.range.end;
       const name = tag.name.toLowerCase();
       if (!tag.closing && !tag.selfClosing && (name === "script" || name === "style")) {
-        const closer = new RegExp(`</${name}`, "gi");
+        const closer = new RegExp(`</${name}(?=[\\s/>]|$)`, "gi");
         closer.lastIndex = i;
-        const end = closer.exec(text)?.index ?? text.length;
+        const found = closer.exec(text);
+        if (!found) html.unterminatedHtml ??= { start: tag.range.start, end: text.length };
+        const end = found?.index ?? text.length;
         html.embedded.push({ tag: name, body: { start: i, end } });
         i = end;
       }
     }
   }
   return html;
+}
+
+/** A tag that runs to the end of the text with no `>`, or with a quote that is never closed. */
+function neverClosed(text: string, tag: Tag): boolean {
+  if (tag.range.end !== text.length) return false;
+  const value = tag.attributes.at(-1)?.value;
+  return text[text.length - 1] !== ">" || value?.end === text.length;
 }
 
 function componentName(name: string): string | null {
@@ -392,8 +415,8 @@ function readTag(text: string, start: number): Tag | null {
  * The range of the document's `{#def#}` header: a `{#def` block anywhere, or the
  * legacy `{# def ... #}` as the first content, where it cannot be mistaken for prose.
  */
-export function defHeaderRange(text: string): Range | null {
-  const { blocks, regions } = scan(text);
+export function defHeaderRange(text: string, s: Scan = scan(text)): Range | null {
+  const { blocks, regions } = s;
   const def = blocks.find((b) => b.keyword === "def");
   if (def) return { start: def.opener.start, end: def.closer.end };
   const first = text.search(/\S/);
