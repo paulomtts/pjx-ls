@@ -78,7 +78,7 @@ The manifest is read when the folder opens, and again 300 ms after a `.pjx`, `.p
 `.pyi` file is saved, created or deleted. The active unsaved document is sent on stdin,
 so completion follows what you type. The interpreter is `pyjinhx.pythonPath`, else the
 Python extension's environment (if installed), else `.venv` in the folder, else `python3`.
-Settings: `pyjinhx.pythonPath`, `pyjinhx.generateStubs`, `pyjinhx.format.python`, `pyjinhx.format.sortImports`, `pyjinhx.manifest.paths`, `pyjinhx.manifest.sysPath`.
+Settings: `pyjinhx.pythonPath`, `pyjinhx.generateStubs`, `pyjinhx.format.python`, `pyjinhx.format.sortImports`, `pyjinhx.format.css`, `pyjinhx.format.js`, `pyjinhx.manifest.paths`, `pyjinhx.manifest.sysPath`.
 
 **Stubs.** With `pyjinhx.generateStubs` on (the default), a `.pjx` with a `{#python` block
 gets its `<name>.pyi` written beside it, as `python -m pyjinhx.stubgen` does, whenever the
@@ -125,7 +125,9 @@ completion, hover (the header's signature) and go to definition work; a componen
 props are in a `.py` file (split, `template = ...`, `{#python`) has none there, and there
 are no diagnostics. Call-site checks
 (unknown tag, unknown or missing prop) wait for pyjinhx to report them. An untrusted
-workspace also runs no ruff, so `{#python` bodies are not formatted there.
+workspace also runs no ruff, so `{#python` bodies are not formatted there; CSS bodies are
+still formatted (no program is run for them), JS bodies are not, because the editor turns its
+TypeScript extension off in Restricted Mode.
 
 ### Formatting
 - Re-indents the HTML/Jinja structure (two-space) and **explodes** slotted component
@@ -143,6 +145,19 @@ workspace also runs no ruff, so `{#python` bodies are not formatted there.
   the body is left exactly as it is and the rest of the file is still formatted; the
   reason is in **PyJinHx: Show Output**. When ruff is not found at all, one message
   per session offers a **Turn off** button. `pyjinhx.format.python: "off"` turns it off.
+- Formats the body of a `{#css` or `{#js` block and of a `<style>` or `<script>` element
+  with the editor's own CSS and JavaScript formatters. The editor's indentation
+  (`tabSize`, `insertSpaces`) is used inside the body, and `css.format.*` and
+  `javascript.format.*` apply as they do for a `.css` or `.js` file. Note that the
+  built-in CSS formatter is not Prettier: by default it puts a blank line between rules and
+  writes `a>b`; `css.format.newlineBetweenRules: false` and
+  `css.format.spaceAroundSelectorSeparator: true` keep a Prettier-style stylesheet as it is.
+  A block's body starts in column 0; an element's body stands one level inside its tag, and
+  follows the tag when it moves. Left as they are: a body with Jinja in it, a `<script>`
+  whose `type` is not JavaScript (JSON, `importmap`, templates), `<style lang>`, a
+  one-line body, and a body that would be shifted and holds a multi-line template literal.
+  The reason is one line in **PyJinHx: Show Output**; nothing is ever shown as a
+  notification. `pyjinhx.format.css` and `pyjinhx.format.js` (both on by default) turn it off.
 - **Idempotent** — running it again changes nothing.
 - Available as **Format Document**, the **PyJinHx: Format Slotted Component Tags**
   command, and **format-on-save** (opt-in through VS Code's own setting, see below).
@@ -193,7 +208,11 @@ Python's configuration there; only the highlighting is PyJinHx.
 
 ## Known limitations
 
-- `{#css` and `{#js` bodies are not formatted yet.
+- CSS and JS bodies are formatted by the editor's built-in formatters, not Prettier;
+  `editor.defaultFormatter` for CSS and JS is not consulted. A body with Jinja in it is not
+  formatted. The first format of a JS body starts the editor's JavaScript service. With the
+  built-in CSS or TypeScript extension disabled (or, for JS, in an untrusted workspace) the
+  bodies are left as they are.
 - The Python body is formatted as a module of its own: ruff is told the file is
   `<name>.py` beside the `.pjx`, and `exclude` patterns are not applied to it.
 - Import sorting follows `unfixable` and `per-file-ignores` but not `ignore`, and a
