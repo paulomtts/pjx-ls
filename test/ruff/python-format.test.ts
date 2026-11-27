@@ -71,6 +71,18 @@ test("ruff's line-ending setting cannot make a mixed file", opts, async () => {
   assert.equal(result, "{#python\r\nx = 1\r\ny = 2\r\n#}\r\n<p>a</p>\r\n");
 });
 
+test("ruff's cr-lf setting cannot put carriage returns into an LF file", opts, async () => {
+  const project = tmp();
+  fs.writeFileSync(path.join(project, "pyproject.toml"), '[tool.ruff.format]\nline-ending = "cr-lf"\n');
+  const log: string[] = [];
+  const ruff = new Ruff(nodeSpawn, (l) => log.push(l));
+  const filename = stdinFilename(path.join(project, "a.pjx"));
+  // The setting is read: on its own, ruff answers with CRLF.
+  assert.equal(await ruff.format("x=1\n", { filename, cwd: project, candidates: async () => [PATH_RUFF] }), "x = 1\r\n");
+  const result = await formatPythonBlock("{#python\nx=1\n#}\n<p>a</p>\n", (b) => ruff.format(b, { filename, cwd: project, candidates: async () => [PATH_RUFF] }));
+  assert.equal(result, "{#python\nx = 1\n#}\n<p>a</p>\n");
+});
+
 test("non-ASCII text comes back as it went", opts, async () => {
   const dir = tmp();
   const { python } = pipeline(path.join(dir, "a.pjx"), dir);
