@@ -91,19 +91,15 @@ export function registerFormatting(context: vscode.ExtensionContext, output: vsc
       if (!editor) {
         return;
       }
-      const formatted = await nextFormattedText(editor.document);
+      const document = editor.document;
+      const formatted = await nextFormattedText(document);
       if (formatted === null) {
         return;
       }
-      await editor.edit((builder) => {
-        builder.replace(
-          new vscode.Range(
-            editor.document.positionAt(0),
-            editor.document.lineAt(editor.document.lineCount - 1).range.end,
-          ),
-          formatted,
-        );
-      });
+      // The editor may have been closed while ruff ran; the document is still there.
+      const edit = new vscode.WorkspaceEdit();
+      edit.set(document.uri, [fullDocumentEdit(document, formatted)]);
+      await vscode.workspace.applyEdit(edit);
     }),
   );
 

@@ -83,6 +83,15 @@ suite("format with ruff", () => {
     assert.strictEqual(doc.getText(), FORMATTED);
   });
 
+  test("the pyjinhx.formatSlots command still formats when another tab is shown while ruff runs", async () => {
+    const doc = await reset(SOURCE);
+    const running = vscode.commands.executeCommand("pyjinhx.formatSlots");
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root(), "ui", "alert.pjx")));
+    await running;
+    assert.strictEqual(doc.getText(), FORMATTED);
+    await vscode.window.showTextDocument(doc);
+  });
+
   test("a file without a block formats as before", async () => {
     const doc = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(root(), "ui", "alert.pjx"));
     await vscode.window.showTextDocument(doc);
