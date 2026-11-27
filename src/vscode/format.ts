@@ -33,7 +33,12 @@ export function registerFormatting(context: vscode.ExtensionContext, output: vsc
     void vscode.window
       .showInformationMessage("ruff was not found, so {#python bodies are not formatted. Install ruff in the project's environment or on PATH, or turn this off.", turnOff)
       .then(async (picked) => {
-        if (picked === turnOff) await vscode.workspace.getConfiguration("pyjinhx", document.uri).update("format.python", "off", targetOf(document));
+        if (picked !== turnOff) return;
+        try {
+          await vscode.workspace.getConfiguration("pyjinhx", document.uri).update("format.python", "off", targetOf(document));
+        } catch (error) {
+          log(`could not set pyjinhx.format.python to "off": ${error instanceof Error ? error.message : error}`);
+        }
       });
   }
 

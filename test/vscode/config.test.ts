@@ -50,6 +50,8 @@ test("the ruff formatting setting defaults on, and ruff is covered by the untrus
   const setting = pkg.contributes.configuration.properties["pyjinhx.format.python"];
   assert.equal(setting.default, "ruff");
   assert.deepEqual(setting.enum, ["ruff", "off"]);
+  // Read for the document and written back to the folder, workspace or user, so it must be a resource setting.
+  assert.equal(setting.scope, "resource");
   const untrusted = pkg.capabilities.untrustedWorkspaces;
   assert.deepEqual(untrusted.restrictedConfigurations, ["pyjinhx.pythonPath", "pyjinhx.pythonBlock.serverPath"]);
   assert.match(untrusted.description, /ruff/);
