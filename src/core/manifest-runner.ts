@@ -17,6 +17,8 @@ export type Spawn = (command: string, args: string[], input?: string, cwd?: stri
 
 export const nodeSpawn: Spawn = (command, args, input, cwd) => {
   const child = spawnProcess(command, args, { cwd, stdio: ["pipe", "pipe", "pipe"] });
+  child.stdout.setEncoding("utf8");
+  child.stderr.setEncoding("utf8");
   const exit = new Promise<Exit>((resolve, reject) => {
     let stdout = "";
     let stderr = "";
