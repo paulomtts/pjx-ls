@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { Ruff, ruffArgs, stdinFilename, type RuffCommand } from "../../src/core/python-format.ts";
+import { Ruff, ruffArgs, sortArgs, stdinFilename, type RuffCommand } from "../../src/core/python-format.ts";
 import type { Cancel } from "../../src/core/lsp-client.ts";
 import { fakeSpawn } from "./fixture.ts";
 
@@ -195,4 +195,133 @@ test("two cwds remember separately", async () => {
 test("a rejected candidates() is null, not a rejection", async () => {
   const { ruff } = setup();
   assert.equal(await ruff.format("x=1\n", { ...request, candidates: async () => Promise.reject(new Error("no")) }), null);
+});
+
+const sorting = { ...request, sortImports: true };
+const sorted = { code: 0, stdout: "import os\nimport sys\n", stderr: "Fixed 1 error.\n" };
+
+test("sortArgs", () => {
+  assert.deepEqual(sortArgs("/w/ui/total.py"), ["check", "--select", "I001", "--fix-only", "--stdin-filename", "/w/ui/total.py", "-"]);
+});
+
+test("imports are sorted, then the result is formatted", async () => {
+  const { ruff, calls } = setup();
+  const run = ruff.format("import sys\nimport os\n", sorting);
+  await tick();
+  assert.deepEqual(calls[0].args, ["-m", "ruff", ...sortArgs("/w/ui/total.py")]);
+  assert.equal(calls[0].input, "import sys\nimport os\n");
+  calls[0].finish(sorted);
+  await tick();
+  assert.deepEqual([calls[1].command, calls[1].args, calls[1].cwd, calls[1].input], ["py", ["-m", "ruff", ...ruffArgs("/w/ui/total.py")], "/w", sorted.stdout]);
+  calls[1].finish(ok);
+  assert.equal(await run, "x = 1\n");
+  assert.equal(calls.length, 2);
+});
+
+test("without sortImports there is one process", async () => {
+  const { ruff, calls } = setup();
+  const run = ruff.format("x=1\n", request);
+  await tick();
+  calls[0].finish(ok);
+  await run;
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0].args, ["-m", "ruff", ...ruffArgs("/w/ui/total.py")]);
+});
+
+test("a failing sort is logged and the original body is formatted", async () => {
+  const { ruff, calls, log } = setup();
+  const run = ruff.format("import sys\n", sorting);
+  await tick();
+  calls[0].finish({ code: 2, stdout: "", stderr: "ruff failed\n" });
+  await tick();
+  assert.equal(calls[1].input, "import sys\n");
+  calls[1].finish(ok);
+  assert.equal(await run, "x = 1\n");
+  assert.equal(log.filter((l) => !l.includes("ok in")).length, 1);
+  assert.ok(log[0].startsWith("ruff check total.py: exit 2"));
+});
+
+test("a sort that answers nothing is not used", async () => {
+  const { ruff, calls } = setup();
+  const run = ruff.format("import sys\n", sorting);
+  await tick();
+  calls[0].finish({ code: 0, stdout: "", stderr: "" });
+  await tick();
+  assert.equal(calls[1].input, "import sys\n");
+  calls[1].finish(ok);
+  await run;
+});
+
+test("ruff found by the sort step is not looked for again", async () => {
+  const { ruff, calls } = setup();
+  let asked = 0;
+  const req = { ...sorting, candidates: async () => (asked++, [PY, BIN]) };
+  const run = ruff.format("import sys\n", req);
+  await tick();
+  calls[0].finish(noModule);
+  await tick();
+  assert.deepEqual([calls[1].command, calls[1].args[0]], ["/bin/ruff", "check"]);
+  calls[1].finish(sorted);
+  await tick();
+  assert.deepEqual([calls[2].command, calls[2].args[0]], ["/bin/ruff", "format"]);
+  calls[2].finish(ok);
+  assert.equal(await run, "x = 1\n");
+  assert.equal(asked, 1);
+});
+
+test("no ruff: nothing is formatted, said once", async () => {
+  const { ruff, calls, log } = setup();
+  const run = ruff.format("import sys\n", sorting);
+  await tick();
+  calls[0].finish(noModule);
+  await tick();
+  calls[1].finish(noModule);
+  assert.equal(await run, null);
+  assert.equal(calls.length, 2);
+  assert.equal(log.filter((l) => l.startsWith("ruff was not found")).length, 1);
+  assert.equal(missing.length, 1);
+});
+
+test("a sort that takes too long ends the format", async () => {
+  const { ruff, calls, log } = setup(20);
+  assert.equal(await ruff.format("import sys\n", sorting), null);
+  assert.equal(calls[0].killed, true);
+  assert.equal(calls.length, 1);
+  assert.equal(log.filter((l) => l.includes("no answer after")).length, 1);
+});
+
+test("both steps share the time", async () => {
+  const { ruff, calls } = setup(200);
+  const start = Date.now();
+  const run = ruff.format("import sys\n", sorting);
+  await tick();
+  await new Promise((r) => setTimeout(r, 150));
+  calls[0].finish(sorted);
+  assert.equal(await run, null);
+  assert.ok(Date.now() - start < 300);
+  assert.equal(calls[1].killed, true);
+});
+
+test("cancelling during the sort starts no format", async () => {
+  const { ruff, calls, log } = setup();
+  let fire = () => {};
+  const cancel: Cancel = { cancelled: false, onCancel: (l) => (fire = l) };
+  const run = ruff.format("import sys\n", { ...sorting, cancel });
+  await tick();
+  fire();
+  assert.equal(await run, null);
+  assert.equal(calls[0].killed, true);
+  assert.equal(calls.length, 1);
+  assert.equal(log.length, 0);
+});
+
+test("cancelled between the steps starts no format", async () => {
+  const { ruff, calls } = setup();
+  const cancel = { cancelled: false, onCancel: () => {} };
+  const run = ruff.format("import sys\n", { ...sorting, cancel });
+  await tick();
+  cancel.cancelled = true;
+  calls[0].finish(sorted);
+  assert.equal(await run, null);
+  assert.equal(calls.length, 1);
 });

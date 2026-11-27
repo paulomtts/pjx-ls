@@ -54,6 +54,9 @@ export const stdinFilename = (pjxPath: string): string => path.join(path.dirname
 
 export const ruffArgs = (filename: string): string[] => ["format", "--stdin-filename", filename, "-"];
 
+/** ruff's import sorting alone, as a fix: the project's other lint rules are not run. */
+export const sortArgs = (filename: string): string[] => ["check", "--select", "I001", "--fix-only", "--stdin-filename", filename, "-"];
+
 export interface RuffRequest {
   /** From `stdinFilename`. */
   filename: string;
@@ -63,13 +66,16 @@ export interface RuffRequest {
   cancel?: Cancel;
   /** Hears what was tried, at the moment (once per cwd) that no candidate could be started. */
   onMissing?: (tried: string) => void;
+  /** Sort the imports before formatting. */
+  sortImports?: boolean;
 }
 
 type Run = Exit | "missing" | "timeout" | "cancelled" | { failure: string };
+type Label = "ruff check" | "ruff format";
 
 const shown = (c: RuffCommand) => [c.command, ...c.args].join(" ");
 
-/** Runs `ruff format` on a module given on stdin, remembering per cwd which command works. */
+/** Runs ruff on a module given on stdin (sorting its imports, then formatting it), remembering per cwd which command works. */
 export class Ruff {
   private readonly found = new Map<string, RuffCommand>();
   private readonly told = new Set<string>();
@@ -84,38 +90,19 @@ export class Ruff {
     this.timeoutMs = timeoutMs;
   }
 
-  /** The formatted module, or null when ruff is missing, fails, times out or is cancelled. Never rejects. */
+  /** The formatted module (its imports sorted first when asked), or null when ruff is missing, fails, times out or is cancelled. Never rejects. */
   async format(source: string, request: RuffRequest): Promise<string | null> {
     if (request.cancel?.cancelled) return null;
+    const deadline = Date.now() + this.timeoutMs;
     const name = path.basename(request.filename);
-
-    const remembered = this.found.get(request.cwd);
-    if (remembered) {
-      const run = await this.run(remembered, source, request);
-      if (run !== "missing") return this.answer(run, remembered, name);
-      this.found.delete(request.cwd);
+    let body = source;
+    if (request.sortImports) {
+      const run = await this.step("ruff check", sortArgs(request.filename), source, request, deadline);
+      const sorted = this.answer(run, "ruff check", name);
+      if (typeof run !== "object" || !("code" in run) || request.cancel?.cancelled) return null;
+      if (sorted !== null && sorted.trim() !== "") body = sorted;
     }
-
-    let candidates: RuffCommand[];
-    try {
-      candidates = await request.candidates();
-    } catch (error) {
-      this.log(`ruff format ${name}: could not look for ruff: ${error instanceof Error ? error.message : error}`);
-      return null;
-    }
-    for (const candidate of candidates) {
-      const run = await this.run(candidate, source, request);
-      if (run === "missing") continue;
-      if (typeof run === "object" && "code" in run) this.found.set(request.cwd, candidate);
-      return this.answer(run, candidate, name);
-    }
-    if (!this.told.has(request.cwd)) {
-      this.told.add(request.cwd);
-      const tried = candidates.map(shown).join(", ") || "nothing";
-      this.log(`ruff was not found (tried: ${tried}): {#python bodies are not formatted. Install ruff in the project's environment or on PATH, or set pyjinhx.format.python to "off".`);
-      request.onMissing?.(tried);
-    }
-    return null;
+    return this.answer(await this.step("ruff format", ruffArgs(request.filename), body, request, deadline), "ruff format", name);
   }
 
   /** Forget which command worked and what was already said: a setting or the interpreter changed. */
@@ -124,23 +111,56 @@ export class Ruff {
     this.told.clear();
   }
 
-  private answer(run: Run, command: RuffCommand, name: string): string | null {
+  /** One ruff subcommand: the run of the first candidate that is not missing, which is then remembered. */
+  private async step(label: Label, args: string[], source: string, request: RuffRequest, deadline: number): Promise<Run> {
+    const name = path.basename(request.filename);
+    const remembered = this.found.get(request.cwd);
+    if (remembered) {
+      const run = await this.run(remembered, label, args, source, request, deadline);
+      if (run !== "missing") return run;
+      this.found.delete(request.cwd);
+    }
+
+    let candidates: RuffCommand[];
+    try {
+      candidates = await request.candidates();
+    } catch (error) {
+      this.log(`${label} ${name}: could not look for ruff: ${error instanceof Error ? error.message : error}`);
+      return "missing";
+    }
+    for (const candidate of candidates) {
+      const run = await this.run(candidate, label, args, source, request, deadline);
+      if (run === "missing") continue;
+      if (typeof run === "object" && "code" in run) this.found.set(request.cwd, candidate);
+      return run;
+    }
+    if (!this.told.has(request.cwd)) {
+      this.told.add(request.cwd);
+      const tried = candidates.map(shown).join(", ") || "nothing";
+      this.log(`ruff was not found (tried: ${tried}): {#python bodies are not formatted. Install ruff in the project's environment or on PATH, or set pyjinhx.format.python to "off".`);
+      request.onMissing?.(tried);
+    }
+    return "missing";
+  }
+
+  private answer(run: Run, label: Label, name: string): string | null {
     if (run === "cancelled") return null;
-    if (run === "timeout") this.log(`ruff format ${name}: no answer after ${this.timeoutMs / 1000} s`);
+    if (run === "timeout") this.log(`${label} ${name}: no answer after ${this.timeoutMs / 1000} s`);
     else if (typeof run === "string") return null;
-    else if ("failure" in run) this.log(`ruff format ${name}: ${run.failure}`);
+    else if ("failure" in run) this.log(`${label} ${name}: ${run.failure}`);
     else if (run.code === 0) return run.stdout;
-    else this.log(`ruff format ${name}: exit ${run.code}: ${run.stderr.split("\n").find((l) => l.trim()) ?? "no message"}`);
+    else this.log(`${label} ${name}: exit ${run.code}: ${run.stderr.split("\n").find((l) => l.trim()) ?? "no message"}`);
     return null;
   }
 
-  private async run(command: RuffCommand, source: string, request: RuffRequest): Promise<Run> {
+  private async run(command: RuffCommand, label: Label, args: string[], source: string, request: RuffRequest, deadline: number): Promise<Run> {
+    if (request.cancel?.cancelled) return "cancelled";
     const started = Date.now();
-    const process = this.spawn(command.command, [...command.args, ...ruffArgs(request.filename)], source, request.cwd);
+    const process = this.spawn(command.command, [...command.args, ...args], source, request.cwd);
     process.exit.catch(() => {});
     let timer: NodeJS.Timeout | undefined;
     const stop = new Promise<"timeout" | "cancelled">((resolve) => {
-      timer = setTimeout(() => resolve("timeout"), this.timeoutMs);
+      timer = setTimeout(() => resolve("timeout"), Math.max(0, deadline - started));
       request.cancel?.onCancel(() => resolve("cancelled"));
     });
     try {
@@ -150,7 +170,7 @@ export class Ruff {
         return result;
       }
       if (result.code !== 0 && /No module named '?ruff/.test(result.stderr)) return "missing";
-      if (result.code === 0) this.log(`ruff format ${path.basename(request.filename)}: ok in ${Date.now() - started} ms (${shown(command)})`);
+      if (result.code === 0) this.log(`${label} ${path.basename(request.filename)}: ok in ${Date.now() - started} ms (${shown(command)})`);
       return result;
     } catch (error) {
       if ((error as { code?: unknown })?.code === "ENOENT") return "missing";
