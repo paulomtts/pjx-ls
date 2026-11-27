@@ -274,3 +274,11 @@ test("an element with no close tag is no body", async () => {
   }
   assert.deepEqual(kinds("<script>\nlet a=1\n</SCRIPT>"), [["js", null]]);
 });
+
+test("a blank line inside a template literal keeps its whitespace", async () => {
+  const text = "{#js\nconst s = `a\n   \nb`;\n#}\n";
+  const { format, seen } = to("X");
+  await run(text, format, "js");
+  assert.deepEqual(seen, ["const s = `a\n   \nb`;\n"]);
+  assert.ok((await run(text, echo, "js")) === text);
+});

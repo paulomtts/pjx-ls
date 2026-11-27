@@ -108,7 +108,8 @@ async function formatBody(text: string, body: Body, format: FormatSource, log: (
   const lines = trimBody(text.slice(body.range.start, body.range.end)).split("\n");
   const prefix = commonPrefix(lines);
   if ((prefix !== "" || body.tagStart !== null) && spansLines(lines, body.kind)) return keep("a string spans lines");
-  const sent = lines.map((l) => (l.trim() === "" ? "" : l.slice(prefix.length))).join("\n") + "\n";
+  // A blank line shorter than the prefix becomes empty; an unshifted body is sent as it is (a blank line may be in a string).
+  const sent = lines.map((l) => (l.startsWith(prefix) ? l.slice(prefix.length) : "")).join("\n") + "\n";
   let answer: string | null;
   try {
     answer = await format(sent);
