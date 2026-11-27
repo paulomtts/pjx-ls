@@ -1,0 +1,9 @@
+<section><style>
+.a{color:red}
+</style><script type="module">
+let a=1
+</script><script type="application/json">
+{"a":1}
+</script>{% if debug %}<script>
+console.log( {{ value|tojson }} )
+</script>{% endif %}<script>go()</script></section>

@@ -1,0 +1,11 @@
+<div class="card">
+  <p>{{ title }}</p>
+</div>
+{#css
+.card{padding:1rem;color:red}
+   .card   >  p{ margin:0 }
+#}
+{#js
+function hello( name ){
+return `hi ${name}`}
+#}
