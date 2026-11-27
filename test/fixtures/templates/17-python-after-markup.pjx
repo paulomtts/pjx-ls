@@ -1,0 +1,11 @@
+<ul class="rows">{% for row in rows %}<li>{{ row }}</li>{% endfor %}</ul>
+{#css
+.rows{margin:0}
+#}
+{#python
+
+
+import os
+rows=[ 'a','b' ]
+
+#}

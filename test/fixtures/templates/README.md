@@ -25,6 +25,8 @@ work to do; the goldens show the result.
 | 13 | `inline-whitespace-preserved` | Spacing between text and interpolations is kept |
 | 14 | `minified-jinja-run` | Glued Jinja/component run stays on one line |
 | 15 | `minified-realistic` | Minified capstone: only block-level boundaries break |
+| 16 | `python-block` | A `{#python` body is kept byte for byte by the pjx rules; ruff formats it in the editor, see `expected-ruff/` |
+| 17 | `python-after-markup` | A block after markup and `{#css`, padded with blank lines |
 
 ## Notes on behavior
 

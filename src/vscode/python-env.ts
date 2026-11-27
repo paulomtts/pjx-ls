@@ -22,7 +22,7 @@ const wanted = () => {
   return !!extension && (extension.isActive || !vscode.workspace.getConfiguration("pyjinhx").get<string>("pythonPath", "").trim());
 };
 
-function onPath(name: string): string | undefined {
+export function onPath(name: string): string | undefined {
   const names = process.platform === "win32" ? [`${name}.exe`, `${name}.cmd`] : [name];
   return (process.env.PATH ?? "")
     .split(path.delimiter)

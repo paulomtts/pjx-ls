@@ -2,7 +2,7 @@
   "name": "pyjinhx-syntax-support",
   "displayName": "PyJinHx",
   "description": "Syntax highlighting and template formatting for the PyJinHx Python framework (PascalCase component tags, slots, {#def#} headers, interpolation).",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "publisher": "paulomtts",
   "license": "MIT",
   "type": "module",
@@ -29,6 +29,7 @@
     "check": "tsc --noEmit",
     "test": "node --test \"test/*.test.ts\" \"test/core/**/*.test.ts\" \"test/grammar/**/*.test.ts\" \"test/scripts/**/*.test.ts\" \"test/vscode/**/*.test.ts\"",
     "test:lsp": "node --test \"test/lsp/**/*.test.ts\"",
+    "test:ruff": "node --test \"test/ruff/**/*.test.ts\"",
     "test:editor": "npm run build && node test/editor/run.mjs",
     "package": "npm run check && npm run build && vsce package"
   },
@@ -77,6 +78,8 @@
       "properties": {
         "pyjinhx.pythonPath": { "type": "string", "default": "", "scope": "machine-overridable", "markdownDescription": "The Python interpreter that has pyjinhx installed. Empty: the Python extension's environment, then `.venv` in the workspace folder, then `python3` on `PATH`. `${workspaceFolder}` is replaced." },
         "pyjinhx.generateStubs": { "type": "boolean", "default": true, "markdownDescription": "Write `<name>.pyi` beside each `.pjx` with a `{#python` block, as `python -m pyjinhx.stubgen` does, when the manifest reports it missing or stale." },
+        "pyjinhx.format.python": { "type": "string", "scope": "resource", "enum": ["ruff", "off"], "enumDescriptions": ["Format the body with the project's ruff.", "Leave the body as it is."], "default": "ruff", "markdownDescription": "How the formatter treats the body of a `{#python` block. `ruff` runs `ruff format` on it, found as `<interpreter> -m ruff` (the interpreter of `pyjinhx.pythonPath`), then as `ruff` on `PATH`, with the project's own ruff configuration; the imports are sorted first (see `pyjinhx.format.sortImports`). Without ruff, on a body ruff cannot parse, and in an untrusted workspace the body is left as it is." },
+        "pyjinhx.format.sortImports": { "type": "boolean", "scope": "resource", "default": true, "markdownDescription": "Sort the imports of a `{#python` block when it is formatted, with ruff's import sorting (rule `I001`) and the project's `[tool.ruff.lint.isort]` settings. No other lint fix is applied. Ignored when `pyjinhx.format.python` is `off`." },
         "pyjinhx.pythonBlock.enabled": { "type": "boolean", "default": true, "markdownDescription": "Colours, hover, definition, completion and signature help inside `{#python` blocks, from a private basedpyright process started when a `.pjx` with a block is open. Uses about 300 MB of memory." },
         "pyjinhx.pythonBlock.serverPath": { "type": "string", "default": "", "scope": "machine-overridable", "markdownDescription": "Another `langserver.index.js` of basedpyright to run instead of the bundled one." },
         "pyjinhx.pythonBlock.diagnostics": { "type": "boolean", "default": true, "markdownDescription": "Show basedpyright's diagnostics for the lines of a `{#python` block. basedpyright reads the project's `pyrightconfig.json`, `[tool.pyright]` or `[tool.basedpyright]`; see `typeCheckingMode`." },
@@ -87,7 +90,7 @@
     }
   },
   "capabilities": {
-    "untrustedWorkspaces": { "supported": "limited", "description": "In an untrusted workspace no Python interpreter is run: tags and props come from the .pjx files only.", "restrictedConfigurations": ["pyjinhx.pythonPath", "pyjinhx.pythonBlock.serverPath"] },
+    "untrustedWorkspaces": { "supported": "limited", "description": "In an untrusted workspace no Python interpreter and no ruff is run: tags and props come from the .pjx files only, and {#python bodies are not formatted.", "restrictedConfigurations": ["pyjinhx.pythonPath", "pyjinhx.pythonBlock.serverPath"] },
     "virtualWorkspaces": { "supported": "limited", "description": "Manifest features need a local Python; highlighting and HTML/CSS/JS forwarding work." }
   },
   "devDependencies": {

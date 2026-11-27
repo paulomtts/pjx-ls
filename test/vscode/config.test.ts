@@ -44,3 +44,24 @@ test("the block's diagnostics are on by default and fall back to standard", () =
   assert.equal(settings["pyjinhx.pythonBlock.typeCheckingMode"].default, "standard");
   assert.deepEqual(settings["pyjinhx.pythonBlock.typeCheckingMode"].enum, ["off", "basic", "standard", "strict", "recommended", "all"]);
 });
+
+test("the import sorting setting is a resource boolean, on, and names no path", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+  const setting = pkg.contributes.configuration.properties["pyjinhx.format.sortImports"];
+  assert.equal(setting.type, "boolean");
+  assert.equal(setting.default, true);
+  assert.equal(setting.scope, "resource");
+  assert.ok(!pkg.capabilities.untrustedWorkspaces.restrictedConfigurations.includes("pyjinhx.format.sortImports"));
+});
+
+test("the ruff formatting setting defaults on, and ruff is covered by the untrusted description", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+  const setting = pkg.contributes.configuration.properties["pyjinhx.format.python"];
+  assert.equal(setting.default, "ruff");
+  assert.deepEqual(setting.enum, ["ruff", "off"]);
+  // Read for the document and written back to the folder, workspace or user, so it must be a resource setting.
+  assert.equal(setting.scope, "resource");
+  const untrusted = pkg.capabilities.untrustedWorkspaces;
+  assert.deepEqual(untrusted.restrictedConfigurations, ["pyjinhx.pythonPath", "pyjinhx.pythonBlock.serverPath"]);
+  assert.match(untrusted.description, /ruff/);
+});

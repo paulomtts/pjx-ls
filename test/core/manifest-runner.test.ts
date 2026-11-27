@@ -1,31 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { Lane, type Exit, type Process, type Spawn } from "../../src/core/manifest-runner.ts";
-import { manifestText } from "./fixture.ts";
+import { Lane, nodeSpawn, type Exit } from "../../src/core/manifest-runner.ts";
+import { fakeSpawn, manifestText } from "./fixture.ts";
 
-interface Fake {
-  spawn: Spawn;
-  calls: { command: string; args: string[]; input?: string; killed: boolean; finish: (e: Exit) => void; fail: (e: unknown) => void }[];
-}
-
-function fake(): Fake {
-  const calls: Fake["calls"] = [];
-  const spawn: Spawn = (command, args, input) => {
-    let finish!: (e: Exit) => void;
-    let fail!: (e: unknown) => void;
-    const exit = new Promise<Exit>((res, rej) => ((finish = res), (fail = rej)));
-    const call = { command, args, input, killed: false, finish, fail };
-    calls.push(call);
-    const process: Process = { exit, kill: () => (call.killed = true) };
-    return process;
-  };
-  return { spawn, calls };
-}
 const ok = { code: 0, stdout: manifestText(), stderr: "" };
 const failure = (outcome: unknown) => (outcome as { failure: { kind: string } }).failure.kind;
 
 test("the command is python -m pyjinhx.manifest with the arguments, and stdin goes to it", async () => {
-  const { spawn, calls } = fake();
+  const { spawn, calls } = fakeSpawn();
   const run = new Lane(spawn).run("py", ["/w"], "text");
   calls[0].finish(ok);
   assert.ok("manifest" in (await run));
@@ -33,7 +15,7 @@ test("the command is python -m pyjinhx.manifest with the arguments, and stdin go
 });
 
 test("a newer run kills the older, which answers superseded", async () => {
-  const { spawn, calls } = fake();
+  const { spawn, calls } = fakeSpawn();
   const lane = new Lane(spawn);
   const first = lane.run("py", ["a"]);
   const second = lane.run("py", ["b"]);
@@ -45,7 +27,7 @@ test("a newer run kills the older, which answers superseded", async () => {
 });
 
 test("a run that takes too long is killed and is a timeout", async () => {
-  const { spawn, calls } = fake();
+  const { spawn, calls } = fakeSpawn();
   const outcome = await new Lane(spawn, 10).run("py", []);
   assert.equal(failure(outcome), "timeout");
   assert.equal(calls[0].killed, true);
@@ -61,10 +43,16 @@ test("each way to fail is its own kind", async () => {
     [{ code: 0, stdout: JSON.stringify({ manifest_version: 2, components: [] }) }, "version"],
   ];
   for (const [result, kind] of cases) {
-    const { spawn, calls } = fake();
+    const { spawn, calls } = fakeSpawn();
     const run = new Lane(spawn).run("py", []);
     if (result === "enoent") calls[0].fail(Object.assign(new Error("spawn"), { code: "ENOENT" }));
     else calls[0].finish({ code: 0, stdout: "", stderr: "", ...result });
     assert.equal(failure(await run), kind);
   }
+});
+
+test("nodeSpawn keeps a character whose bytes arrive in two chunks", async () => {
+  const script = "process.stdout.write(Buffer.from([0x22, 0xc3])); setTimeout(() => process.stdout.write(Buffer.from([0xa9, 0x22])), 100);";
+  const exit = await nodeSpawn(process.execPath, ["-e", script]).exit;
+  assert.equal(exit.stdout, '"é"');
 });
