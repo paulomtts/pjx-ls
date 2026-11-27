@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { isComponentTemplate, TEMPLATE_SELECTOR, type TemplateDocumentLike } from "../../src/vscode/config.ts";
+import { FORMAT_COMMAND, isComponentTemplate, TEMPLATE_SELECTOR, type TemplateDocumentLike } from "../../src/vscode/config.ts";
 
 const make = (over: Partial<TemplateDocumentLike> = {}): TemplateDocumentLike => ({
   uri: { scheme: "file" },
@@ -75,4 +75,14 @@ test("the css and js formatting settings are resource booleans, on, and not rest
     assert.equal(setting.scope, "resource", name);
     assert.ok(!pkg.capabilities.untrustedWorkspaces.restrictedConfigurations.includes(name), name);
   }
+});
+
+test("the format command is titled Format Document and keeps its id", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+  assert.ok(
+    pkg.contributes.commands.some(
+      (c: { command: string; title: string }) => c.command === "pyjinhx.formatSlots" && c.title === "PyJinHx: Format Document",
+    ),
+  );
+  assert.equal(FORMAT_COMMAND, "pyjinhx.formatSlots");
 });
