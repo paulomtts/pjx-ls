@@ -65,3 +65,14 @@ test("the ruff formatting setting defaults on, and ruff is covered by the untrus
   assert.deepEqual(untrusted.restrictedConfigurations, ["pyjinhx.pythonPath", "pyjinhx.pythonBlock.serverPath"]);
   assert.match(untrusted.description, /ruff/);
 });
+
+test("the css and js formatting settings are resource booleans, on, and not restricted", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+  for (const name of ["pyjinhx.format.css", "pyjinhx.format.js"]) {
+    const setting = pkg.contributes.configuration.properties[name];
+    assert.equal(setting.type, "boolean", name);
+    assert.equal(setting.default, true, name);
+    assert.equal(setting.scope, "resource", name);
+    assert.ok(!pkg.capabilities.untrustedWorkspaces.restrictedConfigurations.includes(name), name);
+  }
+});
