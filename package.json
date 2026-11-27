@@ -29,6 +29,7 @@
     "check": "tsc --noEmit",
     "test": "node --test \"test/*.test.ts\" \"test/core/**/*.test.ts\" \"test/grammar/**/*.test.ts\" \"test/scripts/**/*.test.ts\" \"test/vscode/**/*.test.ts\"",
     "test:lsp": "node --test \"test/lsp/**/*.test.ts\"",
+    "test:ruff": "node --test \"test/ruff/**/*.test.ts\"",
     "test:editor": "npm run build && node test/editor/run.mjs",
     "package": "npm run check && npm run build && vsce package"
   },

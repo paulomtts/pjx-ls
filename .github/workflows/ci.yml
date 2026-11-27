@@ -39,6 +39,12 @@ jobs:
       - name: Server tests
         run: npm run test:lsp
 
+      - name: Install ruff
+        run: pipx install ruff==0.16.0
+
+      - name: Ruff tests
+        run: PJX_REQUIRE_RUFF=1 npm run test:ruff
+
       - name: Editor tests
         run: xvfb-run -a npm run test:editor
 
