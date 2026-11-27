@@ -24,6 +24,8 @@ interface Token {
   python?: boolean;
   /** Whether a line break precedes this token in the source. */
   newlineBefore: boolean;
+  /** Whether two or more line breaks (a blank line) precede this token in the source. */
+  blankBefore: boolean;
   /** Whether whitespace (or the start of the text) precedes this token in the source. */
   spaceBefore: boolean;
 }
@@ -88,6 +90,13 @@ function atoms(s: Scan): Atom[] | null {
   return found.sort((a, b) => a.start - b.start || b.end - a.end);
 }
 
+/** Whether the whitespace before `start` holds two or more line breaks. */
+function blankLineBefore(text: string, start: number): boolean {
+  let breaks = 0;
+  for (let i = start - 1; i >= 0 && /\s/.test(text[i]); i -= 1) if (text[i] === "\n") breaks += 1;
+  return breaks >= 2;
+}
+
 /** `complete` is false when something is never closed, or a tag and a `{% raw %}` region overlap. */
 function tokenize(text: string, s: Scan = scan(text)): { tokens: Token[]; complete: boolean } {
   const tokens: Token[] = [];
@@ -95,13 +104,14 @@ function tokenize(text: string, s: Scan = scan(text)): { tokens: Token[]; comple
   if (!all) return { tokens, complete: false };
   const header = defHeaderRange(text, s);
   const python = s.blocks.find((b) => b.keyword === "python");
-  const add = (start: number, token: Omit<Token, "spaceBefore" | "newlineBefore">): void => {
+  const add = (start: number, token: Omit<Token, "spaceBefore" | "newlineBefore" | "blankBefore">): void => {
     let back = start;
     while (back > 0 && /\s/.test(text[back - 1]) && text[back - 1] !== "\n") back -= 1;
     tokens.push({
       ...token,
       spaceBefore: start === 0 || /\s/.test(text[start - 1]),
       newlineBefore: back > 0 && text[back - 1] === "\n",
+      blankBefore: blankLineBefore(text, start),
     });
   };
   const addText = (start: number, end: number): void => {
@@ -351,6 +361,16 @@ function formatLf(text: string): string {
   // A token with no whitespace before it joins the previous line unless one side
   // is a block-level tag: a new line between other neighbours would add a space
   // to the rendered output.
+  // A blank line is kept between siblings, never first or last in its parent.
+  const startsScope = (token: Token | undefined): boolean => {
+    if (token?.type === "open") return true;
+    const kind = token?.type === "jinja" ? jinjaTag(token.value)?.kind : undefined;
+    return kind === "open" || kind === "mid";
+  };
+  const endsScope = (token: Token): boolean => {
+    const kind = token.type === "jinja" ? jinjaTag(token.value)?.kind : undefined;
+    return token.type === "close" || kind === "close" || kind === "mid";
+  };
   const emit = (index: number, line: string): void => {
     const glued =
       !tokens[index].spaceBefore &&
@@ -360,6 +380,8 @@ function formatLf(text: string): string {
     if (glued) {
       lines[lines.length - 1] += line.trimStart();
     } else {
+      const blank = tokens[index].blankBefore && lines.length > 0 && lines[lines.length - 1] !== "";
+      if (blank && !startsScope(tokens[index - 1]) && !endsScope(tokens[index])) lines.push("");
       lines.push(line);
     }
   };

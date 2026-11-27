@@ -204,3 +204,33 @@ test("an exploded tag writes name=\"value\", and keeps unquoted, bare and single
 test("a single-quoted markup value is not a slot", () => {
   assert.equal(formatPyjinhxTemplate(`<Card body='<p>Hi</p>'/>`), `<Card body='<p>Hi</p>'/>\n`);
 });
+
+// Blank lines between siblings are the author's layout: one is kept, never two, and none
+// opens or closes an element.
+const blankLines: [string, string, string][] = [
+  ["between siblings", "<div>\n\n<p>x</p>\n\n\n<p>y</p>\n\n</div>", "<div>\n  <p>x</p>\n\n  <p>y</p>\n</div>\n"],
+  [
+    "inside a Jinja block",
+    "<ul>\n{% for a in b %}\n\n<li>x</li>\n\n<li>y</li>\n\n{% endfor %}\n</ul>",
+    "<ul>\n  {% for a in b %}\n    <li>x</li>\n\n    <li>y</li>\n  {% endfor %}\n</ul>\n",
+  ],
+  ["around a comment", "<p>a</p>\n\n{# note #}\n\n<p>b</p>\n", "<p>a</p>\n\n{# note #}\n\n<p>b</p>\n"],
+  [
+    "before a block",
+    "<main>\n<p>x</p>\n</main>\n\n{#css\n.a{}\n#}\n",
+    "<main>\n  <p>x</p>\n</main>\n\n{#css\n.a{}\n#}\n",
+  ],
+  [
+    "inside a slot",
+    '<Card\n  body="<p>a</p>\n\n<p>b</p>"\n/>',
+    '<Card\n  body="\n    <p>a</p>\n\n    <p>b</p>\n  "\n/>\n',
+  ],
+  ["after a def header", "{#def a: str #}\n\n\n<p>x</p>", "{#def a: str #}\n\n<p>x</p>\n"],
+];
+
+for (const [name, input, output] of blankLines) {
+  test(`blank lines: ${name}`, () => {
+    assert.equal(formatPyjinhxTemplate(input), output);
+    assert.equal(formatPyjinhxTemplate(output), output);
+  });
+}
