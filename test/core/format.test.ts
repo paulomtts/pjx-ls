@@ -234,3 +234,30 @@ for (const [name, input, output] of blankLines) {
     assert.equal(formatPyjinhxTemplate(output), output);
   });
 }
+
+// A block's opener and closer stand on their own lines.
+const blockLines: [string, string, string][] = [
+  [
+    "blocks after markup and after each other",
+    "<div><p>x</p></div>{#css\n.a{}\n#}{#js\nlet a\n#}",
+    "<div>\n  <p>x</p>\n</div>\n{#css\n.a{}\n#}\n{#js\nlet a\n#}\n",
+  ],
+  [
+    "inline elements around a block",
+    "<span>a</span>{#css\n.a{}\n#}<span>b</span>",
+    "<span>a</span>\n{#css\n.a{}\n#}\n<span>b</span>\n",
+  ],
+  ["an expression after a block", "<p>a</p>\n{#css\n.a{}\n#}{{ x }}", "<p>a</p>\n{#css\n.a{}\n#}\n{{ x }}\n"],
+  [
+    "an indented {#python is a comment, not a block",
+    "<span>x</span>{#python\nx = 1\n#}",
+    "<span>x</span>{#python\nx = 1\n#}\n",
+  ],
+];
+
+for (const [name, input, output] of blockLines) {
+  test(`block lines: ${name}`, () => {
+    assert.equal(formatPyjinhxTemplate(input), output);
+    assert.equal(formatPyjinhxTemplate(output), output);
+  });
+}

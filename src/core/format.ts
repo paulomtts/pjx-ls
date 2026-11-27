@@ -22,6 +22,8 @@ interface Token {
   header?: boolean;
   /** The `{#python` block, whose opener stays in column 0. */
   python?: boolean;
+  /** A `{#def`, `{#css`, `{#js` or `{#python` block, which never shares a line. */
+  block?: boolean;
   /** Whether a line break precedes this token in the source. */
   newlineBefore: boolean;
   /** Whether two or more line breaks (a blank line) precede this token in the source. */
@@ -135,6 +137,7 @@ function tokenize(text: string, s: Scan = scan(text)): { tokens: Token[]; comple
       tag: atom.tag,
       header: atom.start === header?.start,
       python: atom.start === python?.opener.start,
+      block: s.blocks.some((b) => b.opener.start === atom.start),
     });
     at = atom.end;
   }
@@ -379,7 +382,8 @@ function formatLf(text: string): string {
       !tokens[index].spaceBefore &&
       lines.length > 0 &&
       lines[lines.length - 1] !== "" &&
-      !isBlockTag(tokens[index]) && !isBlockTag(tokens[index - 1]);
+      !isBlockTag(tokens[index]) && !isBlockTag(tokens[index - 1]) &&
+      !tokens[index].block && !tokens[index - 1]?.block;
     if (glued) {
       lines[lines.length - 1] += line.trimStart();
     } else {
