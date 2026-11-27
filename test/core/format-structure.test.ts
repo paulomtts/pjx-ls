@@ -152,6 +152,7 @@ const broken: [string, string, string][] = [
     '<p>\n  {{ _("Hello\n     world") }}\n</p>',
     '<p>\n  {{ _("Hello\n     world") }}\n</p>\n',
   ],
+  ["a blank line in the text stays empty", "<p>\n  a\n\n  b\n</p>", "<p>\n  a\n\n  b\n</p>\n"],
 ];
 
 for (const [name, input, output] of broken) {

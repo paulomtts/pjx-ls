@@ -275,7 +275,7 @@ function tryInlineElement(tokens: Token[], startIndex: number, baseIndent: strin
       // An expression's lines are its own: a string in it may span them.
       const written = token.type === "jinja_expr"
         ? token.value
-        : token.value.split("\n").map((line) => line.trim()).join(`\n${innerIndent}`);
+        : token.value.split("\n").map((line, i) => (i > 0 && line.trim() ? innerIndent : "") + line.trim()).join("\n");
       if (token.newlineBefore || content.length === 0) content.push(innerIndent + written);
       else content[content.length - 1] += (token.spaceBefore ? " " : "") + written;
       continue;
