@@ -4,7 +4,7 @@ import { formatEmbedded, type Formatters } from "../core/embedded-format.ts";
 import { formatPyjinhxTemplate } from "../core/format.ts";
 import { nodeSpawn } from "../core/manifest-runner.ts";
 import { formatPythonBlock, Ruff, stdinFilename, usesRuff, type FormatBody, type RuffCommand } from "../core/python-format.ts";
-import { FORMAT_SLOTS_COMMAND, isComponentTemplate, TEMPLATE_SELECTOR } from "./config.ts";
+import { FORMAT_COMMAND, isComponentTemplate, TEMPLATE_SELECTOR } from "./config.ts";
 import { BodyFormatter, type Indentation } from "./embedded-format.ts";
 import { findPython, onPath, onPythonEnvironmentChange } from "./python-env.ts";
 import { cancelOf } from "./python-server.ts";
@@ -96,7 +96,7 @@ export function registerFormatting(context: vscode.ExtensionContext, output: vsc
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(FORMAT_SLOTS_COMMAND, async () => {
+    vscode.commands.registerCommand(FORMAT_COMMAND, async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
         return;

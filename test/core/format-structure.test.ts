@@ -67,12 +67,12 @@ test("filter block open/close depth", () => {
 test("interpolation containing < and quotes is not mis-tokenized", () => {
   assert.equal(
     formatPyjinhxTemplate("<div>\n{{ 'a' if x < y else 'b' }}\n</div>"),
-    "<div>{{ 'a' if x < y else 'b' }}</div>\n",
+    "<div>\n  {{ 'a' if x < y else 'b' }}\n</div>\n",
   );
 });
 
 test("a bare double-quote inside {{ }} in an attribute does not terminate the tag", () => {
-  // Locks the {{ }}-skip in readQuotedString: without it, the " inside the
+  // The scanner lexes Jinja before tags: without that, the " inside the
   // interpolation would close the attribute and corrupt the tag.
   assert.equal(
     formatPyjinhxTemplate(`<div a="{{ x or "y" }}"><span>t</span></div>`),
@@ -116,3 +116,48 @@ test("a non-def {# comment #} is depth-neutral", () => {
 test("empty input returned unchanged", () => {
   assert.equal(formatPyjinhxTemplate(""), "");
 });
+
+test("the > of a multi-line open tag stays where it was written", () => {
+  const wrapped = '<form class="a"\n      hx-post="/x">\n<span>t</span>\n</form>';
+  assert.equal(
+    formatPyjinhxTemplate(wrapped),
+    '<form class="a"\n      hx-post="/x">\n  <span>t</span>\n</form>\n',
+  );
+  const own = '<div\n  class="a"\n>\n<p>x</p>\n</div>';
+  assert.equal(formatPyjinhxTemplate(own), '<div\n  class="a"\n>\n  <p>x</p>\n</div>\n');
+  for (const input of [wrapped, own]) {
+    const once = formatPyjinhxTemplate(input);
+    assert.equal(formatPyjinhxTemplate(once), once);
+  }
+});
+
+// An element written as open tag, content lines, close tag stays that way; any other shape
+// is joined on one line.
+const broken: [string, string, string][] = [
+  [
+    "a wrapped open tag and its text",
+    '<button class="a"\n        {% if not n %}disabled{% endif %}>\n  Clear ({{ n }})\n</button>',
+    '<button class="a"\n        {% if not n %}disabled{% endif %}>\n  Clear ({{ n }})\n</button>\n',
+  ],
+  ["a single line of text", "<button>\n  Clear\n</button>", "<button>\n  Clear\n</button>\n"],
+  [
+    "several lines of text",
+    "<p>\n      Hello {{ name }},\n  welcome\n</p>",
+    "<p>\n  Hello {{ name }},\n  welcome\n</p>\n",
+  ],
+  ["written on one line", "<p>Hello {{ name }}</p>", "<p>Hello {{ name }}</p>\n"],
+  ["a break on one side only", "<span>\n  a</span>", "<span> a</span>\n"],
+  [
+    "an expression over several lines is kept as written",
+    '<p>\n  {{ _("Hello\n     world") }}\n</p>',
+    '<p>\n  {{ _("Hello\n     world") }}\n</p>\n',
+  ],
+  ["a blank line in the text stays empty", "<p>\n  a\n\n  b\n</p>", "<p>\n  a\n\n  b\n</p>\n"],
+];
+
+for (const [name, input, output] of broken) {
+  test(`an element written over several lines: ${name}`, () => {
+    assert.equal(formatPyjinhxTemplate(input), output);
+    assert.equal(formatPyjinhxTemplate(output), output);
+  });
+}

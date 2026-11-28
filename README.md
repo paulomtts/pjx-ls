@@ -132,8 +132,19 @@ TypeScript extension off in Restricted Mode.
 ### Formatting
 - Re-indents the HTML/Jinja structure (two-space) and **explodes** slotted component
   tags: each attribute on its own line, the slot value formatted recursively, and the
-  closing `>` / `/>` on its own line.
-- Always keeps a blank line between a `{#def … #}` header and the rest of the file.
+  closing `>` / `/>` on its own line. It reads the file the way pyjinhx does: Jinja first,
+  then tags. HTML comments, `{% raw %}` regions and the `<script>`, `<style>`, `<pre>` and
+  `<textarea>` elements are kept byte for byte, except that the CSS and JS step below
+  formats the bodies of `<style>` and `<script>`.
+- Keeps your line breaks where they carry no meaning for the formatter: one blank line
+  between siblings, an element you wrote over several lines (open tag, content, close tag),
+  and the `>` of a tag you wrapped.
+- A `{#def`, `{#css`, `{#js` or `{#python` block's opener and closer stand on their own
+  lines.
+- Always keeps a blank line between a `{#def … #}` header and the rest of the file. The
+  legacy `{# def … #}` form counts as a header only as the first thing in the file, as in
+  pyjinhx.
+- Never turns a comment into a `{#python` block: an indented `{#python` stays where it is.
 - Formats the body of a `{#python` block with **ruff** (`ruff format`), using the
   project's own ruff configuration (`pyproject.toml`, `ruff.toml`). Imports in the
   block are sorted first (ruff's `I001` fix with the project's
@@ -159,7 +170,7 @@ TypeScript extension off in Restricted Mode.
   The reason is one line in **PyJinHx: Show Output**; nothing is ever shown as a
   notification. `pyjinhx.format.css` and `pyjinhx.format.js` (both on by default) turn it off.
 - **Idempotent** — running it again changes nothing.
-- Available as **Format Document**, the **PyJinHx: Format Slotted Component Tags**
+- Available as **Format Document**, the **PyJinHx: Format Document**
   command, and **format-on-save** (opt-in through VS Code's own setting, see below).
 
 ## Setup
@@ -238,18 +249,28 @@ Python's configuration there; only the highlighting is PyJinHx.
   from a function body.
 - In `<style>` and CSS comments, Jinja names can pick up a theme's `source.css variable`
   colour, because the injected Jinja still sits inside the CSS scope.
-
+- The formatter leaves the file exactly as it is when its structure is not certain:
+  something is never closed (a tag, a comment, `{{`, `{%`, `{#`, `{% raw %}`, a `<script>`);
+  tags or Jinja blocks do not close in the order they opened (an `{% if %}` that opens a
+  `<div>` in each branch); the file has a block error (the diagnostic says which); the file
+  mixes CRLF and LF.
 - Whitespace next to block-level tags (the `BLOCK_ELEMENTS` list in
   `src/core/format.ts`) is treated as non-rendering. That is wrong for
   elements styled `display: inline-block` (e.g. inline-block `<li>` menus can gain
   gaps).
-- Whitespace inside slot values is re-laid out.
+- Whitespace inside slot values is re-laid out; a slot is a double-quoted value that
+  starts with a tag.
+- Lines inside a tag you wrapped are not re-indented when the tag moves.
+- Text and `{{ }}` next to an inline element are written one per line (`Hello` /
+  `<b>world</b>!`).
+- A component named like a void HTML element (`<Link>`, `<Input>`, `<Meta>`, …) must be
+  written self-closing; with a separate close tag the file is left as it is.
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `PyJinHx: Format Slotted Component Tags` | Format the active component template. |
+| `PyJinHx: Format Document` | Format the active component template (the command id is `pyjinhx.formatSlots`). |
 | `PyJinHx: Refresh Component Manifest` | Read the manifest again now. |
 | `PyJinHx: Show Output` | Open the log: the commands run and how long they took. |
 

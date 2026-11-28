@@ -9,7 +9,8 @@ export const FORWARDING_SELECTOR = [
 ];
 
 export const OUTPUT_CHANNEL_NAME = "PyJinHx";
-export const FORMAT_SLOTS_COMMAND = "pyjinhx.formatSlots";
+// The id is older than the command: it formatted slotted tags only. Kept for keybindings.
+export const FORMAT_COMMAND = "pyjinhx.formatSlots";
 
 /**
  * The minimal slice of a `vscode.TextDocument` the scope guard needs. A real

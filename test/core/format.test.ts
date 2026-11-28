@@ -174,9 +174,14 @@ test("a header whose closer is followed by more text on the same line is left al
 });
 
 test("blank lines before a leading {# comment are kept", () => {
+  // A legacy {# def #} header counts only as the first content, as in pyjinhx.
   assert.equal(
     formatPyjinhxTemplate("\n\n{# note #}\n{# def a: str #}\n<p>x</p>"),
-    "\n\n{# note #}\n{# def a: str #}\n\n<p>x</p>\n",
+    "\n\n{# note #}\n{# def a: str #}\n<p>x</p>\n",
+  );
+  assert.equal(
+    formatPyjinhxTemplate("\n\n{# def a: str #}\n<p>x</p>"),
+    "\n\n{# def a: str #}\n\n<p>x</p>\n",
   );
 });
 
@@ -188,3 +193,87 @@ test("a slotted tag name with dots, dashes or underscores is not split", () => {
     );
   }
 });
+
+test("an exploded tag writes name=\"value\", and keeps unquoted, bare and single-quoted attributes", () => {
+  assert.equal(
+    formatPyjinhxTemplate(`<Card a = "x" n=3 on body='<p>s</p>' slot = "<p>Hi</p>"/>`),
+    `<Card\n  a="x"\n  n=3\n  on\n  body='<p>s</p>'\n  slot="\n    <p>Hi</p>\n  "\n/>\n`,
+  );
+});
+
+test("a single-quoted markup value is not a slot", () => {
+  assert.equal(formatPyjinhxTemplate(`<Card body='<p>Hi</p>'/>`), `<Card body='<p>Hi</p>'/>\n`);
+});
+
+// Blank lines between siblings are the author's layout: one is kept, never two, and none
+// opens or closes an element.
+const blankLines: [string, string, string][] = [
+  ["between siblings", "<div>\n\n<p>x</p>\n\n\n<p>y</p>\n\n</div>", "<div>\n  <p>x</p>\n\n  <p>y</p>\n</div>\n"],
+  [
+    "inside a Jinja block",
+    "<ul>\n{% for a in b %}\n\n<li>x</li>\n\n<li>y</li>\n\n{% endfor %}\n</ul>",
+    "<ul>\n  {% for a in b %}\n    <li>x</li>\n\n    <li>y</li>\n  {% endfor %}\n</ul>\n",
+  ],
+  ["around a comment", "<p>a</p>\n\n{# note #}\n\n<p>b</p>\n", "<p>a</p>\n\n{# note #}\n\n<p>b</p>\n"],
+  [
+    "before a block",
+    "<main>\n<p>x</p>\n</main>\n\n{#css\n.a{}\n#}\n",
+    "<main>\n  <p>x</p>\n</main>\n\n{#css\n.a{}\n#}\n",
+  ],
+  [
+    "inside a slot",
+    '<Card\n  body="<p>a</p>\n\n<p>b</p>"\n/>',
+    '<Card\n  body="\n    <p>a</p>\n\n    <p>b</p>\n  "\n/>\n',
+  ],
+  ["after a def header", "{#def a: str #}\n\n\n<p>x</p>", "{#def a: str #}\n\n<p>x</p>\n"],
+];
+
+for (const [name, input, output] of blankLines) {
+  test(`blank lines: ${name}`, () => {
+    assert.equal(formatPyjinhxTemplate(input), output);
+    assert.equal(formatPyjinhxTemplate(output), output);
+  });
+}
+
+// A block's opener and closer stand on their own lines.
+const blockLines: [string, string, string][] = [
+  [
+    "blocks after markup and after each other",
+    "<div><p>x</p></div>{#css\n.a{}\n#}{#js\nlet a\n#}",
+    "<div>\n  <p>x</p>\n</div>\n{#css\n.a{}\n#}\n{#js\nlet a\n#}\n",
+  ],
+  [
+    "inline elements around a block",
+    "<span>a</span>{#css\n.a{}\n#}<span>b</span>",
+    "<span>a</span>\n{#css\n.a{}\n#}\n<span>b</span>\n",
+  ],
+  ["an expression after a block", "<p>a</p>\n{#css\n.a{}\n#}{{ x }}", "<p>a</p>\n{#css\n.a{}\n#}\n{{ x }}\n"],
+  [
+    "an indented {#python is a comment, not a block",
+    "<span>x</span>{#python\nx = 1\n#}",
+    "<span>x</span>{#python\nx = 1\n#}\n",
+  ],
+];
+
+for (const [name, input, output] of blockLines) {
+  test(`block lines: ${name}`, () => {
+    assert.equal(formatPyjinhxTemplate(input), output);
+    assert.equal(formatPyjinhxTemplate(output), output);
+  });
+}
+
+// The formatter never turns a comment into a block, or a document into one with a block error.
+for (const [name, input, output] of [
+  ["an indented opener at the top level", "  {#python\nimport os\n#}\n<p>x</p>", "  {#python\nimport os\n#}\n<p>x</p>"],
+  ["an indented opener and closer", "  {#python\n  x = 1\n  #}\n<p>x</p>", "  {#python\n  x = 1\n  #}\n<p>x</p>"],
+  [
+    "an indented opener inside an element is still formatted",
+    "<div>\n  {#python\n  x = 1\n  #}\n</div>",
+    "<div>\n  {#python\n  x = 1\n  #}\n</div>\n",
+  ],
+]) {
+  test(`never creates a python block: ${name}`, () => {
+    assert.equal(formatPyjinhxTemplate(input), output);
+    assert.equal(formatPyjinhxTemplate(output), output);
+  });
+}

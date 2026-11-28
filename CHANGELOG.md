@@ -3,6 +3,34 @@
 All notable changes to the **PyJinHx** extension are documented here. This project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## 0.11.0
+
+### Changed
+- The formatter reads the file with the same scanner as the rest of the extension, so the
+  Python, CSS/JS and markup steps of Format Document agree on where a tag, a comment or a
+  block is.
+- The command is now titled "PyJinHx: Format Document". Its id, `pyjinhx.formatSlots`,
+  is unchanged, so keybindings keep working.
+- A legacy `{# def … #}` header gets its blank line only when it is the first thing in the
+  file, as in pyjinhx.
+- A file with a block error (a second block, a stray `#}`, text after a closer, …) is not
+  formatted, like the Python and CSS/JS steps.
+- A block's opener and closer always stand on their own lines.
+- One blank line between siblings is kept; the `>` of a tag written over several lines
+  stays where it was; an element written as open tag, content, close tag is no longer
+  joined into one line.
+
+### Fixed
+- A `<` that starts no tag (`a < b`), a `>` inside Jinja in a tag (`{% if a > b %}`), and
+  Jinja strings holding `}}`, `>` or a quote in an attribute no longer stop the file from
+  being formatted.
+- A slotted tag with an apostrophe in another attribute is exploded; a single-quoted
+  value, `#ref="a b"` and Jinja between attributes are kept as written instead of being
+  split at their spaces.
+- A `<script>` with `</script>` in a Jinja string is formatted; `</scripts>` no longer
+  closes a `<script>`.
+- An indented `{#python` comment is no longer moved to column 0, where it became a block.
+
 ## 0.10.0
 
 ### Added

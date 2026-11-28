@@ -148,7 +148,7 @@ test("%} and }} inside a quoted jinja string do not end the tag", () => {
   );
   assert.equal(
     formatPyjinhxTemplate('<div>\n{{ "a\\"}}" }}\n</div>'),
-    '<div>{{ "a\\"}}" }}</div>\n',
+    '<div>\n  {{ "a\\"}}" }}\n</div>\n',
   );
 });
 

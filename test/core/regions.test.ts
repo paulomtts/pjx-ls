@@ -222,3 +222,32 @@ test("componentName is the leading PascalCase name, as pyjinhx reads it", () => 
     ],
   );
 });
+
+const unterminated = (text: string) => {
+  const r = scan(text).unterminated;
+  return r === null ? null : slice(text, r);
+};
+
+test("unterminated is the first thing nothing closes", () => {
+  const whole = ["{% raw %}<b>", "{# a", "<!-- a", '<a href="x>', '<a href="x"', "<script>a<b"];
+  for (const text of whole) assert.equal(unterminated(text), text, text);
+  assert.equal(unterminated("<p>{{ x"), "{{ x");
+  assert.equal(unterminated('<p>{{ "a }}'), '{{ "a }}');
+  assert.equal(unterminated("<p>x</p>\n{#python\nx = 1\n"), "{#python\n");
+});
+
+test("unterminated is null when everything closes", () => {
+  for (const text of ["<p>{{ x }}</p>", "<a>{{ x }}", "<!-- a -->", "<script>a</script>"]) {
+    assert.equal(unterminated(text), null, text);
+  }
+});
+
+test("unterminated is the earlier of two", () => {
+  assert.equal(unterminated("<p>{{ x\n<!-- a"), "{{ x\n<!-- a");
+  assert.equal(unterminated("<!-- a\n<p>{{ x"), "<!-- a\n<p>{{ x");
+});
+
+test("a script closer must end its name", () => {
+  const text = "<script>a</scripts>b</script>";
+  assert.deepEqual(scan(text).embedded.map((e) => slice(text, e.body)), ["a</scripts>b"]);
+});
